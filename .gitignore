@@ -1,0 +1,8 @@
+*.cmd
+*.sh
+*.kdev4
+*.log
+.idea/*
+__pycache__/*
+GPL-3
+trash/*

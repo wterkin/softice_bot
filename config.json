@@ -1,0 +1,12 @@
+{
+    "proxy":"",
+    "master":"Pet_Rovich",
+    "master_name":"Петрович",
+    "barman_chats":["ПравЧат", "Ботовка", "Maftown"],
+    "theolog_chats":["ПравЧат", "Ботовка", "Anastasis"],
+    "meteorolog_chats":[],
+    "librarian_chats":["ПравЧат", "Ботовка", "Хокку", "Maftown"],
+    "mafiozo_chats":["Ботовка"],
+    "babbler_chats":["ПравЧат", "Ботовка"],
+    "token":"1978360349:AAH02ct7Vry0r9syAqVHUWbKtbFsNUru4y4"
+}
