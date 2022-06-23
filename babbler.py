@@ -169,18 +169,26 @@ def babbler(pmessage_text: str) -> str:
     message: str = None
     word_list: list = pmessage_text.split(" ")
     # *** Возможно, запросили меню.
-    # print("*** BBL:BBL:WL ", WEATHER_WORDS)
+    print("*** BBL:BBL:WL ", message)
     if len(pmessage_text) > 2:
 
         for word in word_list:
 
-            # print("*** BBL:BBL:WR ", word)
+            print("*** BBL:BBL:WR ", word)
             if word in " ".join(GREETINGS_WORDS):
 
                 message = f"{random.choice(GREETINGS_ANSWERS)}"
+                print("*** BBL:BBL:GREET")
                 break
             if word in " ".join(WEATHER_WORDS):
 
                 message = f"{random.choice(WEATHER_ANSWERS)}"
+                print("*** BBL:BBL:WEATHER")
+               
                 break
+            if word in " ".join(BEAUTY_WORDS):
+
+                message = f"{random.choice(BEAUTY_ANSWERS)}"
+                print("*** BBL:BBL:BEAUTY")
+ 
     return message
