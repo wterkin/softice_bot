@@ -24,6 +24,11 @@ WEATHER_WORDS_FILE: str = "data/babbling/weather_words.txt"
 WEATHER_ANSWERS: list = []
 WEATHER_ANSWERS_FILE: str = "data/babbling/weather_answers.txt"
 
+BEAUTY_WORDS: list = []
+BEAUTY_WORDS_FILE: str = "data/babbling/beauty_words.txt"
+BEAUTY_ANSWERS: list = []
+BEAUTY_ANSWERS_FILE: str = "data/babbling/beauty_answers.txt"
+
 
 def reload_babbling():
     """Перезагружает приветствия."""
@@ -42,7 +47,7 @@ def reload_babbling():
 
     global WEATHER_WORDS
     WEATHER_WORDS = func.load_from_file(WEATHER_WORDS_FILE)
-    if GREETINGS_WORDS is not None:
+    if WEATHER_WORDS is not None:
 
         print("Loaded ", len(WEATHER_WORDS), " weather words.")
 
@@ -51,6 +56,18 @@ def reload_babbling():
     if WEATHER_ANSWERS is not None:
 
         print("Loaded ", len(WEATHER_ANSWERS), " weather answers.")
+
+    global BEAUTY_WORDS
+    BEAUTY_WORDS = func.load_from_file(BEAUTY_WORDS_FILE)
+    if BEAUTY_WORDS is not None:
+
+        print("Loaded ", len(BEAUTY_WORDS), " beauty words.")
+
+    global BEAUTY_ANSWERS
+    BEAUTY_ANSWERS = func.load_from_file(BEAUTY_ANSWERS_FILE)
+    if BEAUTY_ANSWERS is not None:
+
+        print("Loaded ", len(WEATHER_ANSWERS), " beauty answers.")
 
 
 def is_enabled(pconfig: dict, pchat_title: str) -> bool:
@@ -152,12 +169,12 @@ def babbler(pmessage_text: str) -> str:
     message: str = None
     word_list: list = pmessage_text.split(" ")
     # *** Возможно, запросили меню.
-    print("*** BBL:BBL:WL ", WEATHER_WORDS)
+    # print("*** BBL:BBL:WL ", WEATHER_WORDS)
     if len(pmessage_text) > 2:
 
         for word in word_list:
 
-            print("*** BBL:BBL:WR ", word)
+            # print("*** BBL:BBL:WR ", word)
             if word in " ".join(GREETINGS_WORDS):
 
                 message = f"{random.choice(GREETINGS_ANSWERS)}"

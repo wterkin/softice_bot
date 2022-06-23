@@ -36,6 +36,8 @@ CONTINUE_RUNNING = 0
 QUIT_BY_DEMAND = 1
 BOT_STATUS = CONTINUE_RUNNING
 LAST_BABBLER_PHRASE_TIME = datetime.now()
+ALLOWED_CHATS = "allowed_chats"
+BOT_CONFIG = None
 
 
 class CQuitByDemand(Exception):
@@ -46,17 +48,18 @@ class CQuitByDemand(Exception):
 
 
 # *** Читаем конфигурацию
+# global BOT_CONFIG
 with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as config_file:
 
     BOT_CONFIG = json.load(config_file)
 
 if BOT_CONFIG["proxy"]:
 
-    apihelper.proxy = {'https':BOT_CONFIG["proxy"]}
+    apihelper.proxy = {'https': BOT_CONFIG["proxy"]}
 SoftIceBot = telebot.TeleBot(BOT_CONFIG["token"])
 
 
-def send_help(pconfig: dict, pmessage: object):
+def send_help(pconfig: dict, pmessage):
     """По запросу пользователя отправляет подсказки пло всем модулям."""
 
     barman_message = barman.get_help(pconfig, pmessage.chat.title)
@@ -78,19 +81,19 @@ def send_help(pconfig: dict, pmessage: object):
 
 
 def babbler_process(pconfig: dict, pchat_id: int, pchat_title: str,
-                    puser_title, pmessage_text):
+                    pmessage_text):
     """По возможности обработать команду болтуном."""
     # print("*** SI:BBLPR:MSGTX ", pmessage_text)
     if babbler.can_process(pconfig, pchat_title, pmessage_text):
 
-        print("*** SI:BBLPR:")
+        # print("*** SI:BBLPR:")
         # *** ... точняк
         # message = barman.barman(pmessage.text, pmessage.from_user.user_name)
         message = babbler.babbler(pmessage_text)
-        print("*** SI:BBLPR:MSG ", message)
+        # print("*** SI:BBLPR:MSG ", message)
         if message is not None:
 
-            print(" .. ok.")
+            # print(" .. ok.")
             SoftIceBot.send_message(pchat_id, message)
             return True
     return False
@@ -167,14 +170,14 @@ def mafiozo_process(pconfig: dict, pchat_id: int, pchat_title: str,
 
     if mafiozo.can_process(pconfig, pchat_title, pmessage_text):
 
-        message: str = ""
+        message: str
         markup: object = None
-        addressant: int = 0
+        addressant: int
         # *** как пить дать.
         message, addressant, markup = mafiozo.mafiozo(pconfig, pmessage_text, pchat_id, puser_id, puser_title)
         if message is not None:
 
-            print(" .. ok.")
+            print(" .. ok.", addressant)
             if markup is None:
 
                 SoftIceBot.send_message(addressant, message)
@@ -212,7 +215,7 @@ def process_modules(pchat_id: int, pchat_title: str,
                 # f"Ну и запросы у вас, {user_name} !")
 
 
-def bot_command(pmessage: object):
+def bot_command(pmessage):
     """Обработка команд бота."""
 
     result = True
@@ -221,14 +224,14 @@ def bot_command(pmessage: object):
     user_name = pmessage.from_user.username
     chat_id = pmessage.chat.id
 
-    if command in  ["привет", "hi"]:
+    if command in ["привет", "hi"]:
 
         SoftIceBot.send_message(chat_id,
                                 random.choice(GREETINGS) + ", " + user_title)
     elif command == "тевирп":
 
         SoftIceBot.send_message(chat_id,
-                                "Тевирп! Тсссс.... o_O")
+                                'Тевирп! Тсссс.... o_O')
     elif command in ["конфиг", "config"]:
 
         # *** или конфиг
@@ -261,49 +264,33 @@ def callback_inline(call):
 
     mafiozo_process(BOT_CONFIG, call.message.chat.id, call.message.chat.title,
                     call.from_user.id, call.from_user.username, call.data)
-    #process_callback(pmessage_text: str, puser_id: int, puser_name: str):
-    # Если сообщение из чата с ботом
-    #'from_user': {'id': 1978360349, 'is_bot': True, 'first_name': 'SoftIce', 'username': 'SoftIceBot', 'last_name': None, 'language_code': None, 'can_join_groups': None, 'can_read_all_group_messages': None, 'supports_inline_queries': None}
-    #'chat': {'id': -583831606, 'type': 'group', 'title': 'Ботовка', 'username': None, 'first_name': None, 'last_name': None, 'photo': None, 'bio': None, 'description': None, 'invite_link': None, 'pinned_message': None, 'permissions': None, 'slow_mode_delay': None, 'message_auto_delete_time': None, 'sticker_set_name': None, 'can_set_sticker_set': None, 'linked_chat_id': None, 'location': None},
-
-    #print(call.message)
-    #print(call.message.chat.id)
-    #print(call.message.message_id)
-    #print(call.inline_message_id)
-    #print(call.from_user.username)
-    #print(call.from_user.id)
-    #if call.message:
-
-        #if call.data == "test":
-
-            #SoftIceBot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Пыщь")
-    # Если сообщение из инлайн-режима
-    #if call.inline_message_id:
-        # call.message.chat.id
-        # call.message.message_id
-        # call.inline_message_id
-        #if call.data == "test":
-
-            #SoftIceBot.edit_message_text(inline_message_id=call.inline_message_id, text="Бдыщь")
 
 
 @SoftIceBot.message_handler(func=lambda message: True, content_types=['text'])
-def get_text_messages(pmessage: object):
+def get_text_messages(pmessage):
     """Процедура обработки ввода команд пользователем."""
 
+    global BOT_CONFIG
     word_list: list = func.parse_input(pmessage.text)
-    message_text:str = pmessage.text
+    message_text: str = pmessage.text
     user_title: str = pmessage.from_user.first_name
     user_id: int = pmessage.from_user.id
     chat_id: int = pmessage.chat.id
     chat_title: str = pmessage.chat.title
-    print(chat_id, chat_title)
+    # print(chat_id, chat_title)
+    # *** Проверка разрешенных каналов
+    if chat_title not in BOT_CONFIG[ALLOWED_CHATS]:
+
+        SoftIceBot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+        SoftIceBot.leave_chat(chat_id)
+        print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+
     # *** В начале строки есть знак команды?
     if message_text[0:1] in COMMAND_SIGNS:
 
         if not bot_command(pmessage):
 
-            print(" ", user_title, "says: \"", message_text, "\"", end="")
+            # print(" ", user_title, "says: \"", message_text, "\"", end="")
             if word_list[0] == HELP_COMMAND:
 
                 send_help(BOT_CONFIG, pmessage)
@@ -321,12 +308,12 @@ def get_text_messages(pmessage: object):
 
             # *** В дело вступает болтун!
             global LAST_BABBLER_PHRASE_TIME
-            print("*** SI:GTM:MSGTX ", message_text)
+            # print("*** SI:GTM:MSGTX ", message_text)
             minutes = (datetime.now() - LAST_BABBLER_PHRASE_TIME).total_seconds() / 60
-            print("*** SI:GTM:SEC ", minutes)
+            # print("*** SI:GTM:SEC ", minutes)
             if minutes > 1:
 
-                babbler_process(BOT_CONFIG, chat_id, chat_title, user_title, message_text)
+                babbler_process(BOT_CONFIG, chat_id, chat_title, message_text)  # , user_title
                 LAST_BABBLER_PHRASE_TIME = datetime.now()
 
 
@@ -337,7 +324,6 @@ if __name__ == "__main__":
     librarian.reload_library()
     try:
         while BOT_STATUS == CONTINUE_RUNNING:
-            # SoftIceBot.leave_chat(-1001320080010)
             SoftIceBot.polling(none_stop=NON_STOP, interval=INTERVAL)
             print(f"Bot status = {BOT_STATUS}")
 
