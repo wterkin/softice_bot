@@ -37,6 +37,7 @@ QUIT_BY_DEMAND = 1
 BOT_STATUS = CONTINUE_RUNNING
 LAST_BABBLER_PHRASE_TIME = datetime.now()
 
+
 class CQuitByDemand(Exception):
     """Исключение выхода."""
     def __init__(self):
@@ -85,7 +86,7 @@ def babbler_process(pconfig: dict, pchat_id: int, pchat_title: str,
         print("*** SI:BBLPR:")
         # *** ... точняк
         # message = barman.barman(pmessage.text, pmessage.from_user.user_name)
-        message = babbler.babbler(pmessage_text, puser_title)
+        message = babbler.babbler(pmessage_text)
         print("*** SI:BBLPR:MSG ", message)
         if message is not None:
 
@@ -246,7 +247,7 @@ def bot_command(pmessage: object):
 
         if user_name == BOT_CONFIG["master"]:
 
-            # SoftIceBot.send_message(chat_id, f"Добби свободен! Прощай, {user_title} !!")
+            SoftIceBot.send_message(chat_id, "Ну, я пошёл...")
             raise CQuitByDemand()
         SoftIceBot.send_message(chat_id, f"Извини, {user_title}, у меня другой хозяин!")
     else:
@@ -296,7 +297,7 @@ def get_text_messages(pmessage: object):
     user_id: int = pmessage.from_user.id
     chat_id: int = pmessage.chat.id
     chat_title: str = pmessage.chat.title
-
+    print(chat_id, chat_title)
     # *** В начале строки есть знак команды?
     if message_text[0:1] in COMMAND_SIGNS:
 
@@ -322,7 +323,8 @@ def get_text_messages(pmessage: object):
             global LAST_BABBLER_PHRASE_TIME
             print("*** SI:GTM:MSGTX ", message_text)
             minutes = (datetime.now() - LAST_BABBLER_PHRASE_TIME).total_seconds() / 60
-            if minutes > 0:
+            print("*** SI:GTM:SEC ", minutes)
+            if minutes > 1:
 
                 babbler_process(BOT_CONFIG, chat_id, chat_title, user_title, message_text)
                 LAST_BABBLER_PHRASE_TIME = datetime.now()
@@ -335,7 +337,7 @@ if __name__ == "__main__":
     librarian.reload_library()
     try:
         while BOT_STATUS == CONTINUE_RUNNING:
-
+            # SoftIceBot.leave_chat(-1001320080010)
             SoftIceBot.polling(none_stop=NON_STOP, interval=INTERVAL)
             print(f"Bot status = {BOT_STATUS}")
 

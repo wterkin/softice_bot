@@ -19,6 +19,11 @@ GREETINGS_WORDS_FILE: str = "data/babbling/greetings_words.txt"
 GREETINGS_ANSWERS: list = []
 GREETINGS_ANSWERS_FILE: str = "data/babbling/greetings_answers.txt"
 
+WEATHER_WORDS: list = []
+WEATHER_WORDS_FILE: str = "data/babbling/weather_words.txt"
+WEATHER_ANSWERS: list = []
+WEATHER_ANSWERS_FILE: str = "data/babbling/weather_answers.txt"
+
 
 def reload_babbling():
     """Перезагружает приветствия."""
@@ -34,6 +39,18 @@ def reload_babbling():
     if GREETINGS_ANSWERS is not None:
 
         print("Loaded ", len(GREETINGS_ANSWERS), " greetings answers.")
+
+    global WEATHER_WORDS
+    WEATHER_WORDS = func.load_from_file(WEATHER_WORDS_FILE)
+    if GREETINGS_WORDS is not None:
+
+        print("Loaded ", len(WEATHER_WORDS), " weather words.")
+
+    global WEATHER_ANSWERS
+    WEATHER_ANSWERS = func.load_from_file(WEATHER_ANSWERS_FILE)
+    if WEATHER_ANSWERS is not None:
+
+        print("Loaded ", len(WEATHER_ANSWERS), " weather answers.")
 
 
 def is_enabled(pconfig: dict, pchat_title: str) -> bool:
@@ -58,18 +75,16 @@ def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
 
     if is_enabled(pconfig, pchat_title):
 
-        word_list: list = pmessage_text.split(" ")
-        if word_list[0] in " ".join(GREETINGS_WORDS):
-
-            # (word_list[0] in SHORT_RUS_BAR_COMMANDS) or
-            # (word_list[0] in ENGLISH_BAR_COMMANDS) or
-            # (word_list[0] in SHORT_ENG_BAR_COMMANDS) or
-            # (word_list[0] in MAIN_COMMANDS_LIST) or
-            # (word_list[0] in BAR_RELOAD))
+        # word_list: list = pmessage_text.split(" ")
+        # if word_list[0] in " ".join(GREETINGS_WORDS) or
+        #    word_list[0] in " ".join(WEATHER_WORDS)
+        #     # (word_list[0] in ENGLISH_BAR_COMMANDS) or
+        #     # (word_list[0] in SHORT_ENG_BAR_COMMANDS) or
+        #     # (word_list[0] in MAIN_COMMANDS_LIST) or
+        #     # (word_list[0] in BAR_RELOAD))
+        #    :
             return True
     return False
-
-
 
 
 # def get_command(pword_list: list) -> int:
@@ -130,15 +145,25 @@ def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
 #     return message
 
 
-def babbler(pmessage_text: str, pfrom_user_name: str) -> str:
+def babbler(pmessage_text: str) -> str:
     """Процедура разбора запроса пользователя."""
 
     # command: int = None
     message: str = None
     word_list: list = pmessage_text.split(" ")
     # *** Возможно, запросили меню.
-    print("*** BBL:BBL:WL ", word_list)
-    if word_list[0] in " ".join(GREETINGS_WORDS):
-        # message =
-        message = f"{random.choice(GREETINGS_ANSWERS)}"
+    print("*** BBL:BBL:WL ", WEATHER_WORDS)
+    if len(pmessage_text) > 2:
+
+        for word in word_list:
+
+            print("*** BBL:BBL:WR ", word)
+            if word in " ".join(GREETINGS_WORDS):
+
+                message = f"{random.choice(GREETINGS_ANSWERS)}"
+                break
+            if word in " ".join(WEATHER_WORDS):
+
+                message = f"{random.choice(WEATHER_ANSWERS)}"
+                break
     return message
