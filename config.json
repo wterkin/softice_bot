@@ -2,7 +2,7 @@
     "proxy":"",
     "master":"Pet_Rovich",
     "master_name":"Петрович",
-    "allowed_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку"]
+    "allowed_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку"],
     "barman_chats":["ПравЧат", "Ботовка", "Maftown"],
     "theolog_chats":["ПравЧат", "Ботовка"],
     "meteorolog_chats":["ПравЧат"],
