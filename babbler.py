@@ -4,7 +4,7 @@
 
 import random
 import functions as func
-
+import string
 
 BABBLER_BASE = "data/babbling"
 
@@ -169,26 +169,27 @@ def babbler(pmessage_text: str) -> str:
     message: str = ""
     word_list: list = pmessage_text.split(" ")
     # *** Возможно, запросили меню.
-    print("*** BBL:BBL:WL ", message)
+    # print("*** BBL:BBL:WL ", message)
 
     for word in word_list:
 
-        if len(word) > 2:
+        clean_word = word.rstrip(string.punctuation)
+        if len(clean_word) > 2:
 
-            print("*** BBL:BBL:WR ", word)
-            print("*** BBL:BBL:GW ", GREETINGS_WORDS)
-            if word in " ".join(GREETINGS_WORDS):
+            print("*** BBL:BBL:WR ", clean_word)
+            # print("*** BBL:BBL:GW ", GREETINGS_WORDS)
+            if clean_word in " ".join(GREETINGS_WORDS):
 
                 message = f"{random.choice(GREETINGS_ANSWERS)}"
                 print("*** BBL:BBL:GREET")
                 break
-            if word in " ".join(WEATHER_WORDS):
+            if clean_word in " ".join(WEATHER_WORDS):
 
                 message = f"{random.choice(WEATHER_ANSWERS)}"
                 print("*** BBL:BBL:WEATHER")
 
                 break
-            if word in " ".join(BEAUTY_WORDS):
+            if clean_word in " ".join(BEAUTY_WORDS):
 
                 message = f"{random.choice(BEAUTY_ANSWERS)}"
                 print("*** BBL:BBL:BEAUTY")

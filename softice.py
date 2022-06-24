@@ -93,9 +93,11 @@ def babbler_process(pconfig: dict, pchat_id: int, pchat_title: str,
         # print("*** SI:BBLPR:MSG ", message)
         if message is not None:
 
-            # print(" .. ok.")
-            SoftIceBot.send_message(pchat_id, message)
-            return True
+            print(" .. ok.", message)
+            if len(message) > 0:
+
+                SoftIceBot.send_message(pchat_id, message)
+                return True
     return False
 
 
@@ -250,7 +252,7 @@ def bot_command(pmessage):
 
         if user_name == BOT_CONFIG["master"]:
 
-            SoftIceBot.send_message(chat_id, "Ну, я пошёл...")
+            SoftIceBot.send_message(chat_id, "Всем пока!")
             raise CQuitByDemand()
         SoftIceBot.send_message(chat_id, f"Извини, {user_title}, у меня другой хозяин!")
     else:
