@@ -308,8 +308,8 @@ def get_text_messages(pmessage):
 
             # *** В дело вступает болтун!
             global LAST_BABBLER_PHRASE_TIME
-            # print("*** SI:GTM:MSGTX ", message_text)
-            minutes = (datetime.now() - LAST_BABBLER_PHRASE_TIME).total_seconds() / 60
+            print("*** SI:GTM:MSGTX ", message_text)
+            minutes = (datetime.now() - LAST_BABBLER_PHRASE_TIME).total_seconds() / 30
             # print("*** SI:GTM:SEC ", minutes)
             if minutes > 1:
 

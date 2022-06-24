@@ -100,7 +100,7 @@ def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
         #     # (word_list[0] in MAIN_COMMANDS_LIST) or
         #     # (word_list[0] in BAR_RELOAD))
         #    :
-            return True
+        return True
     return False
 
 
@@ -166,15 +166,17 @@ def babbler(pmessage_text: str) -> str:
     """Процедура разбора запроса пользователя."""
 
     # command: int = None
-    message: str = None
+    message: str = ""
     word_list: list = pmessage_text.split(" ")
     # *** Возможно, запросили меню.
     print("*** BBL:BBL:WL ", message)
-    if len(pmessage_text) > 2:
 
-        for word in word_list:
+    for word in word_list:
+
+        if len(word) > 2:
 
             print("*** BBL:BBL:WR ", word)
+            print("*** BBL:BBL:GW ", GREETINGS_WORDS)
             if word in " ".join(GREETINGS_WORDS):
 
                 message = f"{random.choice(GREETINGS_ANSWERS)}"
@@ -184,11 +186,12 @@ def babbler(pmessage_text: str) -> str:
 
                 message = f"{random.choice(WEATHER_ANSWERS)}"
                 print("*** BBL:BBL:WEATHER")
-               
+
                 break
             if word in " ".join(BEAUTY_WORDS):
 
                 message = f"{random.choice(BEAUTY_ANSWERS)}"
                 print("*** BBL:BBL:BEAUTY")
- 
+                break
+
     return message
