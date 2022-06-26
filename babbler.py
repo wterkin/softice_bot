@@ -6,6 +6,7 @@ import random
 import functions as func
 
 
+
 BABBLER_BASE = "data/babbling"
 
 # *** Команда перегрузки текстов
@@ -29,6 +30,12 @@ BEAUTY_WORDS_FILE: str = "data/babbling/beauty_words.txt"
 BEAUTY_ANSWERS: list = []
 BEAUTY_ANSWERS_FILE: str = "data/babbling/beauty_answers.txt"
 
+TRIGGERS_FOLDER: str = "triggers"
+REACTIONS_FOLDER: str = "reactions"
+
+TRIGGERS_INDEX: int = 0
+REACTIONS_INDEX: int = 1
+BABBLER_MIND: list =
 
 def reload_babbling():
     """Перезагружает приветствия."""
