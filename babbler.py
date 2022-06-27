@@ -3,9 +3,9 @@
 """Модуль бармена."""
 
 import random
-import functions as func
 import string
 from pathlib import Path
+import functions as func
 
 BABBLER_BASE = "data/babbling"
 
@@ -41,14 +41,14 @@ BABBLER_MIND: list = []
 
 def reload_babling_ext():
     """Загружает тексты болтуна."""
-    global BABBLER_MIND
+    # global BABBLER_MIND
     # *** Собираем пути
     triggers_path = Path(BABBLER_DATA) / TRIGGERS_FOLDER
     assert triggers_path.is_dir(), f"{TRIGGERS_FOLDER} must be folder"
     reactions_path = Path(BABBLER_DATA) / REACTIONS_FOLDER
     assert reactions_path.is_dir(), f"{REACTIONS_FOLDER} must be folder"
     # *** Создадим хранилище триггеров и реакций
-    triggers_list: list = []
+    # triggers_list: list = []
     # BABBLER_MIND.append(triggers_list)
     # reactions_list: list = []
     # BABBLER_MIND.append(reactions_list)
@@ -73,44 +73,44 @@ def reload_babling_ext():
                 print(reaction_content)
 
 
-def reload_babbling():
-    """Перезагружает приветствия."""
-
-    global GREETINGS_WORDS
-    GREETINGS_WORDS = func.load_from_file(GREETINGS_WORDS_FILE)
-    if GREETINGS_WORDS is not None:
-
-        print("Loaded ", len(GREETINGS_WORDS), " greeting words.")
-
-    global GREETINGS_ANSWERS
-    GREETINGS_ANSWERS = func.load_from_file(GREETINGS_ANSWERS_FILE)
-    if GREETINGS_ANSWERS is not None:
-
-        print("Loaded ", len(GREETINGS_ANSWERS), " greetings answers.")
-
-    global WEATHER_WORDS
-    WEATHER_WORDS = func.load_from_file(WEATHER_WORDS_FILE)
-    if WEATHER_WORDS is not None:
-
-        print("Loaded ", len(WEATHER_WORDS), " weather words.")
-
-    global WEATHER_ANSWERS
-    WEATHER_ANSWERS = func.load_from_file(WEATHER_ANSWERS_FILE)
-    if WEATHER_ANSWERS is not None:
-
-        print("Loaded ", len(WEATHER_ANSWERS), " weather answers.")
-
-    global BEAUTY_WORDS
-    BEAUTY_WORDS = func.load_from_file(BEAUTY_WORDS_FILE)
-    if BEAUTY_WORDS is not None:
-
-        print("Loaded ", len(BEAUTY_WORDS), " beauty words.")
-
-    global BEAUTY_ANSWERS
-    BEAUTY_ANSWERS = func.load_from_file(BEAUTY_ANSWERS_FILE)
-    if BEAUTY_ANSWERS is not None:
-
-        print("Loaded ", len(WEATHER_ANSWERS), " beauty answers.")
+# def reload_babbling():
+#     """Перезагружает приветствия."""
+#
+#     global GREETINGS_WORDS
+#     GREETINGS_WORDS = func.load_from_file(GREETINGS_WORDS_FILE)
+#     if GREETINGS_WORDS is not None:
+#
+#         print("Loaded ", len(GREETINGS_WORDS), " greeting words.")
+#
+#     global GREETINGS_ANSWERS
+#     GREETINGS_ANSWERS = func.load_from_file(GREETINGS_ANSWERS_FILE)
+#     if GREETINGS_ANSWERS is not None:
+#
+#         print("Loaded ", len(GREETINGS_ANSWERS), " greetings answers.")
+#
+#     global WEATHER_WORDS
+#     WEATHER_WORDS = func.load_from_file(WEATHER_WORDS_FILE)
+#     if WEATHER_WORDS is not None:
+#
+#         print("Loaded ", len(WEATHER_WORDS), " weather words.")
+#
+#     global WEATHER_ANSWERS
+#     WEATHER_ANSWERS = func.load_from_file(WEATHER_ANSWERS_FILE)
+#     if WEATHER_ANSWERS is not None:
+#
+#         print("Loaded ", len(WEATHER_ANSWERS), " weather answers.")
+#
+#     global BEAUTY_WORDS
+#     BEAUTY_WORDS = func.load_from_file(BEAUTY_WORDS_FILE)
+#     if BEAUTY_WORDS is not None:
+#
+#         print("Loaded ", len(BEAUTY_WORDS), " beauty words.")
+#
+#     global BEAUTY_ANSWERS
+#     BEAUTY_ANSWERS = func.load_from_file(BEAUTY_ANSWERS_FILE)
+#     if BEAUTY_ANSWERS is not None:
+#
+#         print("Loaded ", len(WEATHER_ANSWERS), " beauty answers.")
 
 
 def is_enabled(pconfig: dict, pchat_title: str) -> bool:
@@ -123,7 +123,8 @@ def is_enabled(pconfig: dict, pchat_title: str) -> bool:
     return pchat_title in pconfig[CHANNEL_LIST_KEY]
 
 
-def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
+# def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
+def can_process(pconfig: dict, pchat_title: str) -> bool:
     """Возвращает True, если бармен может обработать эту команду
     >>> can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!vodka')
     True
@@ -149,7 +150,7 @@ def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
 
 def babbler(pmessage_text: str) -> str:
     """Улучшенная версия болтуна."""
-    global BABBLER_MIND
+    # global BABBLER_MIND
     message: str = ""
     found: bool = False
     word_list: list = pmessage_text.split(" ")

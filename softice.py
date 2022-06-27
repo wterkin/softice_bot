@@ -3,11 +3,12 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
 
+import sys
 import json
 import random
+from datetime import datetime
 import telebot
 from telebot import apihelper
-from datetime import datetime
 
 import functions as func
 import babbler
@@ -85,7 +86,7 @@ def babbler_process(pconfig: dict, pchat_id: int, pchat_title: str,
                     pmessage_text):
     """По возможности обработать команду болтуном."""
     # print("*** SI:BBLPR:MSGTX ", pmessage_text)
-    if babbler.can_process(pconfig, pchat_title, pmessage_text):
+    if babbler.can_process(pconfig, pchat_title):
 
         # print("*** SI:BBLPR:")
         # *** ... точняк
@@ -177,7 +178,8 @@ def mafiozo_process(pconfig: dict, pchat_id: int, pchat_title: str,
         markup: object = None
         addressant: int
         # *** как пить дать.
-        message, addressant, markup = mafiozo.mafiozo(pconfig, pmessage_text, pchat_id, puser_id, puser_title)
+        message, addressant, markup = mafiozo.mafiozo(pconfig, pmessage_text, pchat_id,
+                                                      puser_id, puser_title)
         if message is not None:
 
             print(" .. ok.", addressant)
@@ -264,6 +266,7 @@ def bot_command(pmessage):
 
 @SoftIceBot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
+    """Процедура обработки кнопок мафии"""
 
     mafiozo_process(BOT_CONFIG, call.message.chat.id, call.message.chat.title,
                     call.from_user.id, call.from_user.username, call.data)
@@ -336,5 +339,5 @@ if __name__ == "__main__":
 
         print(ex.message)
         BOT_STATUS = QUIT_BY_DEMAND
-        exit()
+        sys.exit()
         # SoftIceBot.stop_polling()
