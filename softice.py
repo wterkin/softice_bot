@@ -19,27 +19,31 @@ import mafiozo
 import meteorolog
 
 
-INTERVAL = 0
-NON_STOP = True
-CONFIG_FILE_NAME = "config.json"
+INTERVAL: int = 0
+NON_STOP: bool = True
+CONFIG_FILE_NAME: str = "config.json"
 
-COMMAND_SIGNS = "/!."
-HELP_COMMAND = "help"
-HELP_MESSAGE = "В настоящий момент я понимаю только следующие команды:"
-GREETINGS = ["Здорово", "Хай", "Привет", "Трям", "И те не хворать", "Приветствую",
-             "Здравствуйте", "Здоровеньки булы", "Симметрично", "О, привет",
-             "Рад видеть", "Я вас категорически приветствую", "О, и ты здесь",
-             "Приветище", "Доброго времени суток"]
+COMMAND_SIGNS: str = "/!."
+HELP_COMMAND: str = "help"
+HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие команды:"
+#GREETINGS = ["Здорово", "Хай", "Привет", "Трям", "И те не хворать", "Приветствую",
+             #"Здравствуйте", "Здоровеньки булы", "Симметрично", "О, привет",
+             #"Рад видеть", "Я вас категорически приветствую", "О, и ты здесь",
+             #"Приветище", "Доброго времени суток"]
 
-SMILES = ["8)", "=)", ";)", ":)", "%)", "^_^"]
-BOT_NAME = "SoftIceBot"
-CONTINUE_RUNNING = 0
-QUIT_BY_DEMAND = 1
-BOT_STATUS = CONTINUE_RUNNING
+SMILES: list = ["8)", "=)", ";)", ":)", "%)", "^_^"]
+BOT_NAME: str = "SoftIceBot"
+CONTINUE_RUNNING: int = 0
+QUIT_BY_DEMAND: int = 1
+BOT_STATUS: int = CONTINUE_RUNNING
 LAST_BABBLER_PHRASE_TIME = datetime.now()
-ALLOWED_CHATS = "allowed_chats"
+ALLOWED_CHATS: str = "allowed_chats"
 BOT_CONFIG = None
 
+TOKEN_KEY: str = "token"  # !
+CONFIG_COMMANDS: list = ["конфиг", "config"]  # !
+EXIT_COMMANDS: list = ["прощай", "bye"]
+BABBLER_PERIOD: int = 10
 # message.delete()
 
 class CQuitByDemand(Exception):
@@ -60,6 +64,112 @@ if BOT_CONFIG["proxy"]:
     apihelper.proxy = {'https': BOT_CONFIG["proxy"]}
 SoftIceBot = telebot.TeleBot(BOT_CONFIG["token"])
 
+
+class CSoftIceBot():
+    """Универсальный бот для Телеграмма."""
+
+    def __init__(self):
+        """Конструктор класса."""
+        super().__init__()
+        self.config = {}
+        self.last_babbler_phrase_time: datetime = datetime.now()
+        self.robot = telebot.TeleBot(self.config[TOKEN_KEY])
+
+    def load_config(self):
+        """Загружает конфигурацию из JSON."""
+        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as config_file:
+
+            self.config = json.load(config_file)
+
+    def check_if_this_chat_enabled(pchat_id: int, pchat_title: str):
+        """Проверяет, находится ли данный чат в списке разрешенных."""
+        if pchat_title not in self.config[ALLOWED_CHATS]:
+
+            self.robot.send_message(pchat_id, "Вашего чата нет в списке разрешённых. Чао!")
+            self.robot.leave_chat(chat_id)
+            print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+
+    def process_message(self, pmessage):
+        """Обработчик сообщений."""
+
+        message_text: str = pmessage.text
+        word_list: list = func.parse_input(message.text)
+        chat_id: int = pmessage.chat.id
+        chat_title: str = pmessage.chat.title
+        user_title: str = pmessage.from_user.first_name
+        user_id: int = pmessage.from_user.id
+
+        # *** Проверим, легитимный ли этот чата
+        check_if_this_chat_enabled(chat_id, chat_title)
+
+        # *** Боту дали команду?
+        if message_text[0:1] in COMMAND_SIGNS:
+
+            if not bot_command(pmessage):
+
+                # print(" ", user_title, "says: \"", message_text, "\"", end="")
+                if word_list[0] == HELP_COMMAND:
+
+                    send_help(BOT_CONFIG, pmessage)
+                else:
+
+                    process_modules(chat_id, chat_title, user_id, user_title, message_text)
+
+    def is_this_service_command(self, pmessage):
+        """Обработка команд бота."""
+
+        result = True
+        command = pmessage.text[1:].lower()
+        user_title = pmessage.from_user.first_name
+        user_name = pmessage.from_user.username
+        chat_id = pmessage.chat.id
+        # *** Это не команда перечитать конфиг?
+        if command in CONFIG_COMMANDS:
+
+
+            # *** Такое запрашивать мож ет только хозяин
+            if user_name == self.config["master"]:
+
+
+                self.robot.send_message(chat_id, "Обновляю конфигурацию.")
+                self.load_config()
+                self.robot.send_message(chat_id, "Конфигурация обновлена.")
+            else:
+
+                self.robot.send_message(chat_id, f"Извини, {user_title}, ты мне не хозяин!")
+            # *** Или это команда выхода?
+            elif command in EXIT_COMMANDS:
+
+                if user_name == BOT_CONFIG["master"]:
+
+                    self.robot.send_message(chat_id, "Всем пока!")
+                    raise CQuitByDemand()
+                SoftIceBot.send_message(chat_id, f"Извини, {user_title}, ты мне не хозяин!")
+            else:
+
+                result = False
+            return result
+
+    def babbler(self):
+        """Функция болтуна"""
+        minutes = (datetime.now() - self.last_babbler_phrase_time).total_seconds() BABBLER_PERIOD
+        # *** Заданный период времени с последней фразы прошел?
+        if minutes > 1:
+
+            # *** Бабблер может? болтун может всегда!
+            if babbler.can_process(pconfig, pchat_title):
+
+                # *** ... точняк
+                message = babbler.babbler(pmessage_text)
+                if message is not None:
+
+                    print(" .. ok.", message)
+                    if len(message) > 0:
+
+                        SoftIceBot.send_message(pchat_id, message)
+                        return True
+            return False
+            self.last_babbler_phrase_time = datetime.now()
 
 def send_help(pconfig: dict, pmessage):
     """По запросу пользователя отправляет подсказки пло всем модулям."""
@@ -326,7 +436,7 @@ def get_text_messages(pmessage):
 if __name__ == "__main__":
 
     babbler.reload_babbling()
-    babbler.reload_babling_ext()
+    # babbler.reload_babling_ext()
     barman.reload_bar()
     librarian.reload_library()
     try:

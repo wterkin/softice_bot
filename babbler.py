@@ -39,7 +39,7 @@ REACTIONS_INDEX: int = 1
 BABBLER_MIND: list = []
 
 
-def reload_babling_ext():
+def reload_babbling():
     """Загружает тексты болтуна."""
     # global BABBLER_MIND
     # *** Собираем пути
