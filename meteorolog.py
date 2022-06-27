@@ -51,8 +51,9 @@ def meteorolog(pmessage_text: str) -> str:
 
             parameters = ["ansiweather", "-l", word_list[1], "-s", "true", "-a",
                           "false", "-p", "false", "-f", "2"]
-            print(parameters)
+            # print(parameters)
             process = subprocess.run(parameters, capture_output=True, text=True, check=True)
+            print("Ok")
             message = process.stdout
             if message.split(" ")[0] == "ERROR:":
 

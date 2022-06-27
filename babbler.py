@@ -5,7 +5,7 @@
 import random
 import functions as func
 import string
-
+from pathlib import Path
 
 BABBLER_BASE = "data/babbling"
 
@@ -30,12 +30,37 @@ BEAUTY_WORDS_FILE: str = "data/babbling/beauty_words.txt"
 BEAUTY_ANSWERS: list = []
 BEAUTY_ANSWERS_FILE: str = "data/babbling/beauty_answers.txt"
 
+BABBLER_DATA: str = "data/babbling/"
 TRIGGERS_FOLDER: str = "triggers"
 REACTIONS_FOLDER: str = "reactions"
 
 TRIGGERS_INDEX: int = 0
 REACTIONS_INDEX: int = 1
-BABBLER_MIND: list =
+BABBLER_MIND: list = []
+
+
+def reload_babling_ext():
+    """Загружает тексты болтуна."""
+    global BABBLER_MIND
+    # *** Собираем пути
+    triggers_path = Path(BABBLER_DATA) / TRIGGERS_FOLDER
+    assert triggers_path.is_dir(), f"{TRIGGERS_FOLDER} must be folder"
+    reactions_path = Path(BABBLER_DATA) / REACTIONS_FOLDER
+    assert reactions_path.is_dir(), f"{REACTIONS_FOLDER} must be folder"
+    # *** Создадим хранилище триггеров и реакций
+    triggers_list: list = []
+    BABBLER_MIND.append(triggers_list)
+    reactions_list: list = []
+    BABBLER_MIND.append(reactions_list)
+    # *** Обойдём папку триггеров
+    for trigger in triggers_path.iterdir():
+
+        if trigger.is_file():
+
+            print(trigger)
+            # trigger_content: list = []
+            # trigger_content = func.load_from_file(trigger)
+
 
 def reload_babbling():
     """Перезагружает приветствия."""

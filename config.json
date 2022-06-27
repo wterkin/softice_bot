@@ -2,12 +2,12 @@
     "proxy":"",
     "master":"Pet_Rovich",
     "master_name":"Петрович",
-    "allowed_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку"],
-    "barman_chats":["ПравЧат", "Ботовка", "Maftown"],
+    "allowed_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку", "Mafiozo-City"],
+    "barman_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
     "theolog_chats":["ПравЧат", "Ботовка"],
-    "meteorolog_chats":["ПравЧат"],
-    "librarian_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку"],
+    "meteorolog_chats":["ПравЧат", "Maftown", "Mafiozo-City"],
+    "librarian_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку", "Mafiozo-City"],
     "mafiozo_chats":["Ботовка"],
-    "babbler_chats":["ПравЧат", "Ботовка", "Maftown"],
+    "babbler_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
     "token":"1978360349:AAH02ct7Vry0r9syAqVHUWbKtbFsNUru4y4"
 }

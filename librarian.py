@@ -315,11 +315,11 @@ def librarian(pconfig: dict, pfrom_user_name: str, pmessage_text: str) -> str:
     else:
 
         command = get_command(word_list)
-        print(command)
+        # print(command)
         message = execute_hokku_commands(pconfig, pfrom_user_name, word_list, command)
         if message is None:
 
             message = execute_quotes_commands(pconfig, pfrom_user_name, word_list, command)
-        print(message)
+        # print(message)
 
     return message

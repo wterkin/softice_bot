@@ -281,6 +281,7 @@ def get_text_messages(pmessage):
     chat_title: str = pmessage.chat.title
     # print(chat_id, chat_title)
     # *** Проверка разрешенных каналов
+    print(f"{user_title} в {chat_title} сказал: ", message_text)
     if chat_title not in BOT_CONFIG[ALLOWED_CHATS]:
 
         SoftIceBot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
@@ -310,7 +311,6 @@ def get_text_messages(pmessage):
 
             # *** В дело вступает болтун!
             global LAST_BABBLER_PHRASE_TIME
-            print("*** SI:GTM:MSGTX ", message_text)
             minutes = (datetime.now() - LAST_BABBLER_PHRASE_TIME).total_seconds() / 30
             # print("*** SI:GTM:SEC ", minutes)
             if minutes > 1:
@@ -322,6 +322,7 @@ def get_text_messages(pmessage):
 if __name__ == "__main__":
 
     babbler.reload_babbling()
+    babbler.reload_babling_ext()
     barman.reload_bar()
     librarian.reload_library()
     try:
