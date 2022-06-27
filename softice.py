@@ -39,6 +39,7 @@ LAST_BABBLER_PHRASE_TIME = datetime.now()
 ALLOWED_CHATS = "allowed_chats"
 BOT_CONFIG = None
 
+# message.delete()
 
 class CQuitByDemand(Exception):
     """Исключение выхода."""
@@ -311,7 +312,7 @@ def get_text_messages(pmessage):
 
             # *** В дело вступает болтун!
             global LAST_BABBLER_PHRASE_TIME
-            minutes = (datetime.now() - LAST_BABBLER_PHRASE_TIME).total_seconds() / 30
+            minutes = (datetime.now() - LAST_BABBLER_PHRASE_TIME).total_seconds() / 10
             # print("*** SI:GTM:SEC ", minutes)
             if minutes > 1:
 
@@ -327,10 +328,13 @@ if __name__ == "__main__":
     librarian.reload_library()
     try:
         while BOT_STATUS == CONTINUE_RUNNING:
-            SoftIceBot.polling(none_stop=NON_STOP, interval=INTERVAL)
+            SoftIceBot.infinity_polling()
+            # SoftIceBot.polling(none_stop=NON_STOP, interval=INTERVAL)
             print(f"Bot status = {BOT_STATUS}")
 
     except CQuitByDemand as ex:
 
         print(ex.message)
-        SoftIceBot.stop_polling()
+        BOT_STATUS = QUIT_BY_DEMAND
+        exit()
+        # SoftIceBot.stop_polling()

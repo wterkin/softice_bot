@@ -49,17 +49,28 @@ def reload_babling_ext():
     assert reactions_path.is_dir(), f"{REACTIONS_FOLDER} must be folder"
     # *** Создадим хранилище триггеров и реакций
     triggers_list: list = []
-    BABBLER_MIND.append(triggers_list)
-    reactions_list: list = []
-    BABBLER_MIND.append(reactions_list)
+    # BABBLER_MIND.append(triggers_list)
+    # reactions_list: list = []
+    # BABBLER_MIND.append(reactions_list)
     # *** Обойдём папку триггеров
+    # data\babbling\triggers\001.txt
     for trigger in triggers_path.iterdir():
 
         if trigger.is_file():
 
-            print(trigger)
-            # trigger_content: list = []
-            # trigger_content = func.load_from_file(trigger)
+            module = Path(trigger).resolve().name
+            reaction = reactions_path / module
+            if reaction.is_file():
+
+                trigger_content: list = []
+                trigger_content = func.load_from_file(trigger)
+                block: list = [trigger_content]
+                reaction_content: list = []
+                reaction_content = func.load_from_file(reaction)
+                block.append(reaction_content)
+                BABBLER_MIND.append(block)
+                print(trigger_content)
+                print(reaction_content)
 
 
 def reload_babbling():
@@ -136,95 +147,63 @@ def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
     return False
 
 
-# def get_command(pword_list: list) -> int:
-#     """Распознает команду и возвращает её код, в случае неудачи - None.
-#     >>> get_command(["пиво",])
-#     0
-#     >>> get_command(["cognac",])
-#     4
-#     >>> get_command(["вк",])
-#     1
-#     >>> get_command(["ck",])
-#     6
-#     >>> type(get_command(["абракадабра",]))
-#     <class 'NoneType'>
-#     """
-#     command: int = None
-#     if pword_list[0] in GREETINGS_WORDS:
-#
-#         command =
-#     if pword_list[0] in SHORT_RUS_BAR_COMMANDS:
-#
-#         command = SHORT_RUS_BAR_COMMANDS.index(pword_list[0])
-#     if pword_list[0] in ENGLISH_BAR_COMMANDS:
-#
-#         command = ENGLISH_BAR_COMMANDS.index(pword_list[0])
-#     if pword_list[0] in SHORT_ENG_BAR_COMMANDS:
-#
-#         command = SHORT_ENG_BAR_COMMANDS.index(pword_list[0])
-#     return command
-
-
-# def execute_command(pcommand: int, pname_to: str) -> str:
-#     """Возвращает текстовый эквивалент команды."""
-#
-#     message: str = f"{RUSSIAN_BAR_COMMANDS[pcommand]}, сэр!"
-#     if pcommand == BEER_ID:
-#
-#         message = bring_beer(pname_to)
-#     if pcommand == COCKTAIL_ID:
-#
-#         message = bring_cocktail(pname_to)
-#     if pcommand == COFFEE_ID:
-#
-#         message = bring_coffee(pname_to)
-#     if pcommand == COGNAC_ID:
-#
-#         message = bring_cognac(pname_to)
-#     if pcommand == COOKIES_ID:
-#
-#         message = bring_cookies(pname_to)
-#     if pcommand == TEA_ID:
-#
-#         message = bring_tea(pname_to)
-#     if pcommand == VODKA_ID:
-#
-#         message = bring_vodka(pname_to)
-#
-#     return message
-
-
 def babbler(pmessage_text: str) -> str:
-    """Процедура разбора запроса пользователя."""
-
-    # command: int = None
+    """Улучшенная версия болтуна."""
+    global BABBLER_MIND
     message: str = ""
+    found: bool = False
     word_list: list = pmessage_text.split(" ")
-    # *** Возможно, запросили меню.
-    # print("*** BBL:BBL:WL ", message)
-
     for word in word_list:
 
-        clean_word = word.rstrip(string.punctuation)
-        if len(clean_word) > 2:
+        clean_word = word.rstrip(string.punctuation).lower()
+        if len(clean_word) > 2 or ")" in clean_word:
 
-            print("*** BBL:BBL:WR ", clean_word)
-            # print("*** BBL:BBL:GW ", GREETINGS_WORDS)
-            if clean_word in " ".join(GREETINGS_WORDS):
+            for block in BABBLER_MIND:
 
-                message = f"{random.choice(GREETINGS_ANSWERS)}"
-                print("*** BBL:BBL:GREET")
-                break
-            if clean_word in " ".join(WEATHER_WORDS):
+                if clean_word in " ".join(block[TRIGGERS_INDEX]):
 
-                message = f"{random.choice(WEATHER_ANSWERS)}"
-                print("*** BBL:BBL:WEATHER")
+                    print(block[REACTIONS_INDEX])
+                    answer = random.choice(block[REACTIONS_INDEX])
+                    message = f"{answer}"
+                    found = True
+                    break
+        if found:
 
-                break
-            if clean_word in " ".join(BEAUTY_WORDS):
-
-                message = f"{random.choice(BEAUTY_ANSWERS)}"
-                print("*** BBL:BBL:BEAUTY")
-                break
-
+            break
     return message
+
+
+# def babbler(pmessage_text: str) -> str:
+#     """Процедура разбора запроса пользователя."""
+#
+#     # command: int = None
+#     message: str = ""
+#     word_list: list = pmessage_text.split(" ")
+#     # *** Возможно, запросили меню.
+#     # print("*** BBL:BBL:WL ", message)
+#
+#     for word in word_list:
+#
+#         clean_word = word.rstrip(string.punctuation)
+#         if len(clean_word) > 2:
+#
+#             print("*** BBL:BBL:WR ", clean_word)
+#             # print("*** BBL:BBL:GW ", GREETINGS_WORDS)
+#             if clean_word in " ".join(GREETINGS_WORDS):
+#
+#                 message = f"{random.choice(GREETINGS_ANSWERS)}"
+#                 print("*** BBL:BBL:GREET")
+#                 break
+#             if clean_word in " ".join(WEATHER_WORDS):
+#
+#                 message = f"{random.choice(WEATHER_ANSWERS)}"
+#                 print("*** BBL:BBL:WEATHER")
+#
+#                 break
+#             if clean_word in " ".join(BEAUTY_WORDS):
+#
+#                 message = f"{random.choice(BEAUTY_ANSWERS)}"
+#                 print("*** BBL:BBL:BEAUTY")
+#                 break
+#
+#     return message
