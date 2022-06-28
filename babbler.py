@@ -69,8 +69,8 @@ def reload_babbling():
                 reaction_content = func.load_from_file(reaction)
                 block.append(reaction_content)
                 BABBLER_MIND.append(block)
-                print(trigger_content)
-                print(reaction_content)
+                # print(trigger_content)
+                # print(reaction_content)
 
 
 # def reload_babbling():

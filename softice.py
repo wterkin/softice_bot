@@ -26,10 +26,10 @@ CONFIG_FILE_NAME: str = "config.json"
 COMMAND_SIGNS: str = "/!."
 HELP_COMMAND: str = "help"
 HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие команды:"
-#GREETINGS = ["Здорово", "Хай", "Привет", "Трям", "И те не хворать", "Приветствую",
-             #"Здравствуйте", "Здоровеньки булы", "Симметрично", "О, привет",
-             #"Рад видеть", "Я вас категорически приветствую", "О, и ты здесь",
-             #"Приветище", "Доброго времени суток"]
+# GREETINGS = ["Здорово", "Хай", "Привет", "Трям", "И те не хворать", "Приветствую",
+             # "Здравствуйте", "Здоровеньки булы", "Симметрично", "О, привет",
+             # "Рад видеть", "Я вас категорически приветствую", "О, и ты здесь",
+             # "Приветище", "Доброго времени суток"]
 
 SMILES: list = ["8)", "=)", ";)", ":)", "%)", "^_^"]
 BOT_NAME: str = "SoftIceBot"
@@ -42,8 +42,8 @@ BOT_CONFIG = None
 
 TOKEN_KEY: str = "token"  # !
 CONFIG_COMMANDS: list = ["конфиг", "config"]  # !
-EXIT_COMMANDS: list = ["прощай", "bye"]
-BABBLER_PERIOD: int = 10
+EXIT_COMMANDS: list = ["прощай", "bye"]  # !
+BABBLER_PERIOD: int = 10  # !
 # message.delete()
 
 class CQuitByDemand(Exception):
@@ -54,7 +54,6 @@ class CQuitByDemand(Exception):
 
 
 # *** Читаем конфигурацию
-# global BOT_CONFIG
 with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as config_file:
 
     BOT_CONFIG = json.load(config_file)
@@ -77,30 +76,30 @@ class CSoftIceBot():
 
     def load_config(self):
         """Загружает конфигурацию из JSON."""
-        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as config_file:
+        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
 
-            self.config = json.load(config_file)
+            self.config = json.load(json_file)
 
-    def check_if_this_chat_enabled(pchat_id: int, pchat_title: str):
+    def check_if_this_chat_enabled(self, pchat_id: int, pchat_title: str):
         """Проверяет, находится ли данный чат в списке разрешенных."""
         if pchat_title not in self.config[ALLOWED_CHATS]:
 
             self.robot.send_message(pchat_id, "Вашего чата нет в списке разрешённых. Чао!")
-            self.robot.leave_chat(chat_id)
-            print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+            self.robot.leave_chat(pchat_id)
+            print(f"Караул! Меня похитили и затащили в чат {pchat_title}! Но я удрал.")
 
     def process_message(self, pmessage):
         """Обработчик сообщений."""
 
         message_text: str = pmessage.text
-        word_list: list = func.parse_input(message.text)
+        word_list: list = func.parse_input(pmessage.text)
         chat_id: int = pmessage.chat.id
         chat_title: str = pmessage.chat.title
         user_title: str = pmessage.from_user.first_name
         user_id: int = pmessage.from_user.id
 
         # *** Проверим, легитимный ли этот чата
-        check_if_this_chat_enabled(chat_id, chat_title)
+        self.check_if_this_chat_enabled(chat_id, chat_title)
 
         # *** Боту дали команду?
         if message_text[0:1] in COMMAND_SIGNS:
@@ -137,22 +136,23 @@ class CSoftIceBot():
             else:
 
                 self.robot.send_message(chat_id, f"Извини, {user_title}, ты мне не хозяин!")
-            # *** Или это команда выхода?
-            elif command in EXIT_COMMANDS:
+        # *** Или это команда выхода?
+        elif command in EXIT_COMMANDS:
 
-                if user_name == BOT_CONFIG["master"]:
+            if user_name == BOT_CONFIG["master"]:
 
-                    self.robot.send_message(chat_id, "Всем пока!")
-                    raise CQuitByDemand()
-                SoftIceBot.send_message(chat_id, f"Извини, {user_title}, ты мне не хозяин!")
-            else:
+                self.robot.send_message(chat_id, "Всем пока!")
+                raise CQuitByDemand()
+            SoftIceBot.send_message(chat_id, f"Извини, {user_title}, ты мне не хозяин!")
+        else:
 
-                result = False
-            return result
+            result = False
+        return result
 
-    def babbler(self):
+    def babbler(self, pconfig, pchat_id, pchat_title, pmessage_text):
         """Функция болтуна"""
-        minutes = (datetime.now() - self.last_babbler_phrase_time).total_seconds() BABBLER_PERIOD
+        minutes = (datetime.now() - self.last_babbler_phrase_time).total_seconds() / BABBLER_PERIOD
+        result = False
         # *** Заданный период времени с последней фразы прошел?
         if minutes > 1:
 
@@ -167,9 +167,10 @@ class CSoftIceBot():
                     if len(message) > 0:
 
                         SoftIceBot.send_message(pchat_id, message)
-                        return True
-            return False
+                        result = True
             self.last_babbler_phrase_time = datetime.now()
+        return result
+
 
 def send_help(pconfig: dict, pmessage):
     """По запросу пользователя отправляет подсказки пло всем модулям."""
@@ -339,11 +340,11 @@ def bot_command(pmessage):
     user_name = pmessage.from_user.username
     chat_id = pmessage.chat.id
 
-    if command in ["привет", "hi"]:
-
-        SoftIceBot.send_message(chat_id,
-                                random.choice(GREETINGS) + ", " + user_title)
-    elif command == "тевирп":
+    # if command in ["привет", "hi"]:
+    #
+    #     SoftIceBot.send_message(chat_id,
+    #                             random.choice(GREETINGS) + ", " + user_title)
+    if command == "тевирп":
 
         SoftIceBot.send_message(chat_id,
                                 'Тевирп! Тсссс.... o_O')
@@ -441,8 +442,8 @@ if __name__ == "__main__":
     librarian.reload_library()
     try:
         while BOT_STATUS == CONTINUE_RUNNING:
-            SoftIceBot.infinity_polling()
-            # SoftIceBot.polling(none_stop=NON_STOP, interval=INTERVAL)
+            # SoftIceBot.infinity_polling()
+            SoftIceBot.polling(none_stop=NON_STOP, interval=INTERVAL)
             print(f"Bot status = {BOT_STATUS}")
 
     except CQuitByDemand as ex:
