@@ -339,5 +339,5 @@ class CSoftIceBot:
 
 if __name__ == "__main__":
 
-    SofticeBot = CSoftIceBot
-    SofticeBot.poll(SofticeBot)
+    SofticeBot = CSoftIceBot()
+    SofticeBot.poll()

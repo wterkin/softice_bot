@@ -15,13 +15,13 @@ def load_from_file(pfile_name: str) -> list:
     >>> type(load_from_file("ABCDEF"))
     <class 'NoneType'>
     """
-    content: list = None
+    # content: list = None
     # *** откроем файл
     try:
 
         with open(pfile_name, encoding="utf8") as text_file:
 
-            content = []
+            content: list = []
             # *** читаем в список
             for line in text_file:
 
