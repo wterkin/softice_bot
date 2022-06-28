@@ -14,6 +14,7 @@ COGNAC_ID: int = 4
 TEA_ID: int = 5
 COOKIES_ID: int = 6
 
+# *** Списки свойств напитков
 DRINK_SOURCES: list = None
 DRINK_TRANSFER: list = None
 BEER_CANS: list = None
@@ -66,10 +67,79 @@ BAR_RELOAD: list = ["barreload", "br"]
 # *** Ключ для списка доступных каналов в словаре конфига
 CHANNEL_LIST_KEY: str = "barman_chats"
 
+
+BEER_CANS_PATH: str = "data/bar/beer_cans.txt"
+BEER_MARKS_PATH: str = "data/bar/beer_marks.txt"
+BEER_CANS_KEY: str = "bcans"
+BEER_MARKS_KEY: str = "bmarks"
+COCKTAIL_MARKS_PATH: str = "data/bar/cocktail_marks.txt"
+COGNAC_CANS_PATH: str = "data/bar/cognac_cans.txt"
+COGNAC_CANS_KEY: str = "cgcans"
+COGNAC_MARKS_PATH: str = "data/bar/cognac_marks.txt"
+COGNAC_MARKS_KEY: str = "cgmarks"
+COGNAC_FILLS_PATH: str = "data/bar/cognac_fills.txt"
+COGNAC_FILLS_KEY: str = "cgfills"
+
 #    ... if data_list is None:
 #   ...        print("No")
 #    ...    else:
 #    ...        print("Yes")
+
+
+class CBarman:
+
+    def __init__(self):
+
+        self.beer: dict = {}
+        self.cocktail: list = []
+        self.cognac: dict = {}
+
+    def load_beer(self):
+        """Загружает данные пива."""
+        beer_cans: list = func.load_from_file(BEER_CANS_PATH)
+        if beer_cans:
+
+            print("Barmen loads ", len(beer_cans), " beer cans.")
+            self.beer[BEER_CANS_KEY] = beer_cans
+
+            beer_marks: list = func.load_from_file(BEER_MARKS_PATH)
+            if beer_marks:
+
+                print("Barmen loads ", len(beer_marks), " beer marks.")
+                self.beer[BEER_MARKS_KEY] - beer_marks
+                return True
+        return False
+
+    def load_cocktail(self):
+        """Загружает данные коктейлей"""
+        self.cocktail = func.load_from_file(BEER_CANS_PATH)
+        if self.cocktail:
+
+            print("Barmen loads ", len(self.cocktail), " cocktail marks.")
+            return True
+        return False
+
+    def load_cognac(self):
+        """Загружает данные пива."""
+        cognac_cans: list = func.load_from_file(COGNAC_CANS_PATH)
+        if cognac_cans:
+
+            print("Barmen loads ", len(cognac_cans), " cognac cans.")
+            self.cognac[COGNAC_CANS_KEY] = cognac_cans
+
+            cognac_marks: list = func.load_from_file(COGNAC_MARKS_PATH)
+            if cognac_marks:
+
+                print("Barmen loads ", len(cognac_marks), " cognac marks.")
+                self.cognac[COGNAC_MARKS_KEY] = cognac_marks
+
+                cognac_fills: list = func.load_from_file(COGNAC_FILLS_PATH)
+                if cognac_fills:
+
+                    print("Barmen loads ", len(cognac_fills), " cognac fills.")
+                    self.cognac[COGNAC_FILLS_KEY] = cognac_fills
+                    return True
+        return False
 
 def load_from_file(pfile_name: str) -> list:
     """Загружает файл в список
