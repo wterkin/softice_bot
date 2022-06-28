@@ -79,7 +79,16 @@ COGNAC_MARKS_PATH: str = "data/bar/cognac_marks.txt"
 COGNAC_MARKS_KEY: str = "cgmarks"
 COGNAC_FILLS_PATH: str = "data/bar/cognac_fills.txt"
 COGNAC_FILLS_KEY: str = "cgfills"
-
+VODKA_CANS_PATH: str = "data/bar/vodka_cans.txt"
+VODKA_CANS_KEY: str = "vdcans"
+VODKA_MARKS_PATH: str = "data/bar/vodka_marks.txt"
+VODKA_MARKS_KEY: str = "vdmarks"
+VODKA_FILLS_PATH: str = "data/bar/vodka_fills.txt"
+VODKA_FILLS_KEY: str = "vdfills"
+COFFEE_MARKS_PATH: str = "data/bar/coffee_marks.txt"
+COFFEE_MARKS_KEY: str = "cfmarks"
+COFFEE_FILLS_PATH: str = "data/bar/coffee_fills.txt"
+COFFEE_FILLS_KEY: str = "cffills"
 #    ... if data_list is None:
 #   ...        print("No")
 #    ...    else:
@@ -93,6 +102,8 @@ class CBarman:
         self.beer: dict = {}
         self.cocktail: list = []
         self.cognac: dict = {}
+        self.vodka: dict = {}
+        self.coffee: dict = {}
 
     def load_beer(self):
         """Загружает данные пива."""
@@ -106,7 +117,23 @@ class CBarman:
             if beer_marks:
 
                 print("Barmen loads ", len(beer_marks), " beer marks.")
-                self.beer[BEER_MARKS_KEY] - beer_marks
+                self.beer[BEER_MARKS_KEY] = beer_marks
+                return True
+        return False
+
+    def load_coffee(self):
+        """Загружает данные пива."""
+        coffee_marks: list = func.load_from_file(COFFEE_MARKS_PATH)
+        if coffee_marks:
+
+            print("Barmen loads ", len(coffee_marks), " coffee marks.")
+            self.coffee[COFFEE_MARKS_KEY] = coffee_marks
+
+            coffee_fills: list = func.load_from_file(COFFEE_FILLS_PATH)
+            if coffee_fills:
+
+                print("Barmen loads ", len(coffee_fills), " coffee fills.")
+                self.coffee[COFFEE_FILLS_KEY] = coffee_fills
                 return True
         return False
 
@@ -140,6 +167,29 @@ class CBarman:
                     self.cognac[COGNAC_FILLS_KEY] = cognac_fills
                     return True
         return False
+
+    def load_vodka(self):
+        """Загружает данные пива."""
+        vodka_cans: list = func.load_from_file(VODKA_CANS_PATH)
+        if vodka_cans:
+
+            print("Barmen loads ", len(vodka_cans), " vodka cans.")
+            self.vodka[VODKA_CANS_KEY] = vodka_cans
+
+            vodka_marks: list = func.load_from_file(VODKA_MARKS_PATH)
+            if vodka_marks:
+
+                print("Barmen loads ", len(vodka_marks), " vodka marks.")
+                self.vodka[VODKA_MARKS_KEY] = vodka_marks
+
+                vodka_fills: list = func.load_from_file(VODKA_FILLS_PATH)
+                if vodka_fills:
+
+                    print("Barmen loads ", len(vodka_fills), " vodka fills.")
+                    self.vodka[VODKA_FILLS_KEY] = vodka_fills
+                    return True
+        return False
+
 
 def load_from_file(pfile_name: str) -> list:
     """Загружает файл в список
