@@ -162,12 +162,12 @@ class CSoftIceBot:
         if mafiozo.can_process(self.config, pchat_title, pmessage_text):
 
             message: str
-            markup: object = None
+            markup: object
             addressant: int
             # *** как пить дать.
             message, addressant, markup = mafiozo.mafiozo(self.config, pmessage_text, pchat_id,
                                                           puser_id, puser_title)
-            if message is not None:
+            if message:
 
                 print("Mafiozo answers.", addressant)
                 if markup is None:
@@ -339,5 +339,5 @@ class CSoftIceBot:
 
 if __name__ == "__main__":
 
-    softice_bot = CSoftIceBot()
-    softice_bot.poll()
+    SofticeBot = CSoftIceBot
+    SofticeBot.poll(SofticeBot)
