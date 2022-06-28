@@ -24,12 +24,12 @@ def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
     return False
 
 
-def get_command_list() -> str:
-    """Пользователь запросил список комманд."""
+def help() -> str:
+    """Пользователь запросил помощь."""
     command_list: str = ""
     for command in enumerate(WEATHER_COMMANDS):
 
-        command_list += (f"{command} ")
+        command_list += f"{command} "
     return command_list
 
 

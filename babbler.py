@@ -163,7 +163,7 @@ def babbler(pmessage_text: str) -> str:
 
                 if clean_word in " ".join(block[TRIGGERS_INDEX]):
 
-                    print(block[REACTIONS_INDEX])
+                    # print(block[REACTIONS_INDEX])
                     answer = random.choice(block[REACTIONS_INDEX])
                     message = f"{answer}"
                     found = True
