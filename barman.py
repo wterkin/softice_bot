@@ -72,23 +72,46 @@ BEER_CANS_PATH: str = "data/bar/beer_cans.txt"
 BEER_MARKS_PATH: str = "data/bar/beer_marks.txt"
 BEER_CANS_KEY: str = "bcans"
 BEER_MARKS_KEY: str = "bmarks"
+
 COCKTAIL_MARKS_PATH: str = "data/bar/cocktail_marks.txt"
+
+COFFEE_MARKS_PATH: str = "data/bar/coffee_marks.txt"
+COFFEE_MARKS_KEY: str = "cfmarks"
+COFFEE_FILLS_PATH: str = "data/bar/coffee_fills.txt"
+COFFEE_FILLS_KEY: str = "cffills"
+
 COGNAC_CANS_PATH: str = "data/bar/cognac_cans.txt"
 COGNAC_CANS_KEY: str = "cgcans"
 COGNAC_MARKS_PATH: str = "data/bar/cognac_marks.txt"
 COGNAC_MARKS_KEY: str = "cgmarks"
 COGNAC_FILLS_PATH: str = "data/bar/cognac_fills.txt"
 COGNAC_FILLS_KEY: str = "cgfills"
+
+COOKIES_SOURCES_PATH: str = "data/bar/cookies_sources.txt"
+COOKIES_SOURCES_KEY: str = "cksrc"
+COOKIES_MARKS_PATH: str = "data/bar/cookies_marks.txt"
+COOKIES_MARKS_KEY: str = "ckmrk"
+COOKIES_TRANSFER_PATH: str = "data/bar/cookies_transfer.txt"
+COOKIES_TRANSFER_KEY: str = "cktrf"
+
+DRINKS_SOURCES_PATH: str = "data/bar/drink_sources.txt"
+DRINKS_SOURCES_KEY: str = "drsrc"
+DRINK_TRANSFER_PATH: str = "data/bar/drink_transfer.txt"
+DRINK_TRANSFER_KEY: str = "drtrf"
+
+TEA_MARKS_PATH: str = "data/bar/tea_marks.txt"
+TEA_MARKS_KEY: str = "teamr"
+TEA_FILLS_PATH: str = "data/bar/tea_fills.txt"
+TEA_FILLS_KEY: str = "teafl"
+
 VODKA_CANS_PATH: str = "data/bar/vodka_cans.txt"
 VODKA_CANS_KEY: str = "vdcans"
 VODKA_MARKS_PATH: str = "data/bar/vodka_marks.txt"
 VODKA_MARKS_KEY: str = "vdmarks"
 VODKA_FILLS_PATH: str = "data/bar/vodka_fills.txt"
 VODKA_FILLS_KEY: str = "vdfills"
-COFFEE_MARKS_PATH: str = "data/bar/coffee_marks.txt"
-COFFEE_MARKS_KEY: str = "cfmarks"
-COFFEE_FILLS_PATH: str = "data/bar/coffee_fills.txt"
-COFFEE_FILLS_KEY: str = "cffills"
+
+
 #    ... if data_list is None:
 #   ...        print("No")
 #    ...    else:
@@ -104,6 +127,9 @@ class CBarman:
         self.cognac: dict = {}
         self.vodka: dict = {}
         self.coffee: dict = {}
+        self.coookies: dict = {}
+        self.tea: dict = {}
+        self.drinks: dict = {}
 
     def load_beer(self):
         """Загружает данные пива."""
@@ -168,6 +194,61 @@ class CBarman:
                     return True
         return False
 
+    def load_coookies(self):
+        """Загружает данные пива."""
+        coookies_sources: list = func.load_from_file(COOOKIES_SOURCES_PATH)
+        if coookies_sources:
+
+            print("Barmen loads ", len(coookies_sources), " coookies sources.")
+            self.coookies[COOOKIES_SOURCES_KEY] = coookies_sources
+
+            coookies_marks: list = func.load_from_file(COOOKIES_MARKS_PATH)
+            if coookies_marks:
+
+                print("Barmen loads ", len(coookies_marks), " coookies marks.")
+                self.coookies[COOOKIES_MARKS_KEY] = coookies_marks
+
+                coookies_transfer: list = func.load_from_file(COOOKIES_TRANSFER_PATH)
+                if coookies_transfer:
+
+                    print("Barmen loads ", len(coookies_transfer), " coookies transfer.")
+                    self.cookies[COOOKIES_TRANSFER_KEY] = coookies_transfer
+                    return True
+        return False
+
+    def load_drinks(self):
+        """Загружает данные пива."""
+        drink_sources: list = func.load_from_file(DRINK_SOURCES_PATH)
+        if drink_sources:
+
+            print("Barmen loads ", len(drink_sources), " drink sources.")
+            self.drink[DRINK_SOURCES_KEY] = drink_sources
+
+            drink_transfer: list = func.load_from_file(DRINK_TRANSFER_PATH)
+            if drink_transfer:
+
+                print("Barmen loads ", len(drink_transfer), " drink_transfer.")
+                self.drinks[DRINK_TRANSFER_KEY] = drink_transfer
+                return True
+        return False
+
+    def load_tea(self):
+        """Загружает данные пива."""
+        tea_marks: list = func.load_from_file(TEA_MARKS_PATH)
+        if tea_marks:
+
+            print("Barmen loads ", len(tea_marks), " tea marks.")
+            self.tea[TEA_MARKS_KEY] = tea_marks
+
+            tea_fills: list = func.load_from_file(TEA_FILLS_PATH)
+            if tea_fills:
+
+                print("Barmen loads ", len(tea_fills), " tea fills.")
+                self.tea[TEA_FILLS_KEY] = tea_fills
+
+                return True
+        return False
+
     def load_vodka(self):
         """Загружает данные пива."""
         vodka_cans: list = func.load_from_file(VODKA_CANS_PATH)
@@ -190,6 +271,18 @@ class CBarman:
                     return True
         return False
 
+    def reload_bar(self):
+        """Перегружает все содержимое бара."""
+        if load_beer() and
+           load_coffee() and
+           load_cocktail() and
+           load_cognac() and
+           load_coookies() and
+           load_drinks() and
+           load_tea() and
+           load_vodka():
+
+               print("Barman successfully reload bar assortiment.")
 
 def load_from_file(pfile_name: str) -> list:
     """Загружает файл в список
