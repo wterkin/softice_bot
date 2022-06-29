@@ -143,17 +143,109 @@ class CBarman:
         self.tea: dict = {}
         self.drinks: dict = {}
 
-    def get_help() -> str:
+    def bring_beer(self, puser_name: str) -> str:
+        """Пользователь запросил пиво."""
+
+        if (BEER_CANS_KEY in self.beer and
+            BEER_MARKS_KEY in self.beer and
+            DRINKS_SOURCES_KEY in self.drinks and
+            DRINKS_TRANSFER_KEY in self.drinks):
+
+            can: str = random.choice(self.beer[BEER_CANS_KEY])
+            beer: str = random.choice(self.beer[BEER_MARKS_KEY])
+            source: str = random.choice(self.drinks[DRINKS_SOURCES_KEY])
+            transfer: str = random.choice(self.drinks[DRINKS_TRANSFER_KEY])
+            return f"Softice {source} {can} пива \"{beer}\" {transfer} {puser_name} {BEER_EMODJI}"
+        return "А нету пива! :("
+
+    def bring_cocktail(self, puser_name: str) -> str:
+        """Пользователь запросил коктейль."""
+
+        if (DRINKS_SOURCES_KEY in self.drinks and
+            self.cocktail is not None and
+            VODKA_FILLS_KEY in self.vodka):
+
+            source: str = random.choice(self.drinks[DRINKS_SOURCES_KEY])
+            cocktail: str = random.choice(self.cocktail)
+            transfer: str = random.choice(self.vodka[VODKA_FILLS_KEY])
+            return f"Softice {source} {cocktail} и {transfer} {puser_name} {COCTAIL_EMODJI}"
+        return "Кончились коктейли! =("
+
+    def bring_coffee(self, puser_name: str) -> str:
+        """Пользователь запросил кофе."""
+
+        if (COFFEE_FILLS_KEY in self.coffee and
+            COFFEE_MARKS_KEY in self.coffee and
+            DRINK_TRANSFER in self.drinks):
+
+            fill: str = random.choice(self.coffee[COFFEE_FILLS_KEY])
+            coffee: str = random.choice(self.coffee[COFFEE_MARKS_KEY])
+            transfer: str = random.choice(self.drinks[DRINKS_TRANSFER_KEY])
+            return f"Softice {fill} кофе \"{coffee}\" {transfer} {puser_name} {COFFEE_EMODJI}"
+        return "Кофе весь вышел. :-\\"
+
+    def bring_cognac(self, puser_name: str) -> str:
+        """Пользователь запросил коньяк."""
+
+        if (DRINKS_SOURCES_KEY in self.drinks and
+            COGNAC_CANS_KEY in self.cognac and
+            COGNAC_MARKS_KEY in self.cognac and
+            COGNAC_FILLS_KEY in  self.cognac):
+
+            source: str = random.choice(self.drinks[DRINKS_SOURCES_KEY])
+            can: str = random.choice(self.cognac[COGNAC_CANS_KEY])
+            cognac: str = random.choice(self.cognac[COGNAC_MARKS_KEY])
+            transfer: str = random.choice(self.cognac[COGNAC_FILLS_KEY])
+            return f"Softice {source} {can} {cognac} и {transfer} {puser_name} {COGNAC_EMODJI}"
+        return "Выпили весь коньяк. 8("
+
+    def bring_cookies(self, puser_name: str) -> str:
+        """Пользователь запросил печеньки."""
+
+        if (COOKIES_SOURCES_KEY in self.cookies and
+            COOKIES_MARKS_KEY in self.cookies and
+            COOKIES_TRANSFER_KEY in self.cookies):
+
+            source: str = random.choice(self.cookies[COOKIES_SOURCES_KEY])
+            can: str = "пачку"
+            cookies: str = random.choice(self.cookies[COOKIES_MARKS_KEY])
+            transfer: str = random.choice(self.cookies[COOKIES_TRANSFER_KEY])
+            return f"Softice {source} {can} печенья \"{cookies}\" {transfer} {puser_name} {COOKIE_EMODJI}"
+        return "Нету печенья. Мыши съели. B("
+
+    def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
+        """Возвращает True, если бармен может обработать эту команду
+        >>> can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!vodka')
+        True
+        >>> can_process({'barman_chats':'Хокку'}, 'Ботовка', '!vodka')
+        False
+        >>> can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!мартини')
+        False
+        """
+        if self.is_enabled(pchat_title):
+            word_list: list = func.parse_input(pmessage_text)
+            found = False
+            for command in COMMANDS:
+
+                found = word_list[0] in command
+                if found:
+
+                    break
+            return found
+
+    def get_help(self) -> str:  # noqa
         """Пользователь запросил список комманд."""
-        command_list: str = ""
-        for command_idx, command in enumerate(RUSSIAN_BAR_COMMANDS):
-            command_list += (f"{command} "
-                             f"({SHORT_RUS_BAR_COMMANDS[command_idx]}, "
-                             f"{ENGLISH_BAR_COMMANDS[command_idx]}, "
-                             f"{SHORT_ENG_BAR_COMMANDS[command_idx]}). ")
+        command_list: str = "%"
+        for command in COMMANDS:
+
+            command_list += "/"
+            for kind in command:
+
+                command_list += kind + ", "
+            command_list = command_list[:-2]
         return command_list
 
-    def get_hint(self, pchat_title: str) -> str:
+    def get_hint(self, pchat_title: str) -> str:  # noqa
         """Возвращает список команд, поддерживаемых модулем.
         >>> get_help({'barman_chats':'Ботовка'}, 'Ботовка')
         'меню, (menu, бар, bar)'
@@ -207,7 +299,7 @@ class CBarman:
 
     def load_cocktail(self):
         """Загружает данные коктейлей"""
-        self.cocktail = func.load_from_file(BEER_CANS_PATH)
+        self.cocktail = func.load_from_file(COCKTAIL_MARKS_PATH)
         if self.cocktail:
 
             print("Barmen loads ", len(self.cocktail), " cocktail marks.")
@@ -326,6 +418,7 @@ class CBarman:
 
                print("Barman successfully reload bar assortiment.")
 
+
 def load_from_file(pfile_name: str) -> list:
     """Загружает файл в список
     >>> load_from_file("data/bar/bar_test.txt")
@@ -350,6 +443,7 @@ def load_from_file(pfile_name: str) -> list:
 
         return content
     return content
+
 
   # X
 def reload_alcohol():  # X
@@ -409,6 +503,7 @@ def reload_alcohol():  # X
 
         print("Loaded ", len(VODKA_FILLS), " vodka fills.")
 
+
   # X
 def reload_alcohol_free():  # X
     """Перезагружает безалкогольные напитки."""
@@ -441,6 +536,7 @@ def reload_alcohol_free():  # X
     TEA_FILLS = load_from_file("data/bar/tea_fills.txt")
     print("Loaded ", len(TEA_FILLS), " tea fills.")
 
+
   # X
 def reload_bar():
     """Перезагружает тексты из файлов в списки."""
@@ -457,6 +553,7 @@ def reload_bar():
     reload_alcohol_free()
 
 
+  # X
 def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
     """Возвращает True, если бармен может обработать эту команду
     >>> can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!vodka')
@@ -479,6 +576,7 @@ def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
     return False
 
 
+  # X
 def get_command_list() -> str:
     """Пользователь запросил список комманд."""
     command_list: str = ""
@@ -491,6 +589,7 @@ def get_command_list() -> str:
     return command_list
 
 
+  # X
 def get_help(pconfig: dict, pchat_title: str) -> str:
     """Возвращает список команд, поддерживаемых модулем.
     >>> get_help({'barman_chats':'Ботовка'}, 'Ботовка')
@@ -505,6 +604,7 @@ def get_help(pconfig: dict, pchat_title: str) -> str:
     return None
 
 
+  # X
 def is_enabled(pconfig: dict, pchat_title: str) -> bool:
     """Возвращает True, если бармен разрешен на этом канале.
     >>> is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
@@ -513,8 +613,8 @@ def is_enabled(pconfig: dict, pchat_title: str) -> bool:
     False
     """
     return pchat_title in pconfig[CHANNEL_LIST_KEY]
-
-
+`
+  # X
 def bring_beer(puser_name: str) -> str:
     """Пользователь запросил пиво."""
 
@@ -529,7 +629,7 @@ def bring_beer(puser_name: str) -> str:
         return f"Softice {source} {can} пива \"{beer}\" {transfer} {puser_name} {BEER_EMODJI}"
     return "А нету пива!"
 
-
+  # X
 def bring_cocktail(puser_name: str) -> str:
     """Пользователь запросил коктейль."""
 
@@ -542,7 +642,7 @@ def bring_cocktail(puser_name: str) -> str:
         return f"Softice {source} {cocktail} и {transfer} {puser_name} {COCTAIL_EMODJI}"
     return "Кончились коктейли!"
 
-
+  # X
 def bring_coffee(puser_name: str) -> str:
     """Пользователь запросил кофе."""
 
@@ -555,7 +655,7 @@ def bring_coffee(puser_name: str) -> str:
         return f"Softice {fill} кофе \"{coffee}\" {transfer} {puser_name} {COFFEE_EMODJI}"
     return "Кофе весь вышел."
 
-
+  # X
 def bring_cognac(puser_name: str) -> str:
     """Пользователь запросил коньяк."""
 
@@ -570,7 +670,7 @@ def bring_cognac(puser_name: str) -> str:
         return f"Softice {source} {can} {cognac} и {transfer} {puser_name} {COGNAC_EMODJI}"
     return "Выпили весь коньяк."
 
-
+  # X
 def bring_cookies(puser_name: str) -> str:
     """Пользователь запросил печеньки."""
 
