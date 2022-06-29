@@ -8,10 +8,10 @@ import functions as func
 # *** Идентификаторы, они же индексы, напитков
 BEER_ID: int = 0
 VODKA_ID: int = 1
-COCKTAIL_ID: int = 3  # 2  # 3!
-COFFEE_ID: int = 5  # 3  # 5!
-COGNAC_ID: int = 2  # 4  # 2!
-TEA_ID: int = 4  # 5  # 4!
+COGNAC_ID: int = 2
+COCKTAIL_ID: int = 3
+TEA_ID: int = 4
+COFFEE_ID: int = 5
 COOKIES_ID: int = 6
 
 COMMANDS: list = [["пиво", "beer", "пв", "br"],
@@ -100,17 +100,16 @@ class CBarman:
     def barman(self, pmessage_text: str, pfrom_user_name: str) -> str:
         """Процедура разбора запроса пользователя."""
 
-        command: int = 0
-        message: str = ""
+        command: int
+        message: str
         word_list: list = func.parse_input(pmessage_text)
         # *** Возможно, запросили меню.
-        print("$$$$", word_list)
         if word_list[0] in BAR_HINT:
 
             message = "Сегодня в баре имеется следующий ассортимент: \n" + self.get_help()
         elif word_list[0] in BAR_RELOAD:
 
-            self.reload_bar()
+            self.reload()
             message = "Содержимое бара обновлено"
         else:
 
@@ -131,6 +130,7 @@ class CBarman:
                 BEER_MARKS_KEY in self.beer and
                 DRINKS_SOURCES_KEY in self.drinks and
                 DRINKS_TRANSFER_KEY in self.drinks):
+
             can: str = random.choice(self.beer[BEER_CANS_KEY])
             beer: str = random.choice(self.beer[BEER_MARKS_KEY])
             source: str = random.choice(self.drinks[DRINKS_SOURCES_KEY])
@@ -144,6 +144,7 @@ class CBarman:
         if (DRINKS_SOURCES_KEY in self.drinks and
                 self.cocktail is not None and
                 VODKA_FILLS_KEY in self.vodka):
+
             source: str = random.choice(self.drinks[DRINKS_SOURCES_KEY])
             cocktail: str = random.choice(self.cocktail)
             transfer: str = random.choice(self.vodka[VODKA_FILLS_KEY])
@@ -152,13 +153,10 @@ class CBarman:
 
     def bring_coffee(self, puser_name: str) -> str:
         """Пользователь запросил кофе."""
-        # print(self.coffee[COFFEE_FILLS_KEY],
-        #       self.coffee[COFFEE_MARKS_KEY],
-        #       self.drinks[])
-
         if (COFFEE_FILLS_KEY in self.coffee and
                 COFFEE_MARKS_KEY in self.coffee and
                 DRINKS_TRANSFER_KEY in self.drinks):
+
             fill: str = random.choice(self.coffee[COFFEE_FILLS_KEY])
             coffee: str = random.choice(self.coffee[COFFEE_MARKS_KEY])
             transfer: str = random.choice(self.drinks[DRINKS_TRANSFER_KEY])
@@ -172,6 +170,7 @@ class CBarman:
                 COGNAC_CANS_KEY in self.cognac and
                 COGNAC_MARKS_KEY in self.cognac and
                 COGNAC_FILLS_KEY in self.cognac):
+
             source: str = random.choice(self.drinks[DRINKS_SOURCES_KEY])
             can: str = random.choice(self.cognac[COGNAC_CANS_KEY])
             cognac: str = random.choice(self.cognac[COGNAC_MARKS_KEY])
@@ -185,6 +184,7 @@ class CBarman:
         if (COOKIES_SOURCES_KEY in self.cookies and
                 COOKIES_MARKS_KEY in self.cookies and
                 COOKIES_TRANSFER_KEY in self.cookies):
+
             source: str = random.choice(self.cookies[COOKIES_SOURCES_KEY])
             can: str = "пачку"
             cookies: str = random.choice(self.cookies[COOKIES_MARKS_KEY])
@@ -199,6 +199,7 @@ class CBarman:
         if (TEA_FILLS_KEY in self.tea and
                 TEA_MARKS_KEY in self.tea and
                 DRINKS_TRANSFER_KEY in self.drinks):
+
             fill: str = random.choice(self.tea[TEA_FILLS_KEY])
             tea: str = random.choice(self.tea[TEA_MARKS_KEY])
             transfer: str = random.choice(self.drinks[DRINKS_TRANSFER_KEY])
@@ -212,6 +213,7 @@ class CBarman:
                 VODKA_CANS_KEY in self.vodka and
                 VODKA_MARKS_KEY in self.vodka and
                 VODKA_FILLS_KEY in self.vodka):
+
             source: str = random.choice(self.drinks[DRINKS_SOURCES_KEY])
             can: str = random.choice(self.vodka[VODKA_CANS_KEY])
             vodka: str = random.choice(self.vodka[VODKA_MARKS_KEY])
@@ -221,21 +223,22 @@ class CBarman:
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если бармен может обработать эту команду
-        >>> can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!vodka')
+        >>> self.can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!vodka')
         True
-        >>> can_process({'barman_chats':'Хокку'}, 'Ботовка', '!vodka')
+        >>> self.can_process({'barman_chats':'Хокку'}, 'Ботовка', '!vodka')
         False
-        >>> can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!мартини')
+        >>> self.can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!мартини')
         False
         """
+        found: bool = False
         if self.is_enabled(pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
-            found = False
             for command in COMMANDS:
 
                 found = word_list[0] in command
                 if found:
+
                     break
             if not found:
 
@@ -243,47 +246,54 @@ class CBarman:
 
                     found = word_list[0] in command
                     if found:
-                        break
 
+                        break
         return found
 
     def execute_command(self, pcommand: int, pname_to: str) -> str:
         """Возвращает текстовый эквивалент команды."""
-
         message: str = f"{COMMANDS[pcommand][0]}, сэр!"
         if pcommand == BEER_ID:
+
             message = self.bring_beer(pname_to)
         if pcommand == COCKTAIL_ID:
+
             message = self.bring_cocktail(pname_to)
         if pcommand == COFFEE_ID:
+
             message = self.bring_coffee(pname_to)
         if pcommand == COGNAC_ID:
+
             message = self.bring_cognac(pname_to)
         if pcommand == COOKIES_ID:
+
             message = self.bring_cookies(pname_to)
         if pcommand == TEA_ID:
+
             message = self.bring_tea(pname_to)
         if pcommand == VODKA_ID:
+
             message = self.bring_vodka(pname_to)
         return message
 
     def get_command(self, pword: str) -> int:  # noqa
         """Распознает команду и возвращает её код, в случае неудачи - None.
-        >>> get_command(["пиво",])
+        >>> self.get_command("пиво")
         0
-        >>> get_command(["cognac",])
+        >>> self.get_command("cognac")
         4
-        >>> get_command(["вк",])
+        >>> self.get_command("вк")
         1
-        >>> get_command(["ck",])
+        >>> self.get_command("ck")
         6
-        >>> type(get_command(["абракадабра",]))
+        >>> type(self.get_command("абракадабра"))
         <class 'NoneType'>
         """
         result: int = 0
         for command_idx, command in enumerate(COMMANDS):
 
             if pword in command:
+
                 result = command_idx
         return result
 
@@ -293,6 +303,7 @@ class CBarman:
         for command in COMMANDS:
 
             for kind in command:
+
                 command_list += kind + ", "
             command_list = command_list[:-2]
             command_list += "\n"
@@ -300,12 +311,11 @@ class CBarman:
 
     def get_hint(self, pchat_title: str) -> str:  # noqa
         """Возвращает список команд, поддерживаемых модулем.
-        >>> get_help({'barman_chats':'Ботовка'}, 'Ботовка')
+        >>> self.get_help({'barman_chats':'Ботовка'}, 'Ботовка')
         'меню, (menu, бар, bar)'
-        >>> type(get_help({'barman_chats':'Хокку'}, 'Ботовка'))
+        >>> type(self.get_help({'barman_chats':'Хокку'}, 'Ботовка'))
         <class 'NoneType'>
         """
-        print("***1", pchat_title)
         if self.is_enabled(pchat_title):
 
             return ", ".join(BAR_HINT)
@@ -313,12 +323,11 @@ class CBarman:
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если бармен разрешен на этом канале.
-        >>> is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
+        >>> self.is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
         True
-        >>> is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
+        >>> self.is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
         False
         """
-        print("***2", pchat_title)
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def load_beer(self):
@@ -331,6 +340,7 @@ class CBarman:
 
             beer_marks: list = func.load_from_file(BEER_MARKS_PATH)
             if beer_marks:
+
                 print("Barmen loads ", len(beer_marks), " beer marks.")
                 self.beer[BEER_MARKS_KEY] = beer_marks
                 return True
@@ -346,6 +356,7 @@ class CBarman:
 
             coffee_fills: list = func.load_from_file(COFFEE_FILLS_PATH)
             if coffee_fills:
+
                 print("Barmen loads ", len(coffee_fills), " coffee fills.")
                 self.coffee[COFFEE_FILLS_KEY] = coffee_fills
                 return True
@@ -355,6 +366,7 @@ class CBarman:
         """Загружает данные коктейлей"""
         self.cocktail = func.load_from_file(COCKTAIL_MARKS_PATH)
         if self.cocktail:
+
             print("Barmen loads ", len(self.cocktail), " cocktail marks.")
             return True
         return False
@@ -375,6 +387,7 @@ class CBarman:
 
                 cognac_fills: list = func.load_from_file(COGNAC_FILLS_PATH)
                 if cognac_fills:
+
                     print("Barmen loads ", len(cognac_fills), " cognac fills.")
                     self.cognac[COGNAC_FILLS_KEY] = cognac_fills
                     return True
@@ -396,6 +409,7 @@ class CBarman:
 
                 cookies_transfer: list = func.load_from_file(COOKIES_TRANSFER_PATH)
                 if cookies_transfer:
+
                     print("Barmen loads ", len(cookies_transfer), " cookies transfer.")
                     self.cookies[COOKIES_TRANSFER_KEY] = cookies_transfer
                     return True
@@ -411,6 +425,7 @@ class CBarman:
 
             drinks_transfer: list = func.load_from_file(DRINKS_TRANSFER_PATH)
             if drinks_transfer:
+
                 print("Barmen loads ", len(drinks_transfer), " drinks transfer.")
                 self.drinks[DRINKS_TRANSFER_KEY] = drinks_transfer
                 return True
@@ -426,9 +441,9 @@ class CBarman:
 
             tea_fills: list = func.load_from_file(TEA_FILLS_PATH)
             if tea_fills:
+
                 print("Barmen loads ", len(tea_fills), " tea fills.")
                 self.tea[TEA_FILLS_KEY] = tea_fills
-
                 return True
         return False
 
@@ -448,6 +463,7 @@ class CBarman:
 
                 vodka_fills: list = func.load_from_file(VODKA_FILLS_PATH)
                 if vodka_fills:
+
                     print("Barmen loads ", len(vodka_fills), " vodka fills.")
                     self.vodka[VODKA_FILLS_KEY] = vodka_fills
                     return True
@@ -458,9 +474,11 @@ class CBarman:
         if (self.load_beer() and
                 self.load_coffee() and
                 self.load_cocktail() and
-                self.load_cognac() and
-                self.load_cookies() and
-                self.load_drinks() and
-                self.load_tea() and
-                self.load_vodka()):
-            print("Barman successfully reload bar assortiment.")
+                self.load_cognac()):
+
+            if (self.load_cookies() and
+                    self.load_drinks() and
+                    self.load_tea() and
+                    self.load_vodka()):
+
+                print("Barman successfully reload bar assortiment.")
