@@ -68,9 +68,9 @@ class CSoftIceBot:
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
         babbler.reload_babbling()
-        barman.reload_bar()
+        # !!! barman.reload_bar()
         librarian.reload_library()
-
+        self.barman = barman.CBarman(self.config)
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
             """Обработчик сообщений."""
@@ -118,9 +118,10 @@ class CSoftIceBot:
                 message = babbler.babbler(pmessage_text)
                 if message is not None:
 
-                    print("Babbler answers.", message)
                     if len(message) > 0:
+
                         self.robot.send_message(pchat_id, message)
+                        print("Babbler answers.", message)
                         return True
             self.last_babbler_phrase_time = datetime.now()
         return False
@@ -129,10 +130,12 @@ class CSoftIceBot:
                     puser_title, pmessage_text):
         """По возможности обработать команду барменом."""
 
-        if barman.can_process(self.config, pchat_title, pmessage_text):
+        # if barman.can_process(self.config, pchat_title, pmessage_text):
+        if self.barman.can_process(pchat_title, pmessage_text):
 
             # *** ... точняк
-            message = barman.barman(pmessage_text, puser_title)
+            # message = barman.barman(pmessage_text, puser_title)
+            message = self.barman.barman(pmessage_text, puser_title)
             if message is not None:
                 print("Barman answers.")
                 self.robot.send_message(pchat_id, message)
@@ -220,7 +223,8 @@ class CSoftIceBot:
 
         if pcommand in HELP_COMMANDS:
 
-            barman_message = barman.get_help(self.config, pchat_title)
+            # barman_message = barman.get_help(self.config, pchat_title)
+            barman_message = self.barman.get_hint(pchat_title)
             librarian_message = librarian.get_help(self.config, pchat_title)
             meteorolog_message = meteorolog.help()
             theolog_message = theolog.get_help(self.config, pchat_title)
