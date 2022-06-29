@@ -71,6 +71,8 @@ class CSoftIceBot:
         # !!! barman.reload_bar()
         librarian.reload_library()
         self.barman = barman.CBarman(self.config)
+        # self.babbler = babbler.CBabbler(self.config)
+
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
             """Обработчик сообщений."""

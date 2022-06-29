@@ -10,10 +10,10 @@ import functions as func
 BABBLER_BASE = "data/babbling"
 
 # *** Команда перегрузки текстов
-BABBLER_RELOAD: list = ["babble", "blr"]
+BABBLER_RELOAD: list = ["babreload", "bblr"]
 
 # *** Ключ для списка доступных каналов в словаре конфига
-CHANNEL_LIST_KEY: str = "babbler_chats"
+ENABLED_IN_CHATS_KEY: str = "babbler_chats"
 
 GREETINGS_WORDS: list = []
 GREETINGS_WORDS_FILE: str = "data/babbling/greetings_words.txt"
@@ -39,6 +39,72 @@ REACTIONS_INDEX: int = 1
 BABBLER_MIND: list = []
 
 
+class CBabbler:
+    """Класс болтуна."""
+
+    def __init__(self, pconfig):
+        """"Конструктор."""
+        self.config = pconfig
+        self.mind: list = []
+
+    def babbler(self, pmessage_text: str) -> str:
+        """Улучшенная версия болтуна."""
+        message: str = ""
+        found: bool = False
+        word_list: list = pmessage_text.split(" ")
+        for word in word_list:
+
+            clean_word = word.rstrip(string.punctuation).lower()
+            if len(clean_word) > 2:  # or ")" in clean_word:
+
+                for block in self.mind:
+
+                    if clean_word in " ".join(block[TRIGGERS_INDEX]):
+
+                        answer = random.choice(block[REACTIONS_INDEX])
+                        message = f"{answer}"
+                        found = True
+                        break
+            if found:
+
+                break
+        return message
+
+    def can_process(self, pchat_title: str) -> bool:
+        """Болтун всегда может обработать эту команду."""
+
+        return self.is_enabled(self.config, pchat_title)
+
+    def is_enabled(self, pchat_title: str) -> bool:
+        """Возвращает True, если бармен разрешен на этом канале.
+        >>> self.is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
+        True
+        >>> self.is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
+        False
+        """
+        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+
+    def reload_babbling(self):
+        """Загружает тексты болтуна."""
+        # *** Собираем пути
+        triggers_path = Path(BABBLER_DATA) / TRIGGERS_FOLDER
+        assert triggers_path.is_dir(), f"{TRIGGERS_FOLDER} must be folder"
+        reactions_path = Path(BABBLER_DATA) / REACTIONS_FOLDER
+        assert reactions_path.is_dir(), f"{REACTIONS_FOLDER} must be folder"
+        for trigger in triggers_path.iterdir():
+
+            if trigger.is_file():
+
+                module = Path(trigger).resolve().name
+                reaction = reactions_path / module
+                if reaction.is_file():
+
+                    trigger_content: list = func.load_from_file(trigger.stem)
+                    block: list = [trigger_content]
+                    reaction_content: list = func.load_from_file(reaction.stem)
+                    block.append(reaction_content)
+                    self.mind.append(block)
+
 def reload_babbling():
     """Загружает тексты болтуна."""
     # global BABBLER_MIND
@@ -61,7 +127,6 @@ def reload_babbling():
             module = Path(trigger).resolve().name
             reaction = reactions_path / module
             if reaction.is_file():
-
                 trigger_content: list = []
                 trigger_content = func.load_from_file(trigger)
                 block: list = [trigger_content]
@@ -73,55 +138,14 @@ def reload_babbling():
                 # print(reaction_content)
 
 
-# def reload_babbling():
-#     """Перезагружает приветствия."""
-#
-#     global GREETINGS_WORDS
-#     GREETINGS_WORDS = func.load_from_file(GREETINGS_WORDS_FILE)
-#     if GREETINGS_WORDS is not None:
-#
-#         print("Loaded ", len(GREETINGS_WORDS), " greeting words.")
-#
-#     global GREETINGS_ANSWERS
-#     GREETINGS_ANSWERS = func.load_from_file(GREETINGS_ANSWERS_FILE)
-#     if GREETINGS_ANSWERS is not None:
-#
-#         print("Loaded ", len(GREETINGS_ANSWERS), " greetings answers.")
-#
-#     global WEATHER_WORDS
-#     WEATHER_WORDS = func.load_from_file(WEATHER_WORDS_FILE)
-#     if WEATHER_WORDS is not None:
-#
-#         print("Loaded ", len(WEATHER_WORDS), " weather words.")
-#
-#     global WEATHER_ANSWERS
-#     WEATHER_ANSWERS = func.load_from_file(WEATHER_ANSWERS_FILE)
-#     if WEATHER_ANSWERS is not None:
-#
-#         print("Loaded ", len(WEATHER_ANSWERS), " weather answers.")
-#
-#     global BEAUTY_WORDS
-#     BEAUTY_WORDS = func.load_from_file(BEAUTY_WORDS_FILE)
-#     if BEAUTY_WORDS is not None:
-#
-#         print("Loaded ", len(BEAUTY_WORDS), " beauty words.")
-#
-#     global BEAUTY_ANSWERS
-#     BEAUTY_ANSWERS = func.load_from_file(BEAUTY_ANSWERS_FILE)
-#     if BEAUTY_ANSWERS is not None:
-#
-#         print("Loaded ", len(WEATHER_ANSWERS), " beauty answers.")
-
-
-def is_enabled(pconfig: dict, pchat_title: str) -> bool:
+def is_enabled(pconfig, pchat_title: str) -> bool:
     """Возвращает True, если бармен разрешен на этом канале.
     >>> is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
     True
     >>> is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
     False
     """
-    return pchat_title in pconfig[CHANNEL_LIST_KEY]
-
+    return pchat_title in pconfig[ENABLED_IN_CHATS_KEY]
 
 # def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
 def can_process(pconfig: dict, pchat_title: str) -> bool:
@@ -135,7 +159,6 @@ def can_process(pconfig: dict, pchat_title: str) -> bool:
     """
 
     if is_enabled(pconfig, pchat_title):
-
         # word_list: list = pmessage_text.split(" ")
         # if word_list[0] in " ".join(GREETINGS_WORDS) or
         #    word_list[0] in " ".join(WEATHER_WORDS)
@@ -162,17 +185,14 @@ def babbler(pmessage_text: str) -> str:
             for block in BABBLER_MIND:
 
                 if clean_word in " ".join(block[TRIGGERS_INDEX]):
-
                     # print(block[REACTIONS_INDEX])
                     answer = random.choice(block[REACTIONS_INDEX])
                     message = f"{answer}"
                     found = True
                     break
         if found:
-
             break
     return message
-
 
 # def babbler(pmessage_text: str) -> str:
 #     """Процедура разбора запроса пользователя."""

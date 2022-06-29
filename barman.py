@@ -30,9 +30,6 @@ COOKIE_EMODJI: str = "🍪"
 # *** Команда перегрузки текстов
 BAR_RELOAD: list = ["barreload", "brl"]
 
-# *** Ключ для списка доступных каналов в словаре конфига
-CHANNEL_LIST_KEY: str = "barman_chats"  # X
-
 BEER_CANS_PATH: str = "data/bar/beer_cans.txt"
 BEER_MARKS_PATH: str = "data/bar/beer_marks.txt"
 BEER_CANS_KEY: str = "bcans"
