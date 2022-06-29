@@ -71,7 +71,7 @@ class CSoftIceBot:
         # !!! barman.reload_bar()
         librarian.reload_library()
         self.barman = barman.CBarman(self.config)
-        # self.babbler = babbler.CBabbler(self.config)
+        self.babbler = babbler.CBabbler(self.config)
 
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
@@ -114,10 +114,11 @@ class CSoftIceBot:
         if minutes > 1:
 
             # *** Болтун может? болтун может всегда!
-            if babbler.can_process(self.config, pchat_title):
+
+            if self.babbler.can_process(pchat_title):
 
                 # *** ... точняк
-                message = babbler.babbler(pmessage_text)
+                message = self.babbler.babbler(pmessage_text)
                 if message is not None:
 
                     if len(message) > 0:

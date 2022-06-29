@@ -15,7 +15,7 @@ def load_from_file(pfile_name: str) -> list:
     >>> type(load_from_file("ABCDEF"))
     <class 'NoneType'>
     """
-    # content: list = None
+    content: list = None
     # *** откроем файл
     try:
 

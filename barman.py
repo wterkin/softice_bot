@@ -4,6 +4,7 @@
 
 import random
 import functions as func
+import prototype
 
 # *** Идентификаторы, они же индексы, напитков
 BEER_ID: int = 0
@@ -78,11 +79,12 @@ ENABLED_IN_CHATS_KEY: str = "barman_chats"
 BAR_HINT: list = ["бар", "bar"]
 
 
-class CBarman:
+class CBarman(prototype.CPrototype):
     """Класс бармена."""
 
     def __init__(self, pconfig):
 
+        super().__init__()
         self.config = pconfig
         self.beer: dict = {}
         self.cocktail: list = []
