@@ -96,8 +96,8 @@ COOKIES_TRANSFER_KEY: str = "cktrf"
 
 DRINKS_SOURCES_PATH: str = "data/bar/drink_sources.txt"
 DRINKS_SOURCES_KEY: str = "drsrc"
-DRINK_TRANSFER_PATH: str = "data/bar/drink_transfer.txt"
-DRINK_TRANSFER_KEY: str = "drtrf"
+DRINKS_TRANSFER_PATH: str = "data/bar/drink_transfer.txt"
+DRINKS_TRANSFER_KEY: str = "drtrf"
 
 TEA_MARKS_PATH: str = "data/bar/tea_marks.txt"
 TEA_MARKS_KEY: str = "teamr"
@@ -127,7 +127,7 @@ class CBarman:
         self.cognac: dict = {}
         self.vodka: dict = {}
         self.coffee: dict = {}
-        self.coookies: dict = {}
+        self.cookies: dict = {}
         self.tea: dict = {}
         self.drinks: dict = {}
 
@@ -194,41 +194,41 @@ class CBarman:
                     return True
         return False
 
-    def load_coookies(self):
+    def load_cookies(self):
         """Загружает данные пива."""
-        coookies_sources: list = func.load_from_file(COOOKIES_SOURCES_PATH)
-        if coookies_sources:
+        cookies_sources: list = func.load_from_file(COOKIES_SOURCES_PATH)
+        if cookies_sources:
 
-            print("Barmen loads ", len(coookies_sources), " coookies sources.")
-            self.coookies[COOOKIES_SOURCES_KEY] = coookies_sources
+            print("Barmen loads ", len(cookies_sources), " cookies sources.")
+            self.cookies[COOKIES_SOURCES_KEY] = cookies_sources
 
-            coookies_marks: list = func.load_from_file(COOOKIES_MARKS_PATH)
-            if coookies_marks:
+            cookies_marks: list = func.load_from_file(COOKIES_SOURCES_PATH)
+            if cookies_marks:
 
-                print("Barmen loads ", len(coookies_marks), " coookies marks.")
-                self.coookies[COOOKIES_MARKS_KEY] = coookies_marks
+                print("Barmen loads ", len(cookies_marks), " cookies marks.")
+                self.cookies[COOKIES_MARKS_KEY] = cookies_marks
 
-                coookies_transfer: list = func.load_from_file(COOOKIES_TRANSFER_PATH)
-                if coookies_transfer:
+                cookies_transfer: list = func.load_from_file(COOKIES_TRANSFER_PATH)
+                if cookies_transfer:
 
-                    print("Barmen loads ", len(coookies_transfer), " coookies transfer.")
-                    self.cookies[COOOKIES_TRANSFER_KEY] = coookies_transfer
+                    print("Barmen loads ", len(cookies_transfer), " cookies transfer.")
+                    self.cookies[COOKIES_TRANSFER_KEY] = cookies_transfer
                     return True
         return False
 
     def load_drinks(self):
         """Загружает данные пива."""
-        drink_sources: list = func.load_from_file(DRINK_SOURCES_PATH)
-        if drink_sources:
+        drinks_sources: list = func.load_from_file(DRINKS_SOURCES_PATH)
+        if drinks_sources:
 
-            print("Barmen loads ", len(drink_sources), " drink sources.")
-            self.drink[DRINK_SOURCES_KEY] = drink_sources
+            print("Barmen loads ", len(drinks_sources), " drinks sources.")
+            self.drinks[DRINKS_SOURCES_KEY] = drinks_sources
 
-            drink_transfer: list = func.load_from_file(DRINK_TRANSFER_PATH)
-            if drink_transfer:
+            drinks_transfer: list = func.load_from_file(DRINKS_TRANSFER_PATH)
+            if drinks_transfer:
 
-                print("Barmen loads ", len(drink_transfer), " drink_transfer.")
-                self.drinks[DRINK_TRANSFER_KEY] = drink_transfer
+                print("Barmen loads ", len(drinks_transfer), " drinks transfer.")
+                self.drinks[DRINKS_TRANSFER_KEY] = drinks_transfer
                 return True
         return False
 
@@ -273,14 +273,14 @@ class CBarman:
 
     def reload_bar(self):
         """Перегружает все содержимое бара."""
-        if load_beer() and
-           load_coffee() and
-           load_cocktail() and
-           load_cognac() and
-           load_coookies() and
-           load_drinks() and
-           load_tea() and
-           load_vodka():
+        if (self.load_beer() and
+           self.load_coffee() and
+           self.load_cocktail() and
+           self.load_cognac() and
+           self.load_coookies() and
+           self.load_drinks() and
+           self.load_tea() and
+           self.load_vodka()):
 
                print("Barman successfully reload bar assortiment.")
 
