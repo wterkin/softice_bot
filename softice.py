@@ -33,6 +33,7 @@ TOKEN_KEY: str = "token"  # !
 BOT_STATUS: int = CONTINUE_RUNNING
 SMILES: list = ["8)", "=)", ";)", ":)", "%)", "^_^"]
 
+
 # message.delete()
 
 
@@ -119,7 +120,6 @@ class CSoftIceBot:
 
                     print("Babbler answers.", message)
                     if len(message) > 0:
-
                         self.robot.send_message(pchat_id, message)
                         return True
             self.last_babbler_phrase_time = datetime.now()
@@ -187,7 +187,6 @@ class CSoftIceBot:
             # *** как пить дать.
             message = meteorolog.meteorolog(pmessage_text)
             if message is not None:
-
                 print(" Meteorolog answers.")
                 self.robot.send_message(pchat_id, message)
                 return True
@@ -202,7 +201,6 @@ class CSoftIceBot:
             # *** как пить дать.
             message = theolog.theolog(pmessage_text)
             if message is not None:
-
                 print("Theolog answers.")
                 self.robot.send_message(pchat_id, message)
                 return True
@@ -212,7 +210,6 @@ class CSoftIceBot:
         """Проверяет, находится ли данный чат в списке разрешенных."""
 
         if pchat_title not in self.config[ALLOWED_CHATS]:
-
             self.robot.send_message(pchat_id, "Вашего чата нет в списке разрешённых. Чао!")
             self.robot.leave_chat(pchat_id)
             print(f"Караул! Меня похитили и затащили в чат {pchat_title}! Но я удрал.")
@@ -231,27 +228,22 @@ class CSoftIceBot:
                     librarian_message or
                     meteorolog_message or
                     theolog_message):
-
                 self.robot.send_message(pchat_id, HELP_MESSAGE)
 
             # *** Помощь от бармена
             if barman_message:
-
                 self.robot.send_message(pchat_id, barman_message)
 
             # *** Помощь от библиотекаря
             if librarian_message:
-
                 self.robot.send_message(pchat_id, librarian_message)
 
             # *** Помощь от метеоролога
             if meteorolog_message:
-
                 self.robot.send_message(pchat_id, meteorolog_message)
 
             # *** Помощь от теолога
             if theolog_message:
-
                 self.robot.send_message(pchat_id, theolog_message)
 
     def is_quit_command_queried(self, pcommand: str, pchat_id: int,
@@ -262,7 +254,6 @@ class CSoftIceBot:
         if pcommand in EXIT_COMMANDS:
 
             if puser_name == self.config["master"]:
-
                 self.robot.send_message(pchat_id, "Всем пока!")
                 result = True
                 raise CQuitByDemand()
@@ -291,7 +282,6 @@ class CSoftIceBot:
     def load_config(self):
         """Загружает конфигурацию из JSON."""
         with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
-
             self.config = json.load(json_file)
 
     def poll(self):
@@ -299,7 +289,6 @@ class CSoftIceBot:
         try:
 
             while self.bot_status == CONTINUE_RUNNING:
-
                 # self.robot.infinity_polling()
                 self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
                 print(f"Bot status = {BOT_STATUS}")
@@ -326,7 +315,6 @@ class CSoftIceBot:
                     if not self.call_meteorolog(pchat_id, pchat_title, pmessage_text):
 
                         if not self.call_theolog(pchat_id, pchat_title, pmessage_text):
-
                             print(" .. fail.")
 
 
@@ -338,6 +326,5 @@ class CSoftIceBot:
 #                     call.from_user.id, call.from_user.username, call.data)
 
 if __name__ == "__main__":
-
     SofticeBot = CSoftIceBot()
     SofticeBot.poll()

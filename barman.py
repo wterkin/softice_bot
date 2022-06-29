@@ -8,31 +8,31 @@ import functions as func
 # *** Идентификаторы, они же индексы, напитков
 BEER_ID: int = 0
 VODKA_ID: int = 1
-COCKTAIL_ID: int = 2
-COFFEE_ID: int = 3
-COGNAC_ID: int = 4
-TEA_ID: int = 5
+COCKTAIL_ID: int = 2  # 3!
+COFFEE_ID: int = 3  # 5!
+COGNAC_ID: int = 4  # 2!
+TEA_ID: int = 5  # 4!
 COOKIES_ID: int = 6
 
 # *** Списки свойств напитков
-DRINK_SOURCES: list = None
-DRINK_TRANSFER: list = None
-BEER_CANS: list = None
-BEER_MARKS: list = None
-COCKTAIL_MARKS: list = None
-COFFEE_MARKS: list = None
-COFFEE_FILLS: list = None
-COGNAC_CANS: list = None
-COGNAC_MARKS: list = None
-COGNAC_FILLS: list = None
-COOKIES_SOURCES: list = None
-COOKIES_MARKS: list = None
-COOKIES_TRANSFER: list = None
-TEA_MARKS: list = None
-TEA_FILLS: list = None
-VODKA_CANS: list = None
-VODKA_MARKS: list = None
-VODKA_FILLS: list = None
+DRINK_SOURCES: list = None  # X
+DRINK_TRANSFER: list = None  # X
+BEER_CANS: list = None  # X
+BEER_MARKS: list = None  # X
+COCKTAIL_MARKS: list = None  # X
+COFFEE_MARKS: list = None  # X
+COFFEE_FILLS: list = None  # X
+COGNAC_CANS: list = None  # X
+COGNAC_MARKS: list = None  # X
+COGNAC_FILLS: list = None  # X
+COOKIES_SOURCES: list = None  # X
+COOKIES_MARKS: list = None  # X
+COOKIES_TRANSFER: list = None  # X
+TEA_MARKS: list = None  # X
+TEA_FILLS: list = None  # X
+VODKA_CANS: list = None  # X
+VODKA_MARKS: list = None  # X
+VODKA_FILLS: list = None  # X
 
 MENU_MESSAGE: str = "Сегодня в меню у нас имеются следующие напитки: "
 
@@ -52,6 +52,14 @@ SHORT_RUS_BAR_COMMANDS: list = ["пв", "вк", "кт", "кф",
 SHORT_ENG_BAR_COMMANDS: list = ["br", "vk", "ct", "cf",
                                 "cn", "te", "ck"]
 
+COMMANDS: list = [["пиво", "beer", "пв", "br"],
+                  ["водка", "vodka", "вк", "vk"],
+                  ["коньяк", "cognac", "кн", "cn"],
+                  ["коктейль", "cocktail", "кт", "ct"],
+                  ["чай", "tea", "чй", "te"],
+                  ["кофе", "coffee", "кф", "cf"],
+                  ["печеньки", "cookies", "пч", "ck"]]
+
 # *** Команды вызова меню
 MAIN_COMMANDS_LIST: list = ["меню", "menu", "бар", "bar"]
 MAIN_COMMANDS_STRING: str = "меню, (menu, бар, bar)"
@@ -65,7 +73,7 @@ COOKIE_EMODJI: str = "🍪"
 BAR_RELOAD: list = ["barreload", "br"]
 
 # *** Ключ для списка доступных каналов в словаре конфига
-CHANNEL_LIST_KEY: str = "barman_chats"
+CHANNEL_LIST_KEY: str = "barman_chats"  # X
 
 
 BEER_CANS_PATH: str = "data/bar/beer_cans.txt"
@@ -111,6 +119,9 @@ VODKA_MARKS_KEY: str = "vdmarks"
 VODKA_FILLS_PATH: str = "data/bar/vodka_fills.txt"
 VODKA_FILLS_KEY: str = "vdfills"
 
+# *** Ключ для списка доступных каналов в словаре конфига
+ENABLED_IN_CHATS_KEY: str = "barman_chats"
+BAR_HINT: list = ["бар", "bar"]
 
 #    ... if data_list is None:
 #   ...        print("No")
@@ -120,8 +131,9 @@ VODKA_FILLS_KEY: str = "vdfills"
 
 class CBarman:
 
-    def __init__(self):
+    def __init__(self, pconfig):
 
+        self.config = pconfig
         self.beer: dict = {}
         self.cocktail: list = []
         self.cognac: dict = {}
@@ -130,6 +142,36 @@ class CBarman:
         self.cookies: dict = {}
         self.tea: dict = {}
         self.drinks: dict = {}
+
+    def get_help() -> str:
+        """Пользователь запросил список комманд."""
+        command_list: str = ""
+        for command_idx, command in enumerate(RUSSIAN_BAR_COMMANDS):
+            command_list += (f"{command} "
+                             f"({SHORT_RUS_BAR_COMMANDS[command_idx]}, "
+                             f"{ENGLISH_BAR_COMMANDS[command_idx]}, "
+                             f"{SHORT_ENG_BAR_COMMANDS[command_idx]}). ")
+        return command_list
+
+    def get_hint(self, pchat_title: str) -> str:
+        """Возвращает список команд, поддерживаемых модулем.
+        >>> get_help({'barman_chats':'Ботовка'}, 'Ботовка')
+        'меню, (menu, бар, bar)'
+        >>> type(get_help({'barman_chats':'Хокку'}, 'Ботовка'))
+        <class 'NoneType'>
+        """
+        if is_enabled(pchat_title):
+            return ", ".join(BAR_HINT)
+        return ""
+
+    def is_enabled(self, pchat_title: str) -> bool:
+        """Возвращает True, если бармен разрешен на этом канале.
+        >>> is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
+        True
+        >>> is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
+        False
+        """
+        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def load_beer(self):
         """Загружает данные пива."""
@@ -271,13 +313,13 @@ class CBarman:
                     return True
         return False
 
-    def reload_bar(self):
+    def reload(self):
         """Перегружает все содержимое бара."""
         if (self.load_beer() and
            self.load_coffee() and
            self.load_cocktail() and
            self.load_cognac() and
-           self.load_coookies() and
+           self.load_cookies() and
            self.load_drinks() and
            self.load_tea() and
            self.load_vodka()):
@@ -309,8 +351,8 @@ def load_from_file(pfile_name: str) -> list:
         return content
     return content
 
-
-def reload_alcohol():
+  # X
+def reload_alcohol():  # X
     """Перезагружает алкоголь."""
 
     global BEER_CANS
@@ -367,8 +409,8 @@ def reload_alcohol():
 
         print("Loaded ", len(VODKA_FILLS), " vodka fills.")
 
-
-def reload_alcohol_free():
+  # X
+def reload_alcohol_free():  # X
     """Перезагружает безалкогольные напитки."""
 
     global COFFEE_MARKS
@@ -399,7 +441,7 @@ def reload_alcohol_free():
     TEA_FILLS = load_from_file("data/bar/tea_fills.txt")
     print("Loaded ", len(TEA_FILLS), " tea fills.")
 
-
+  # X
 def reload_bar():
     """Перезагружает тексты из файлов в списки."""
 
