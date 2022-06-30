@@ -55,9 +55,12 @@ class CBabbler(prototype.CPrototype):
 
     def babbler(self, pchat_title: str, pmessage_text: str) -> str:
         """Улучшенная версия болтуна."""
+        assert pchat_title is not None, \
+            "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
         message: str = ""
         found: bool = False
-
         minutes = (datetime.now() - self.last_phrase_time).total_seconds() / BABBLER_PERIOD
         # *** Заданный период времени с последней фразы прошел?
         if minutes > 1:
@@ -96,16 +99,21 @@ class CBabbler(prototype.CPrototype):
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Болтун всегда может обработать эту команду."""
-
+        assert pchat_title is not None, \
+            "Assert: [babbler.can_process] No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [babbler.can_process] No <pmessage_text> parameter specified!"
         return self.is_enabled(pchat_title)
 
     def get_help(self):
         """Возвращает список команд модуля, доступных пользователю."""
         return ""
 
-    def get_hint(self):
+    def get_hint(self, pchat_title: str):
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
+        assert pchat_title is not None, \
+            "Assert: [babbler.get_hint] No <pchat_title> parameter specified!"
         return ""
 
     def is_enabled(self, pchat_title: str) -> bool:
@@ -115,6 +123,8 @@ class CBabbler(prototype.CPrototype):
         >>> self.is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
         False
         """
+        assert pchat_title is not None, \
+            "Assert: [babbler.is_enabled] No <pchat_title> parameter specified!"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def reload(self):

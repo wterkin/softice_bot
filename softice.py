@@ -393,7 +393,6 @@ class CSoftIceBot:
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
-
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         message = self.barman.barman(pchat_title, pmessage_text, puser_title)
         if len(message) > 0:

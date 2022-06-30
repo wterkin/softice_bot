@@ -98,9 +98,14 @@ class CBarman(prototype.CPrototype, ABC):
         self.drinks: dict = {}
         self.reload()
 
-    def barman(self, pchat_title: str, pmessage_text: str, pfrom_user_name: str) -> str:
+    def barman(self, pchat_title: str, pmessage_text: str, puser_title: str) -> str:
         """Процедура разбора запроса пользователя."""
-
+        assert pchat_title is not None, \
+            "Assert: [barman.barman] No <pchat_title> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [barman.barman] No <puser_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [barman.barman] No <pmessage_text> parameter specified!"
         command: int
         message: str = ""
         word_list: list = func.parse_input(pmessage_text)
@@ -119,7 +124,7 @@ class CBarman(prototype.CPrototype, ABC):
 
                 # *** Нет, видимо, напиток.
                 command = self.get_command(word_list[0])
-                name_to = pfrom_user_name
+                name_to = puser_title
                 if len(word_list) > 1:
 
                     name_to = word_list[1]
@@ -132,7 +137,8 @@ class CBarman(prototype.CPrototype, ABC):
 
     def bring_beer(self, puser_name: str) -> str:
         """Пользователь запросил пиво."""
-
+        assert puser_name is not None, \
+            "Assert: [barman.bring_beer] No <puser_name> parameter specified!"
         if (BEER_CANS_KEY in self.beer and
                 BEER_MARKS_KEY in self.beer and
                 DRINKS_SOURCES_KEY in self.drinks and
@@ -147,6 +153,8 @@ class CBarman(prototype.CPrototype, ABC):
 
     def bring_cocktail(self, puser_name: str) -> str:
         """Пользователь запросил коктейль."""
+        assert puser_name is not None, \
+            "Assert: [barman.bring_cocktail] No <puser_name> parameter specified!"
 
         if (DRINKS_SOURCES_KEY in self.drinks and
                 self.cocktail is not None and
@@ -160,6 +168,8 @@ class CBarman(prototype.CPrototype, ABC):
 
     def bring_coffee(self, puser_name: str) -> str:
         """Пользователь запросил кофе."""
+        assert puser_name is not None, \
+            "Assert: [barman.bring_coffee] No <puser_name> parameter specified!"
         if (COFFEE_FILLS_KEY in self.coffee and
                 COFFEE_MARKS_KEY in self.coffee and
                 DRINKS_TRANSFER_KEY in self.drinks):
@@ -172,7 +182,8 @@ class CBarman(prototype.CPrototype, ABC):
 
     def bring_cognac(self, puser_name: str) -> str:
         """Пользователь запросил коньяк."""
-
+        assert puser_name is not None, \
+            "Assert: [barman.bring_cognac] No <puser_name> parameter specified!"
         if (DRINKS_SOURCES_KEY in self.drinks and
                 COGNAC_CANS_KEY in self.cognac and
                 COGNAC_MARKS_KEY in self.cognac and
@@ -187,7 +198,8 @@ class CBarman(prototype.CPrototype, ABC):
 
     def bring_cookies(self, puser_name: str) -> str:
         """Пользователь запросил печеньки."""
-
+        assert puser_name is not None, \
+            "Assert: [barman.bring_cookies] No <puser_name> parameter specified!"
         if (COOKIES_SOURCES_KEY in self.cookies and
                 COOKIES_MARKS_KEY in self.cookies and
                 COOKIES_TRANSFER_KEY in self.cookies):
@@ -202,7 +214,8 @@ class CBarman(prototype.CPrototype, ABC):
 
     def bring_tea(self, puser_name: str) -> str:
         """Пользователь запросил чай."""
-
+        assert puser_name is not None, \
+            "Assert: [barman.bring_tea] No <puser_name> parameter specified!"
         if (TEA_FILLS_KEY in self.tea and
                 TEA_MARKS_KEY in self.tea and
                 DRINKS_TRANSFER_KEY in self.drinks):
@@ -215,7 +228,8 @@ class CBarman(prototype.CPrototype, ABC):
 
     def bring_vodka(self, puser_name: str) -> str:
         """Пользователь запросил пиво."""
-
+        assert puser_name is not None, \
+            "Assert: [barman.bring_vodka] No <puser_name> parameter specified!"
         if (DRINKS_SOURCES_KEY in self.drinks and
                 VODKA_CANS_KEY in self.vodka and
                 VODKA_MARKS_KEY in self.vodka and
@@ -237,6 +251,12 @@ class CBarman(prototype.CPrototype, ABC):
         >>> self.can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!мартини')
         False
         """
+        assert pchat_title is not None, \
+            "Assert: [barman.can_process] " \
+            "No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [barman.can_process] " \
+            "No <pmessage_text> parameter specified!"
         found: bool = False
         if self.is_enabled(pchat_title):
 
@@ -259,6 +279,12 @@ class CBarman(prototype.CPrototype, ABC):
 
     def execute_command(self, pcommand: int, pname_to: str) -> str:
         """Возвращает текстовый эквивалент команды."""
+        assert pcommand is not None, \
+            "Assert: [barman.execute_process] " \
+            "No <pcommand> parameter specified!"
+        assert pname_to is not None, \
+            "Assert: [barman.execute_process] " \
+            "No <pname_to> parameter specified!"
         message: str = f"{COMMANDS[pcommand][0]}, сэр!"
         if pcommand == BEER_ID:
 
@@ -296,6 +322,9 @@ class CBarman(prototype.CPrototype, ABC):
         >>> type(self.get_command("абракадабра"))
         <class 'NoneType'>
         """
+        assert pword is not None, \
+            "Assert: [barman.get_command] " \
+            "No <pword> parameter specified!"
         result: int = 0
         for command_idx, command in enumerate(COMMANDS):
 
@@ -316,13 +345,17 @@ class CBarman(prototype.CPrototype, ABC):
             command_list += "\n"
         return command_list
 
-    def get_hint(self, pchat_title: str) -> str:  # noqa
+    def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.
         >>> self.get_help({'barman_chats':'Ботовка'}, 'Ботовка')
         'меню, (menu, бар, bar)'
         >>> type(self.get_help({'barman_chats':'Хокку'}, 'Ботовка'))
         <class 'NoneType'>
         """
+        assert pchat_title is not None, \
+            "Assert: [barman.get_hint] " \
+            "No <pchat_title> parameter specified!"
+
         if self.is_enabled(pchat_title):
 
             return ", ".join(BAR_HINT)
@@ -335,6 +368,10 @@ class CBarman(prototype.CPrototype, ABC):
         >>> self.is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
         False
         """
+        assert pchat_title is not None, \
+            "Assert: [barman.is_enabled] " \
+            "No <pchat_title> parameter specified!"
+
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def load_beer(self):
