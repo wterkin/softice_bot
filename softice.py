@@ -16,7 +16,6 @@ import mafiozo
 import meteorolog
 
 ALLOWED_CHATS: str = "allowed_chats"
-BABBLER_PERIOD: int = 10  # !
 BOT_NAME: str = "SoftIceBot"
 COMMAND_SIGNS: str = "/!."  # !
 CONFIG_FILE_NAME: str = "config.json"
@@ -77,7 +76,7 @@ class CSoftIceBot:
             """Обработчик сообщений."""
 
             message_text: str = pmessage.text
-            print("*** ", message_text)
+            # print("*** ", message_text)
             command = pmessage.text[1:].lower()
             chat_id: int = pmessage.chat.id
             chat_title: str = pmessage.chat.title
@@ -108,25 +107,46 @@ class CSoftIceBot:
 
                         self.robot.send_message(chat_id, message)
 
-    def call_barman(self, pchat_id: int, pchat_title: str,
-                    puser_title, pmessage_text):
-        """По возможности обработать команду барменом."""
-
-        # if barman.can_process(self.config, pchat_title, pmessage_text):
-        if self.barman.can_process(pchat_title, pmessage_text):
-
-            # *** ... точняк
-            # message = barman.barman(pmessage_text, puser_title)
-            message = self.barman.barman(pmessage_text, puser_title)
-            if message is not None:
-                print("Barman answers.")
-                self.robot.send_message(pchat_id, message)
-                return True
-        return False
+    # def call_barman(self, pchat_id: int, pchat_title: str,
+    #                 puser_title, pmessage_text):
+    #     """По возможности обработать команду барменом."""
+    #     assert pchat_id is not None, \
+    #         "Assert: [softice.call_librarian] " \
+    #         "No <pchat_id> parameter specified!"
+    #     assert pchat_title is not None, \
+    #         "Assert: [softice.call_librarian] " \
+    #         "No <pchat_title> parameter specified!"
+    #     assert puser_title is not None, \
+    #         "Assert: [softice.call_librarian] No <puser_title> parameter specified!"
+    #     assert pmessage_text is not None, \
+    #         "Assert: [softice.call_librarian] " \
+    #         "No <pmessage_text> parameter specified!"
+    #     # if barman.can_process(self.config, pchat_title, pmessage_text):
+    #     if self.barman.can_process(pchat_title, pmessage_text):
+    #
+    #         # *** ... точняк
+    #         # message = barman.barman(pmessage_text, puser_title)
+    #         message = self.barman.barman(pmessage_text, puser_title)
+    #         if message is not None:
+    #             print("Barman answers.")
+    #             self.robot.send_message(pchat_id, message)
+    #             return True
+    #     return False
 
     def call_librarian(self, pchat_id: int, pchat_title: str,
                        puser_title, pmessage_text):
         """ Если это команда библиотекаря... """
+        assert pchat_id is not None, \
+            "Assert: [softice.call_librarian] " \
+            "No <pchat_id> parameter specified!"
+        assert pchat_title is not None, \
+            "Assert: [softice.call_librarian] " \
+            "No <pchat_title> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [softice.call_librarian] No <puser_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [softice.call_librarian] " \
+            "No <pmessage_text> parameter specified!"
 
         if librarian.can_process(self.config, pchat_title, pmessage_text):
 
@@ -143,6 +163,19 @@ class CSoftIceBot:
     def call_mafiozo(self, pchat_id: int, pchat_title: str,
                      puser_id, puser_title: str, pmessage_text):
         """По возможности обработать команду мафиози"""
+        assert pchat_id is not None, \
+            "Assert: [softice.call_mafiozo] " \
+            "No <pchat_id> parameter specified!"
+        assert pchat_title is not None, \
+            "Assert: [softice.call_mafiozo] " \
+            "No <pchat_title> parameter specified!"
+        assert puser_id is not None, \
+            "Assert: [softice.call_mafiozo] No <puser_id> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [softice.call_mafiozo] No <puser_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [softice.call_mafiozo] " \
+            "No <pmessage_text> parameter specified!"
 
         if mafiozo.can_process(self.config, pchat_title, pmessage_text):
 
@@ -167,6 +200,15 @@ class CSoftIceBot:
     def call_meteorolog(self, pchat_id: int, pchat_title: str,
                         pmessage_text: str):
         """По возможности обработать команду метеорологом"""
+        assert pchat_id is not None, \
+            "Assert: [softice.call_meteorolog] " \
+            "No <pchat_id> parameter specified!"
+        assert pchat_title is not None, \
+            "Assert: [softice.call_meteorolog] " \
+            "No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [softice.call_meteorolog] " \
+            "No <pmessage_text> parameter specified!"
         if meteorolog.can_process(self.config, pchat_title, pmessage_text):
 
             # *** как пить дать.
@@ -180,12 +222,21 @@ class CSoftIceBot:
     def call_theolog(self, pchat_id: int, pchat_title: str,
                      pmessage_text):
         """По возможности обработать команду теологом"""
-
+        assert pchat_id is not None, \
+            "Assert: [softice.call_theolog] " \
+            "No <pchat_id> parameter specified!"
+        assert pchat_title is not None, \
+            "Assert: [softice.call_theolog] " \
+            "No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [softice.call_theolog] " \
+            "No <pmessage_text> parameter specified!"
         if theolog.can_process(self.config, pchat_title, pmessage_text):
 
             # *** как пить дать.
             message = theolog.theolog(pmessage_text)
             if message is not None:
+
                 print("Theolog answers.")
                 self.robot.send_message(pchat_id, message)
                 return True
@@ -193,6 +244,12 @@ class CSoftIceBot:
 
     def check_is_this_chat_enabled(self, pchat_id: int, pchat_title: str):
         """Проверяет, находится ли данный чат в списке разрешенных."""
+        assert pchat_id is not None, \
+            "Assert: [softice.check_is_this_chat_enabled] " \
+            "No <pchat_id> parameter specified!"
+        assert pchat_title is not None, \
+            "Assert: [softice.check_is_this_chat_enabled] " \
+            "No <pchat_title> parameter specified!"
 
         if pchat_title not in self.config[ALLOWED_CHATS]:
 
@@ -205,10 +262,18 @@ class CSoftIceBot:
     def is_help_command_queried(self, pcommand: str,
                                 pchat_id: int, pchat_title: str):
         """Проверяет, не была ли запрошена подсказка."""
+        assert pcommand is not None, \
+            "Assert: [softice.is_help_command_queried] " \
+            "No <pchat_title> parameter specified!"
+        assert pchat_id is not None, \
+            "Assert: [softice.is_help_command_queried] " \
+            "No <pchat_id> parameter specified!"
+        assert pchat_title is not None, \
+            "Assert: [softice.is_help_command_queried] " \
+            "No <pchat_title> parameter specified!"
 
         if pcommand in HELP_COMMANDS:
 
-            # barman_message = barman.get_help(self.config, pchat_title)
             barman_message = self.barman.get_hint(pchat_title)
             librarian_message = librarian.get_help(self.config, pchat_title)
             meteorolog_message = meteorolog.help()
@@ -217,6 +282,7 @@ class CSoftIceBot:
                     librarian_message or
                     meteorolog_message or
                     theolog_message):
+
                 self.robot.send_message(pchat_id, HELP_MESSAGE)
 
             # *** Помощь от бармена
@@ -238,13 +304,24 @@ class CSoftIceBot:
     def is_quit_command_queried(self, pcommand: str, pchat_id: int,
                                 puser_name: str, puser_title: str):
         """Проверка, вдруг была команда выхода."""
-
+        assert pcommand is not None, \
+            "Assert: [softice.is_quit_command_queried] " \
+            "No <pchat_title> parameter specified!"
+        assert pchat_id is not None, \
+            "Assert: [softice.is_quit_command_queried] " \
+            "No <pchat_id> parameter specified!"
+        assert puser_name is not None, \
+            "Assert: [softice.is_quit_command_queried] " \
+            "No <puser_name> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [softice.is_quit_command_queried] " \
+            "No <puser_title> parameter specified!"
         result = False
         if pcommand in EXIT_COMMANDS:
 
             if puser_name == self.config["master"]:
+
                 self.robot.send_message(pchat_id, "Всем пока!")
-                result = True
                 raise CQuitByDemand()
             self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
         return result
@@ -252,6 +329,18 @@ class CSoftIceBot:
     def is_reload_config_command_queried(self, pcommand: str, pchat_id: int,
                                          puser_name: str, puser_title: str):
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
+        assert pcommand is not None, \
+            "Assert: [softice.is_reload_config_command_queried] " \
+            "No <pchat_title> parameter specified!"
+        assert pchat_id is not None, \
+            "Assert: [softice.is_reload_config_command_queried] " \
+            "No <pchat_id> parameter specified!"
+        assert puser_name is not None, \
+            "Assert: [softice.is_reload_config_command_queried] " \
+            "No <puser_name> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [softice.is_reload_config_command_queried] " \
+            "No <puser_title> parameter specified!"
 
         result = False
         if pcommand in CONFIG_COMMANDS:
@@ -271,6 +360,7 @@ class CSoftIceBot:
     def load_config(self):
         """Загружает конфигурацию из JSON."""
         with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
+
             self.config = json.load(json_file)
 
     def poll(self):
@@ -278,6 +368,7 @@ class CSoftIceBot:
         try:
 
             while self.bot_status == CONTINUE_RUNNING:
+
                 # self.robot.infinity_polling()
                 self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
                 print(f"Bot status = {BOT_STATUS}")
@@ -286,12 +377,23 @@ class CSoftIceBot:
 
             print(ex.message)
             self.bot_status = QUIT_BY_DEMAND
-            # self.robot.stop_polling()
+            self.robot.stop_polling()
 
     def process_modules(self, pchat_id: int, pchat_title: str,
                         puser_id: int, puser_title: str,
                         pmessage_text):
         """Пытается обработать команду различными модулями."""
+        assert pchat_id is not None, \
+            "Assert: [softice.process_modules] No <pchat_id> parameter specified!"
+        assert pchat_title is not None, \
+            "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
+        assert puser_id is not None, \
+            "Assert: [softice.process_modules] No <puser_id> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [softice.process_modules] No <puser_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
+
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         message = self.barman.barman(pchat_title, pmessage_text, puser_title)
         if len(message) > 0:
@@ -308,6 +410,7 @@ class CSoftIceBot:
                     if not self.call_meteorolog(pchat_id, pchat_title, pmessage_text):
 
                         if not self.call_theolog(pchat_id, pchat_title, pmessage_text):
+
                             print(" .. fail.")
 
 
