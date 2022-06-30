@@ -44,15 +44,6 @@ class CQuitByDemand(Exception):
         super().__init__(self.message)
 
 
-# # *** Читаем конфигурацию +++
-# with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as config_file:
-#     BOT_CONFIG = json.load(config_file)
-#
-# if BOT_CONFIG["proxy"]:
-#     apihelper.proxy = {'https': BOT_CONFIG["proxy"]}
-# self.robot = telebot.TeleBot(BOT_CONFIG["token"])
-
-
 class CSoftIceBot:
     """Универсальный бот для Телеграмма."""
 
@@ -107,32 +98,6 @@ class CSoftIceBot:
 
                         self.robot.send_message(chat_id, message)
 
-    # def call_barman(self, pchat_id: int, pchat_title: str,
-    #                 puser_title, pmessage_text):
-    #     """По возможности обработать команду барменом."""
-    #     assert pchat_id is not None, \
-    #         "Assert: [softice.call_librarian] " \
-    #         "No <pchat_id> parameter specified!"
-    #     assert pchat_title is not None, \
-    #         "Assert: [softice.call_librarian] " \
-    #         "No <pchat_title> parameter specified!"
-    #     assert puser_title is not None, \
-    #         "Assert: [softice.call_librarian] No <puser_title> parameter specified!"
-    #     assert pmessage_text is not None, \
-    #         "Assert: [softice.call_librarian] " \
-    #         "No <pmessage_text> parameter specified!"
-    #     # if barman.can_process(self.config, pchat_title, pmessage_text):
-    #     if self.barman.can_process(pchat_title, pmessage_text):
-    #
-    #         # *** ... точняк
-    #         # message = barman.barman(pmessage_text, puser_title)
-    #         message = self.barman.barman(pmessage_text, puser_title)
-    #         if message is not None:
-    #             print("Barman answers.")
-    #             self.robot.send_message(pchat_id, message)
-    #             return True
-    #     return False
-
     def call_librarian(self, pchat_id: int, pchat_title: str,
                        puser_title, pmessage_text):
         """ Если это команда библиотекаря... """
@@ -161,7 +126,7 @@ class CSoftIceBot:
         return False
 
     def call_mafiozo(self, pchat_id: int, pchat_title: str,
-                     puser_id, puser_title: str, pmessage_text):
+                     puser_id: int, puser_title: str, pmessage_text: str):
         """По возможности обработать команду мафиози"""
         assert pchat_id is not None, \
             "Assert: [softice.call_mafiozo] " \

@@ -132,7 +132,7 @@ class CBarman(prototype.CPrototype, ABC):
                 message = self.execute_command(command, name_to)
         if len(message) > 0:
 
-            print("Barman answers.")
+            print("Barman answers: ", message)
         return message
 
     def bring_beer(self, puser_name: str) -> str:
@@ -346,12 +346,7 @@ class CBarman(prototype.CPrototype, ABC):
         return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
-        """Возвращает список команд, поддерживаемых модулем.
-        >>> self.get_help({'barman_chats':'Ботовка'}, 'Ботовка')
-        'меню, (menu, бар, bar)'
-        >>> type(self.get_help({'barman_chats':'Хокку'}, 'Ботовка'))
-        <class 'NoneType'>
-        """
+        """Возвращает список команд, поддерживаемых модулем.  """
         assert pchat_title is not None, \
             "Assert: [barman.get_hint] " \
             "No <pchat_title> parameter specified!"
