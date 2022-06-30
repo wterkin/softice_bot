@@ -61,7 +61,7 @@ class CSoftIceBot:
         librarian.reload_library()
         self.barman = barman.CBarman(self.config)
         self.babbler = babbler.CBabbler(self.config)
-
+        self.theolog = theolog.CTheolog(self.config)
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
             """Обработчик сообщений."""
@@ -184,29 +184,6 @@ class CSoftIceBot:
                 return True
         return False
 
-    def call_theolog(self, pchat_id: int, pchat_title: str,
-                     pmessage_text):
-        """По возможности обработать команду теологом"""
-        assert pchat_id is not None, \
-            "Assert: [softice.call_theolog] " \
-            "No <pchat_id> parameter specified!"
-        assert pchat_title is not None, \
-            "Assert: [softice.call_theolog] " \
-            "No <pchat_title> parameter specified!"
-        assert pmessage_text is not None, \
-            "Assert: [softice.call_theolog] " \
-            "No <pmessage_text> parameter specified!"
-        if theolog.can_process(self.config, pchat_title, pmessage_text):
-
-            # *** как пить дать.
-            message = theolog.theolog(pmessage_text)
-            if message is not None:
-
-                print("Theolog answers.")
-                self.robot.send_message(pchat_id, message)
-                return True
-        return False
-
     def check_is_this_chat_enabled(self, pchat_id: int, pchat_title: str):
         """Проверяет, находится ли данный чат в списке разрешенных."""
         assert pchat_id is not None, \
@@ -242,7 +219,7 @@ class CSoftIceBot:
             barman_message = self.barman.get_hint(pchat_title)
             librarian_message = librarian.get_help(self.config, pchat_title)
             meteorolog_message = meteorolog.help()
-            theolog_message = theolog.get_help(self.config, pchat_title)
+            theolog_message = self.theolog.get_hint(pchat_title)  #
             if (barman_message or
                     librarian_message or
                     meteorolog_message or
@@ -358,6 +335,7 @@ class CSoftIceBot:
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
+
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         message = self.barman.barman(pchat_title, pmessage_text, puser_title)
         if len(message) > 0:
@@ -365,17 +343,22 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, message)
         else:
 
-            if not self.call_librarian(pchat_id,
-                                       pchat_title, puser_title, pmessage_text):
+            message = self.theolog.theolog(pchat_title, pmessage_text)
+            if len(message) > 0:
 
-                if not self.call_mafiozo(pchat_id, pchat_title,
-                                         puser_id, puser_title, pmessage_text):
+                self.robot.send_message(pchat_id, message)
+            else:
 
-                    if not self.call_meteorolog(pchat_id, pchat_title, pmessage_text):
 
-                        if not self.call_theolog(pchat_id, pchat_title, pmessage_text):
+                if not self.call_librarian(pchat_id,
+                                        pchat_title, puser_title, pmessage_text):
 
-                            print(" .. fail.")
+                    if not self.call_mafiozo(pchat_id, pchat_title,
+                                            puser_id, puser_title, pmessage_text):
+
+                        if not self.call_meteorolog(pchat_id, pchat_title, pmessage_text):
+
+                                print(" .. fail.")
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)

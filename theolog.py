@@ -17,7 +17,7 @@ COMMAND_ARG: int = 0
 LINE_ARG: int = 1
 
 # *** Основные команды X
-MAIN_COMMANDS: list = ["книги", "books", "вз", "нз"]
+MAIN_COMMANDS   : list = ["книги", "books", "вз", "нз"]
 
 # *** Список книг Библии
 BIBLE_BOOKS: list = [["бытие", "быт", "Книга Бытия"],
@@ -109,7 +109,7 @@ class CTheolog(prototype.CPrototype, ABC):
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если теолог может обработать эту команду."""
-        if is_enabled(self.config, pchat_title):
+        if self.is_enabled(pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
             if word_list[0].lower() in THEOLOG_HINT:
@@ -227,7 +227,7 @@ class CTheolog(prototype.CPrototype, ABC):
 
         return pchat_title in self.config[CHANNEL_LIST_KEY]
 
-    def theolog(self, pmessage_text: str) -> str:
+    def theolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Обрабатывает запросы теолога."""
 
         message: str = ""
@@ -236,204 +236,40 @@ class CTheolog(prototype.CPrototype, ABC):
         param_count = len(word_list)
         book_name: str = ""
         chapter: str = ""
-        # *** Если есть один параметр, то запрос помощи должен быть это
-        if param_count == 1:
 
-            if word_list[COMMAND_ARG] in THEOLOG_HINT:
+        if self.can_process(pchat_title, pmessage_text):
 
-                return get_help()
-        # *** Если есть два параметра, то это книга и глава/стих.
-        elif param_count > 1:
+            # *** Если есть один параметр, то запрос помощи должен быть это
+            if param_count == 1:
 
-            # *** Передали книгу и главу - или команду поиска
-            if word_list[0].lower() in [NEW_TESTAMENT, OLD_TESTAMENT]:
+                if word_list[COMMAND_ARG] in THEOLOG_HINT:
 
-                testament = word_list[0]
-                phrase = " ".join(word_list[1:]).lower()
-                message = self.global_search(testament, phrase)
-            else:
+                    return self.get_help()
+            # *** Если есть два параметра, то это книга и глава/стих.
+            elif param_count > 1:
 
-                book_name = word_list[0]
-                chapter = word_list[1]
-                # *** Есть третий параметр, то это количество строк
-                if param_count > 2:
+                # *** Передали книгу и главу - или команду поиска
+                if word_list[0].lower() in [NEW_TESTAMENT, OLD_TESTAMENT]:
 
-                    # *** И это число?
-                    if word_list[2].isdigit():
-
-                        # *** Значит, это количество выводимых строк
-                        line_count = int(word_list[2])
-                        line_count = 5 if line_count > 5 else line_count
-                message = self.execute_quote(chapter, book_name, line_count)
-        return message
-
-# X
-def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
-    """Возвращает True, если теолог может обработать эту комманду."""
-
-    if is_enabled(pconfig, pchat_title):
-
-        word_list: list = func.parse_input(pmessage_text)
-        if word_list[0] in MAIN_COMMANDS:
-
-            return True
-
-        for book in BIBLE_BOOKS:
-
-            if word_list[0].lower() in book:
-
-                return True
-    return False
-
-# X
-def get_help(pconfig: dict, pchat_title: str) -> str:
-    """Возвращает список команд, поддерживаемых модулем."""
-
-    if is_enabled(pconfig, pchat_title):
-
-        return ", ".join(MAIN_COMMANDS)
-    return None
-
-# X
-def is_enabled(pconfig: dict, pchat_title: str) -> bool:
-    """Возвращает True, если бармен разрешен на этом канале."""
-
-    return pchat_title in pconfig[CHANNEL_LIST_KEY]
-
-# X
-def list_books() -> str:
-    """Выводит список книг."""
-
-    books: str = ""
-    for book in BIBLE_BOOKS:
-
-        books += f"{book[0]}/{book[1]}, "
-    return books
-
-# X
-def global_search(ptestament: str, pphrase: str) -> str:
-    """Ищет заданную строку по всем книгам заданного завета"""
-    search_range: object = None
-    result_list: list = []
-    parsed_line: list = []
-
-    if ptestament == NEW_TESTAMENT:
-
-        search_range = NEW_TESTAMENT_BOOKS
-    elif ptestament == OLD_TESTAMENT:
-
-        search_range = OLD_TESTAMENT_BOOKS
-    for book in search_range:
-
-        # print(search_range)
-        book_title: str = BIBLE_BOOKS[book-1][2]
-        book_name: str = f"{BIBLE_PATH}{book}.txt"
-        # print(f"*** {book} {book_title} {book_name}")
-        with open(book_name, "r", encoding="utf-8") as book_file:
-
-            for line in book_file:
-
-                lower_line = line.lower()
-                if pphrase in lower_line:
-
-                    parsed_line = re.split(r'\:', line, maxsplit=2)
-                    result_list.append(f"{book_title} глава {parsed_line[0]}"
-                                       f" стих {parsed_line[1]} : {parsed_line[2]}")
-    if len(result_list) > 0:
-
-        return random.choice(result_list)
-    return None
-
-# X
-def find_in_book(pbook_idx: int, pline_id: str, pbook: str, pline_count: int) -> str:
-    """Ищет заданную строку в файле."""
-
-    message: str = None
-    # *** Путь к файлу
-    book_name: str = f"{BIBLE_PATH}{pbook_idx+1}.txt"
-    with open(book_name, "r", encoding="utf-8") as book_file:
-
-        for line in book_file:
-
-            # *** Ищем в файле заданный идентификатор строки
-            regexp = f"^{pline_id}:"
-            if re.search(regexp, line) is not None:
-
-                # parsed_line: str = line.split(":")
-                if ":" in line:
-
-                    chapter_position = line.index(":")
-                    chapter = line[:chapter_position]
-                    line_position = line.index(":", chapter_position + 1)
-                    line_number = line[chapter_position+1:line_position]
-                    text = line[line_position:]
-                    message: str = f"{pbook} {chapter}:{line_number} {text}"
-                if pline_count == 1:
-
-                    break
-            elif message:
-
-                if pline_count > 1:
-
-                    parsed_line: str = line.split(":")
-                    message += "\n" + parsed_line[2]
-                    pline_count -= 1
+                    testament = word_list[0]
+                    phrase = " ".join(word_list[1:]).lower()
+                    message = self.global_search(testament, phrase)
                 else:
 
-                    break
-    return message
+                    book_name = word_list[0]
+                    chapter = word_list[1]
+                    # *** Есть третий параметр, то это количество строк
+                    if param_count > 2:
 
-# X
-def execute_quote(pchapter: str, pbook_name: str, pline_count: int) -> str:
-    """Выполняет поиск заданной главы в Библии."""
-    message: str = None
-    for book_idx, book in enumerate(BIBLE_BOOKS):
+                        # *** И это число?
+                        if word_list[2].isdigit():
 
-        if pbook_name.lower() in book:
+                            # *** Значит, это количество выводимых строк
+                            line_count = int(word_list[2])
+                            line_count = 5 if line_count > 5 else line_count
+                    message = self.execute_quote(chapter, book_name, line_count)
+        if len(message) > 0:
 
-            message = find_in_book(book_idx, pchapter, pbook_name, pline_count)
-            if message is not None:
+            print("Theolog answers.")
+        return message
 
-                break
-    return message
-
-
-def theolog(pmessage_text: str) -> str:
-    """Обрабатывает запросы теолога."""
-
-    message: str = None
-    word_list: list = func.parse_input(pmessage_text)
-    line_count: int = 1
-    param_count = len(word_list)
-    book_name: str = ""
-    chapter: str = ""
-    # *** Если есть один параметр, то запрос помощи должен быть это
-    if param_count == 1:
-
-        if word_list[COMMAND_ARG] in MAIN_COMMANDS:
-
-            return list_books()
-    # *** Если есть два параметра, то это книга и глава:стих.
-    elif param_count > 1:
-
-        # *** Передали книгу и главу - или команду поиска
-        if word_list[0].lower() in [NEW_TESTAMENT, OLD_TESTAMENT]:
-
-            testament = word_list[0]
-            phrase = " ".join(word_list[1:]).lower()
-            message = global_search(testament, phrase)
-        else:
-
-            book_name = word_list[0]
-            chapter = word_list[1]
-            # *** Есть третий параметр, то это количество строк
-            if param_count > 2:
-
-                # *** И это число?
-                if word_list[2].isdigit():
-
-                    # *** Значит, это количество выводимых строк
-                    line_count = int(word_list[2])
-                    line_count = 5 if line_count > 5 else line_count
-            message = execute_quote(chapter, book_name, line_count)
-    return message
