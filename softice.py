@@ -67,7 +67,6 @@ class CSoftIceBot:
             apihelper.proxy = {'https': self.config["proxy"]}
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
-        babbler.reload_babbling()
         # !!! barman.reload_bar()
         librarian.reload_library()
         self.barman = barman.CBarman(self.config)
@@ -87,47 +86,27 @@ class CSoftIceBot:
             user_id: int = pmessage.from_user.id
 
             # *** Проверим, легитимный ли этот чат
-            self.check_is_this_chat_enabled(chat_id, chat_title)
+            if self.check_is_this_chat_enabled(chat_id, chat_title):
 
-            # *** Боту дали команду?
-            if message_text[0:1] in COMMAND_SIGNS:
+                # *** Боту дали команду?
+                if message_text[0:1] in COMMAND_SIGNS:
 
-                if not self.is_reload_config_command_queried(command, chat_id,
-                                                             user_name, user_title):
+                    if not self.is_reload_config_command_queried(command, chat_id,
+                                                                 user_name, user_title):
 
-                    if not self.is_quit_command_queried(command, chat_id,
-                                                        user_name, user_title):
+                        if not self.is_quit_command_queried(command, chat_id,
+                                                            user_name, user_title):
 
-                        if not self.is_help_command_queried(command, chat_id, chat_title):
-                            # *** Передаём введённую команду модулям
-                            self.process_modules(chat_id, chat_title, user_id,
-                                                 user_title, message_text)
-            else:
+                            if not self.is_help_command_queried(command, chat_id, chat_title):
+                                # *** Передаём введённую команду модулям
+                                self.process_modules(chat_id, chat_title, user_id,
+                                                     user_title, message_text)
+                else:
 
-                self.call_babbler(chat_id, chat_title, message_text)
-
-    def call_babbler(self, pchat_id, pchat_title, pmessage_text):
-        """Функция болтуна"""
-
-        minutes = (datetime.now() - self.last_babbler_phrase_time).total_seconds() / BABBLER_PERIOD
-        # *** Заданный период времени с последней фразы прошел?
-        if minutes > 1:
-
-            # *** Болтун может? болтун может всегда!
-
-            if self.babbler.can_process(pchat_title):
-
-                # *** ... точняк
-                message = self.babbler.babbler(pmessage_text)
-                if message is not None:
-
+                    message = self.babbler.babbler(chat_title, message_text)
                     if len(message) > 0:
 
-                        self.robot.send_message(pchat_id, message)
-                        print("Babbler answers.", message)
-                        return True
-            self.last_babbler_phrase_time = datetime.now()
-        return False
+                        self.robot.send_message(chat_id, message)
 
     def call_barman(self, pchat_id: int, pchat_title: str,
                     puser_title, pmessage_text):
@@ -216,9 +195,12 @@ class CSoftIceBot:
         """Проверяет, находится ли данный чат в списке разрешенных."""
 
         if pchat_title not in self.config[ALLOWED_CHATS]:
+
             self.robot.send_message(pchat_id, "Вашего чата нет в списке разрешённых. Чао!")
             self.robot.leave_chat(pchat_id)
             print(f"Караул! Меня похитили и затащили в чат {pchat_title}! Но я удрал.")
+            return False
+        return True
 
     def is_help_command_queried(self, pcommand: str,
                                 pchat_id: int, pchat_title: str):
@@ -311,7 +293,11 @@ class CSoftIceBot:
                         pmessage_text):
         """Пытается обработать команду различными модулями."""
         # *** Проверим, не запросил ли пользователь что-то у бармена...
-        if not self.call_barman(pchat_id, pchat_title, puser_title, pmessage_text):
+        message = self.barman.barman(pchat_title, pmessage_text, puser_title)
+        if len(message) > 0:
+
+            self.robot.send_message(pchat_id, message)
+        else:
 
             if not self.call_librarian(pchat_id,
                                        pchat_title, puser_title, pmessage_text):

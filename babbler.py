@@ -4,6 +4,7 @@
 
 import random
 import string
+from datetime import datetime
 from pathlib import Path
 import functions as func
 import prototype
@@ -32,6 +33,7 @@ BEAUTY_ANSWERS: list = []
 BEAUTY_ANSWERS_FILE: str = "data/babbling/beauty_answers.txt"
 
 BABBLER_DATA: str = "data/babbling/"
+BABBLER_PERIOD: int = 10  # !
 TRIGGERS_FOLDER: str = "triggers"
 REACTIONS_FOLDER: str = "reactions"
 
@@ -48,34 +50,48 @@ class CBabbler(prototype.CPrototype):
         super().__init__()
         self.config = pconfig
         self.mind: list = []
+        self.last_phrase_time: datetime = datetime.now()
         self.reload()
 
-    def babbler(self, pmessage_text: str) -> str:
+    def babbler(self, pchat_title: str, pmessage_text: str) -> str:
         """Улучшенная версия болтуна."""
         message: str = ""
         found: bool = False
-        word_list: list = pmessage_text.split(" ")
-        for word in word_list:
 
-            clean_word = word.rstrip(string.punctuation).lower()
-            if len(clean_word) > 2:  # or ")" in clean_word:
+        minutes = (datetime.now() - self.last_phrase_time).total_seconds() / BABBLER_PERIOD
+        # *** Заданный период времени с последней фразы прошел?
+        if minutes > 1:
 
-                for block in self.mind:
+            # *** Болтун может? болтун может всегда!
+            if self.can_process(pchat_title, pmessage_text):
 
-                    for block_item in block:
+                word_list: list = pmessage_text.split(" ")
+                for word in word_list:
 
-                        if clean_word in block_item:
+                    clean_word = word.rstrip(string.punctuation).lower()
+                    if len(clean_word) > 2:  # or ")" in clean_word:
 
-                            answer = random.choice(block[REACTIONS_INDEX])
-                            message = f"{answer}"
-                            found = True
-                            break
+                        for block in self.mind:
+
+                            for block_item in block:
+
+                                if clean_word in block_item:
+
+                                    answer = random.choice(block[REACTIONS_INDEX])
+                                    message = f"{answer}"
+                                    found = True
+                                    break
+                            if found:
+
+                                break
                     if found:
 
                         break
-            if found:
 
-                break
+        if len(message) > 0:
+
+            print("Babbler answers.", message)
+            self.last_phrase_time = datetime.now()
         return message
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:

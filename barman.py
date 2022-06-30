@@ -3,6 +3,8 @@
 """Модуль бармена."""
 
 import random
+from abc import ABC
+
 import functions as func
 import prototype
 
@@ -79,7 +81,7 @@ ENABLED_IN_CHATS_KEY: str = "barman_chats"
 BAR_HINT: list = ["бар", "bar"]
 
 
-class CBarman(prototype.CPrototype):
+class CBarman(prototype.CPrototype, ABC):
     """Класс бармена."""
 
     def __init__(self, pconfig):
@@ -96,30 +98,36 @@ class CBarman(prototype.CPrototype):
         self.drinks: dict = {}
         self.reload()
 
-    def barman(self, pmessage_text: str, pfrom_user_name: str) -> str:
+    def barman(self, pchat_title: str, pmessage_text: str, pfrom_user_name: str) -> str:
         """Процедура разбора запроса пользователя."""
 
         command: int
-        message: str
+        message: str = ""
         word_list: list = func.parse_input(pmessage_text)
-        # *** Возможно, запросили меню.
-        if word_list[0] in BAR_HINT:
 
-            message = "Сегодня в баре имеется следующий ассортимент: \n" + self.get_help()
-        elif word_list[0] in BAR_RELOAD:
+        if self.can_process(pchat_title, pmessage_text):
 
-            self.reload()
-            message = "Содержимое бара обновлено"
-        else:
+            # *** Возможно, запросили меню.
+            if word_list[0] in BAR_HINT:
 
-            # *** Нет, видимо, напиток.
-            command = self.get_command(word_list[0])
-            name_to = pfrom_user_name
-            if len(word_list) > 1:
+                message = "Сегодня в баре имеется следующий ассортимент: \n" + self.get_help()
+            elif word_list[0] in BAR_RELOAD:
 
-                name_to = word_list[1]
-            # *** В зависимости от команды выполняем действия
-            message = self.execute_command(command, name_to)
+                self.reload()
+                message = "Содержимое бара обновлено"
+            else:
+
+                # *** Нет, видимо, напиток.
+                command = self.get_command(word_list[0])
+                name_to = pfrom_user_name
+                if len(word_list) > 1:
+
+                    name_to = word_list[1]
+                # *** В зависимости от команды выполняем действия
+                message = self.execute_command(command, name_to)
+        if len(message) > 0:
+
+            print("Barman answers.")
         return message
 
     def bring_beer(self, puser_name: str) -> str:
