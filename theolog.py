@@ -17,7 +17,7 @@ COMMAND_ARG: int = 0
 LINE_ARG: int = 1
 
 # *** Основные команды X
-MAIN_COMMANDS   : list = ["книги", "books", "вз", "нз"]
+# MAIN_COMMANDS: list = ["книги", "books", "вз", "нз"]
 
 # *** Список книг Библии
 BIBLE_BOOKS: list = [["бытие", "быт", "Книга Бытия"],
@@ -109,6 +109,10 @@ class CTheolog(prototype.CPrototype, ABC):
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если теолог может обработать эту команду."""
+        assert pchat_title is not None, \
+            "Assert: [theolog.can_process] No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [theolog.can_process] No <pchat_title> parameter specified!"
         if self.is_enabled(pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
@@ -123,19 +127,32 @@ class CTheolog(prototype.CPrototype, ABC):
 
     def execute_quote(self, pchapter: str, pbook_name: str, pline_count: int) -> str:  # noqa
         """Выполняет поиск заданной главы в Библии."""
+        assert pchapter is not None, \
+            "Assert: [theolog.execute_quote] No <pchapter> parameter specified!"
+        assert pbook_name is not None, \
+            "Assert: [theolog.execute_quote] No <pbook_name> parameter specified!"
         message: str = ""
         for book_idx, book in enumerate(BIBLE_BOOKS):
 
             if pbook_name.lower() in book:
 
-                message = find_in_book(book_idx, pchapter, pbook_name, pline_count)
+                message = self.find_in_book(book_idx, pchapter, pbook_name, pline_count)
                 if len(message) > 0:
 
                     break
         return message
 
-    def find_in_book(self, pbook_idx: int, pline_id: str, pbook: str, pline_count: int) -> str:  # noqa
+    def find_in_book(self, pbook_idx: int, pline_id: str, pbook: str,
+                     pline_count: int) -> str:  # noqa
         """Ищет заданную строку в файле."""
+        assert pbook_idx is not None, \
+            "Assert: [theolog.find_in_book] No <pbook_idx> parameter specified!"
+        assert pline_id is not None, \
+            "Assert: [theolog.find_in_book] No <pline_id> parameter specified!"
+        assert pbook is not None, \
+            "Assert: [theolog.find_in_book] No <pbook> parameter specified!"
+        assert pline_count is not None, \
+            "Assert: [theolog.find_in_book] No <pline_count> parameter specified!"
         message: str = ""
         # *** Путь к файлу
         book_name: str = f"{BIBLE_PATH}{pbook_idx + 1}.txt"
@@ -148,6 +165,7 @@ class CTheolog(prototype.CPrototype, ABC):
                 if re.search(regexp, line) is not None:
 
                     if ":" in line:
+
                         chapter_position = line.index(":")
                         chapter = line[:chapter_position]
                         line_position = line.index(":", chapter_position + 1)
@@ -181,11 +199,9 @@ class CTheolog(prototype.CPrototype, ABC):
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем."""
-
         assert pchat_title is not None, \
-            "Assert: [barman.get_hint] " \
+            "Assert: [theolog.get_hint] " \
             "No <pchat_title> parameter specified!"
-
         if self.is_enabled(pchat_title):
 
             return ", ".join(THEOLOG_HINT)
@@ -193,6 +209,10 @@ class CTheolog(prototype.CPrototype, ABC):
 
     def global_search(self, ptestament: str, pphrase: str) -> str:  # noqa
         """Ищет заданную строку по всем книгам заданного завета"""
+        assert ptestament is not None, \
+            "Assert: [theolog.global_search] No <ptestament> parameter specified!"
+        assert pphrase is not None, \
+            "Assert: [theolog.global_search] No <pphrase> parameter specified!"
         search_range = None
         result_list: list = []
         parsed_line: list
@@ -224,18 +244,20 @@ class CTheolog(prototype.CPrototype, ABC):
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если бармен разрешен на этом канале."""
-
+        assert pchat_title is not None, \
+            "Assert: [theolog.is_enabled] No <pchat_title> parameter specified!"
         return pchat_title in self.config[CHANNEL_LIST_KEY]
 
     def theolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Обрабатывает запросы теолога."""
-
+        assert pchat_title is not None, \
+            "Assert: [theolog.theolog] No <pchat_title> parameter specified!"
         message: str = ""
         word_list: list = func.parse_input(pmessage_text)
         line_count: int = 1
         param_count = len(word_list)
-        book_name: str = ""
-        chapter: str = ""
+        book_name: str
+        chapter: str
 
         if self.can_process(pchat_title, pmessage_text):
 
@@ -272,4 +294,3 @@ class CTheolog(prototype.CPrototype, ABC):
 
             print("Theolog answers.")
         return message
-
