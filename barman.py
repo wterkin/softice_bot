@@ -208,6 +208,7 @@ class CBarman(prototype.CPrototype, ABC):
             can: str = "пачку"
             cookies: str = random.choice(self.cookies[COOKIES_MARKS_KEY])
             transfer: str = random.choice(self.cookies[COOKIES_TRANSFER_KEY])
+            # print(cookies, COOKIES_MARKS_KEY, self.cookies[COOKIES_MARKS_KEY])
             return (f"Softice {source} {can} печенья \"{cookies}\" {transfer} "
                     f"{puser_name} {COOKIE_EMODJI}")
         return "Нету печенья. Мыши съели. B("
@@ -440,7 +441,7 @@ class CBarman(prototype.CPrototype, ABC):
             print("Barmen loads ", len(cookies_sources), " cookies sources.")
             self.cookies[COOKIES_SOURCES_KEY] = cookies_sources
 
-            cookies_marks: list = func.load_from_file(COOKIES_SOURCES_PATH)
+            cookies_marks: list = func.load_from_file(COOKIES_MARKS_PATH)
             if cookies_marks:
 
                 print("Barmen loads ", len(cookies_marks), " cookies marks.")
