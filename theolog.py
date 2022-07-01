@@ -91,12 +91,12 @@ BIBLE_BOOKS: list = [["бытие", "быт", "Книга Бытия"],
 CHANNEL_LIST_KEY: str = "theolog_chats"
 
 # *** Команды поиска текста по книгам Библии
-NEW_TESTAMENT: str = "нз"
-OLD_TESTAMENT: str = "вз"
+NEW_TESTAMENT: str = "найтинз"
+OLD_TESTAMENT: str = "найтивз"
 OLD_TESTAMENT_BOOKS = range(1, 40)
 NEW_TESTAMENT_BOOKS = range(40, 67)
 
-THEOLOG_HINT: list = ["книги", "books"]
+THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMENT}"]
 
 
 class CTheolog(prototype.CPrototype, ABC):
@@ -193,8 +193,12 @@ class CTheolog(prototype.CPrototype, ABC):
         books: str = ""
         for book in BIBLE_BOOKS:
 
-            books += f"{book[0]}/{book[1]}, "
+            if not book[0][0].isdigit():
 
+                books += f"{book[0].capitalize()}({book[1]}), "
+            else:
+
+                books += f"{book[0]}({book[1]}), "
         return books
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
@@ -224,7 +228,7 @@ class CTheolog(prototype.CPrototype, ABC):
 
             search_range = OLD_TESTAMENT_BOOKS
         for book in search_range:
-
+            # print("** ", pphrase)
             book_title: str = BIBLE_BOOKS[book-1][2]
             book_name: str = f"{BIBLE_PATH}{book}.txt"
             with open(book_name, "r", encoding="utf-8") as book_file:
@@ -260,7 +264,7 @@ class CTheolog(prototype.CPrototype, ABC):
         chapter: str
 
         if self.can_process(pchat_title, pmessage_text):
-
+            # print("* ", pmessage_text)
             # *** Если есть один параметр, то запрос помощи должен быть это
             if param_count == 1:
 
@@ -275,6 +279,7 @@ class CTheolog(prototype.CPrototype, ABC):
 
                     testament = word_list[0]
                     phrase = " ".join(word_list[1:]).lower()
+                    # print("** ", phrase)
                     message = self.global_search(testament, phrase)
                 else:
 
