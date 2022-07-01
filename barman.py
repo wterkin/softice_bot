@@ -132,7 +132,7 @@ class CBarman(prototype.CPrototype, ABC):
                 message = self.execute_command(command, name_to)
         if len(message) > 0:
 
-            print("Barman answers: ", message)
+            print(f"Barman answers: {message[:16]}")
         return message
 
     def bring_beer(self, puser_name: str) -> str:

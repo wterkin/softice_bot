@@ -62,6 +62,7 @@ class CSoftIceBot:
         self.barman = barman.CBarman(self.config)
         self.babbler = babbler.CBabbler(self.config)
         self.theolog = theolog.CTheolog(self.config)
+
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
             """Обработчик сообщений."""
@@ -95,7 +96,6 @@ class CSoftIceBot:
 
                     message = self.babbler.babbler(chat_title, message_text)
                     if len(message) > 0:
-
                         self.robot.send_message(chat_id, message)
 
     def call_librarian(self, pchat_id: int, pchat_title: str,
@@ -194,7 +194,6 @@ class CSoftIceBot:
             "No <pchat_title> parameter specified!"
 
         if pchat_title not in self.config[ALLOWED_CHATS]:
-
             self.robot.send_message(pchat_id, "Вашего чата нет в списке разрешённых. Чао!")
             self.robot.leave_chat(pchat_id)
             print(f"Караул! Меня похитили и затащили в чат {pchat_title}! Но я удрал.")
@@ -224,7 +223,6 @@ class CSoftIceBot:
                     librarian_message or
                     meteorolog_message or
                     theolog_message):
-
                 self.robot.send_message(pchat_id, HELP_MESSAGE)
 
             # *** Помощь от бармена
@@ -262,7 +260,6 @@ class CSoftIceBot:
         if pcommand in EXIT_COMMANDS:
 
             if puser_name == self.config["master"]:
-
                 self.robot.send_message(pchat_id, "Всем пока!")
                 raise CQuitByDemand()
             self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
@@ -302,7 +299,6 @@ class CSoftIceBot:
     def load_config(self):
         """Загружает конфигурацию из JSON."""
         with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
-
             self.config = json.load(json_file)
 
     def poll(self):
@@ -310,7 +306,6 @@ class CSoftIceBot:
         try:
 
             while self.bot_status == CONTINUE_RUNNING:
-
                 # self.robot.infinity_polling()
                 self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
                 print(f"Bot status = {BOT_STATUS}")
@@ -336,6 +331,7 @@ class CSoftIceBot:
         assert pmessage_text is not None, \
             "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
 
+        # print(pchat_title, pmessage_text)
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         message = self.barman.barman(pchat_title, pmessage_text, puser_title)
         if len(message) > 0:
@@ -349,16 +345,15 @@ class CSoftIceBot:
                 self.robot.send_message(pchat_id, message)
             else:
 
-
                 if not self.call_librarian(pchat_id,
-                                        pchat_title, puser_title, pmessage_text):
+                                           pchat_title, puser_title, pmessage_text):
 
                     if not self.call_mafiozo(pchat_id, pchat_title,
-                                            puser_id, puser_title, pmessage_text):
+                                             puser_id, puser_title, pmessage_text):
 
                         if not self.call_meteorolog(pchat_id, pchat_title, pmessage_text):
 
-                                print(" .. fail.")
+                            print(" .. fail.")
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)

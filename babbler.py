@@ -40,6 +40,7 @@ REACTIONS_FOLDER: str = "reactions"
 TRIGGERS_INDEX: int = 0
 REACTIONS_INDEX: int = 1
 BABBLER_MIND: list = []
+BABBLER_EMODJI: list = ["😎", "😊", "☺", "😊", "😋"]
 
 
 class CBabbler(prototype.CPrototype):
@@ -93,7 +94,7 @@ class CBabbler(prototype.CPrototype):
 
         if len(message) > 0:
 
-            print("Babbler answers.", message)
+            print(f"Babbler answers: {message[:16]}...")
             self.last_phrase_time = datetime.now()
         return message
 

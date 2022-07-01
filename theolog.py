@@ -4,7 +4,6 @@
 
 import re
 import random
-from abc import ABC
 
 import functions as func
 import prototype
@@ -99,7 +98,7 @@ NEW_TESTAMENT_BOOKS = range(40, 67)
 THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMENT}"]
 
 
-class CTheolog(prototype.CPrototype, ABC):
+class CTheolog(prototype.CPrototype):
     """Класс теолога."""
 
     def __init__(self, pconfig):
@@ -142,7 +141,8 @@ class CTheolog(prototype.CPrototype, ABC):
                     break
         return message
 
-    def find_in_book(self, pbook_idx: int, pline_id: str, pbook: str,
+    @staticmethod
+    def find_in_book(pbook_idx: int, pline_id: str, pbook: str,
                      pline_count: int) -> str:  # noqa
         """Ищет заданную строку в файле."""
         assert pbook_idx is not None, \
@@ -252,6 +252,9 @@ class CTheolog(prototype.CPrototype, ABC):
             "Assert: [theolog.is_enabled] No <pchat_title> parameter specified!"
         return pchat_title in self.config[CHANNEL_LIST_KEY]
 
+    def reload(self):
+        pass
+
     def theolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Обрабатывает запросы теолога."""
         assert pchat_title is not None, \
@@ -297,5 +300,5 @@ class CTheolog(prototype.CPrototype, ABC):
                     message = self.execute_quote(chapter, book_name, line_count)
         if len(message) > 0:
 
-            print("Theolog answers.")
+            print(f"Theolog answers: {message[:16]}...")
         return message
