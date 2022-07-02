@@ -104,6 +104,95 @@ class CLibrarian(prototype.CPrototype):
                             break
         return found
 
+
+    def execute_hokku_commands(self, pfrom_user_name: str, pword_list: list,
+                            pcommand: int) -> str:
+        """Выполняет команды, касающиеся базы хокку."""
+
+        message: str = ""
+         
+        if pcommand == ASK_HOKKU_CMD:
+
+            # *** Пользователь хочет хокку....
+            message = self.quote(self.hokku, pword_list)
+        elif pcommand == ADD_HOKKU_CMD:
+
+            # *** Пользователь хочет добавить хокку в книгу
+            self.hokku.append(" ".join(pword_list[1:]))
+            message = f"Спасибо, {pfrom_user_name}, хокку добавлено."
+        elif pcommand == DEL_HOKKU_CMD:
+
+            # *** Пользователь хочет удалить хокку из книги...
+            if pfrom_user_name == self.config["master"]:
+
+                del self.hokku[int(pword_list[1])]
+                message = f"Хокку {pword_list[1]} удалена."
+            else:
+
+                # *** ... но не тут-то было...
+                message = (f"Извини, {pfrom_user_name}, "
+                        f"только {pconfig['master_name']} может удалять хокку.")
+        elif pcommand == SAVE_HOKKU_CMD:
+
+            # *** Пользователь хочет сохранить книгу хокку
+            if pfrom_user_name == self.config["master"]:
+
+                message = self.save_book(self.hokku, HOKKU_FILE_NAME)
+            else:
+
+                # *** ... но не тут-то было...
+                message = (f"Извини, {pfrom_user_name}, только "
+                        f"{pconfig['master_name']} может сохранять книгу.")
+        elif pcommand == FIND_HOKKU_CMD:
+
+            # *** Пользователь хочет найти хокку по заданной строке
+            message = self.find_in_book(self.hokku, pword_list)
+
+        return message
+
+
+    def execute_quotes_commands(self, pfrom_user_name: str,
+                                pword_list: list, pcommand: int) -> str:
+        """Выполняет команды, касающиеся базы цитат."""
+
+        message: str = ""
+        # *** В зависимости от команды выполняем действия
+        if pcommand == ASK_QUOTE_CMD:
+
+            message = self.quote(self.quote, pword_list)
+        elif pcommand == ADD_QUOTE_CMD:
+
+            # *** Пользователь хочет добавить цитату в книгу
+            self.quotes.append(" ".join(pword_list[1:]))
+            message = f"Спасибо, {pfrom_user_name}, цитата добавлена."
+        elif pcommand == DEL_QUOTE_CMD:
+
+            # *** Пользователь хочет удалить цитату из книги...
+            if pfrom_user_name == self.config["master"]:
+
+                del self.quotes[int(pword_list[1])]
+                message = f"Цитата {pword_list[1]} удалена."
+            else:
+
+                # *** ... но не тут-то было...
+                message = (f"Извини, {pfrom_user_name}, "
+                        f"только {pconfig['master_name']} может удалять цитаты.")
+        elif pcommand == SAVE_QUOTE_CMD:
+
+            # *** Пользователь хочет сохранить книгу цитат
+            if pfrom_user_name == self.config["master"]:
+
+                message = self.save_book(self.hokku, HOKKU_FILE_NAME)
+            else:
+
+                # *** ... но не тут-то было...
+                message = (f"Извини, {pfrom_user_name}, только "
+                        f"{pconfig['master_name']} может сохранять книгу.")
+        elif pcommand == FIND_QUOTE_CMD:
+
+            message = self.find_in_book(QUOTES_BOOK, pword_list)
+        return message
+
     def find_in_book(self, pbook: list, pword_list: list) -> str:  # noqa
         """Ищет хокку или цитату в книге по заданной строке"""
         message: str = ""
@@ -114,24 +203,37 @@ class CLibrarian(prototype.CPrototype):
             for line in pbook:
 
                 if search_line in line:
+
                     found_list.append(line)
             if len(found_list) > 0:
+
                 message = random.choice(found_list)
         if len(message) == 0:
+
             message = "Извините, ничего не нашёл!"
-        return message @
+        return message
 
     def get_command(self, pword: str) -> int:  # noqa
         """Распознает команду и возвращает её код, в случае неудачи - None.
         """
         assert pword is not None, \
-            "Assert: [barman.get_command] " \
+            "Assert: [librarian.get_command] " \
             "No <pword> parameter specified!"
         result: int = 0
-        for command_idx, command in enumerate(COMMANDS):
+        for command_idx, command in enumerate(HOKKU_COMMANDS):
 
             if pword in command:
+            
                 result = command_idx
+
+        if result == 0:
+
+            for command_idx, command in enumerate(QUOTES_COMMANDS)
+                
+                if pword in command:
+
+                    result = command_idx
+
         return result
 
     def get_help(self) -> str:  # noqa
@@ -153,6 +255,7 @@ class CLibrarian(prototype.CPrototype):
             "No <pchat_title> parameter specified!"
 
         if self.is_enabled(pchat_title):
+
             return ", ".join(HINT)
         return ""
 
@@ -160,6 +263,46 @@ class CLibrarian(prototype.CPrototype):
         """Возвращает True, если библиотекарь разрешен на этом канале."""
 
         return pchat_title in self.config[CHANNEL_LIST_KEY]
+
+    def librarian(self, pchat_title, pfrom_user_name: str, pmessage_text: str) -> str:
+        """Процедура разбора запроса пользователя."""
+
+        command: int = None
+        message: str = ""
+        word_list: list = func.parse_input(pmessage_text)
+        if self.can_process(pchat_title, pmessage_text):
+
+            # *** Возможно, запросили перезагрузку.
+            if word_list[0] in RELOAD_LIBRARY:
+
+                # *** Пользователь хочет перезагрузить библиотеку
+                if pfrom_user_name == self.config["master"]:
+
+                    self.reload()
+                    message = "Библиотека обновлена"
+                else:
+
+                    # *** Низзя
+                    message = (f"Извини, {pfrom_user_name}, "
+                            f"только {self.config['master_name']} может перезагружать библиотеку.")
+            else:
+
+                # *** Получим код команды
+                # !!!! ВОТ ТУТ КОСЯК!!!! 
+                command = self.get_command(word_list)
+                # *** Хокку запрашивали?
+                message = self.execute_hokku_commands(pfrom_user_name, word_list, command)
+            if len(message) == 0:
+
+                # *** Не, цитату
+                message = self.execute_quotes_commands(pfrom_user_name, word_list, command)
+
+            if len(message) > 0:
+
+                print("Librarian answers: ", message[:16])
+
+        return message
+
 
     def load_book_from_file(self, pfile_name: str) -> list:
         """Загружает файл в список"""
@@ -345,7 +488,7 @@ def save_book(pbook: list, pbook_name: str) -> str:
     # message = "В процессе сохранения книги произошла ошибка."
     return message
 
-
+# X
 def get_command(pword_list):
     """Возвращает заданную команду."""
 
@@ -377,7 +520,7 @@ def get_command(pword_list):
         command = SHORT_ENG_QUOTES_COMMANDS.index(pword_list[0]) + 10
     return command
 
-
+# X
 def execute_hokku_commands(pconfig: dict, pfrom_user_name: str, pword_list: list,
                            pcommand: int) -> str:
     """Выполняет команды, касающиеся базы хокку."""
@@ -422,7 +565,7 @@ def execute_hokku_commands(pconfig: dict, pfrom_user_name: str, pword_list: list
 
     return message
 
-
+# X
 def execute_quotes_commands(pconfig: dict, pfrom_user_name: str,
                             pword_list: list, pcommand: int) -> str:
     """Выполняет команды, касающиеся базы цитат."""
@@ -465,7 +608,7 @@ def execute_quotes_commands(pconfig: dict, pfrom_user_name: str,
         message = find_in_book(QUOTES_BOOK, pword_list)
     return message
 
-
+# X
 def librarian(pconfig: dict, pfrom_user_name: str, pmessage_text: str) -> str:
     """Процедура разбора запроса пользователя."""
 

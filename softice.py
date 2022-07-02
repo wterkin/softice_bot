@@ -34,6 +34,9 @@ SMILES: list = ["8)", "=)", ";)", ":)", "%)", "^_^"]
 
 
 # message.delete()
+# ToDo: реализовать отработку команды reload по всем модулям
+# ToDo: и чтоб в каждом модуле шла проверка на то,
+# что команда отдана хозяином.
 
 
 class CQuitByDemand(Exception):
@@ -62,7 +65,7 @@ class CSoftIceBot:
         self.barman = barman.CBarman(self.config)
         self.babbler = babbler.CBabbler(self.config)
         self.theolog = theolog.CTheolog(self.config)
-
+        self.librarian = librarian.CLibrarian(self.config)
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
             """Обработчик сообщений."""
@@ -73,6 +76,7 @@ class CSoftIceBot:
             chat_id: int = pmessage.chat.id
             chat_title: str = pmessage.chat.title
             user_name = pmessage.from_user.username
+            # print(pmessage)
             user_title: str = pmessage.from_user.first_name
             user_id: int = pmessage.from_user.id
 
@@ -98,32 +102,32 @@ class CSoftIceBot:
                     if len(message) > 0:
                         self.robot.send_message(chat_id, message)
 
-    def call_librarian(self, pchat_id: int, pchat_title: str,
-                       puser_title, pmessage_text):
-        """ Если это команда библиотекаря... """
-        assert pchat_id is not None, \
-            "Assert: [softice.call_librarian] " \
-            "No <pchat_id> parameter specified!"
-        assert pchat_title is not None, \
-            "Assert: [softice.call_librarian] " \
-            "No <pchat_title> parameter specified!"
-        assert puser_title is not None, \
-            "Assert: [softice.call_librarian] No <puser_title> parameter specified!"
-        assert pmessage_text is not None, \
-            "Assert: [softice.call_librarian] " \
-            "No <pmessage_text> parameter specified!"
+#    def call_librarian(self, pchat_id: int, pchat_title: str,
+#                       puser_title, pmessage_text):
+#        """ Если это команда библиотекаря... """
+#        assert pchat_id is not None, \
+#            "Assert: [softice.call_librarian] " \
+#            "No <pchat_id> parameter specified!"
+##        assert pchat_title is not None, \
+#            "Assert: [softice.call_librarian] " \
+#            "No <pchat_title> parameter specified!"
+#        assert puser_title is not None, \
+#            "Assert: [softice.call_librarian] No <puser_title> parameter specified!"
+#        assert pmessage_text is not None, \
+#            "Assert: [softice.call_librarian] " \
+#            "No <pmessage_text> parameter specified!"
 
-        if librarian.can_process(self.config, pchat_title, pmessage_text):
+#        if librarian.can_process(self.config, pchat_title, pmessage_text):
 
-            # *** как пить дать.
-            message = librarian.librarian(self.config,
-                                          puser_title,
-                                          pmessage_text)
-            if message is not None:
-                print("Librarian answers.")
-                self.robot.send_message(pchat_id, message)
-                return True
-        return False
+#            # *** как пить дать.
+#            message = librarian.librarian(self.config,
+#                                          puser_title,
+#                                          pmessage_text)
+#            if message is not None:
+#               print("Librarian answers.")
+#               self.robot.send_message(pchat_id, message)
+#               return True
+#       return False
 
     # def call_mafiozo(self, pchat_id: int, pchat_title: str,
     #                  puser_id: int, puser_title: str, pmessage_text: str):
@@ -250,9 +254,6 @@ class CSoftIceBot:
         assert pchat_id is not None, \
             "Assert: [softice.is_quit_command_queried] " \
             "No <pchat_id> parameter specified!"
-        assert puser_name is not None, \
-            "Assert: [softice.is_quit_command_queried] " \
-            "No <puser_name> parameter specified!"
         assert puser_title is not None, \
             "Assert: [softice.is_quit_command_queried] " \
             "No <puser_title> parameter specified!"
@@ -274,9 +275,6 @@ class CSoftIceBot:
         assert pchat_id is not None, \
             "Assert: [softice.is_reload_config_command_queried] " \
             "No <pchat_id> parameter specified!"
-        assert puser_name is not None, \
-            "Assert: [softice.is_reload_config_command_queried] " \
-            "No <puser_name> parameter specified!"
         assert puser_title is not None, \
             "Assert: [softice.is_reload_config_command_queried] " \
             "No <puser_title> parameter specified!"
@@ -345,8 +343,13 @@ class CSoftIceBot:
                 self.robot.send_message(pchat_id, message)
             else:
 
-                if not self.call_librarian(pchat_id,
-                                           pchat_title, puser_title, pmessage_text):
+                message = self.librarian.librarian(pchat_title, puser_title, pmessage_text)
+                # pchat_id,
+                if len(message) > 0:
+                    
+                    self.robot.send_message(pchat_id, message)
+                else:
+
 
                     # if not self.call_mafiozo(pchat_id, pchat_title,
                     #                          puser_id, puser_title, pmessage_text):
