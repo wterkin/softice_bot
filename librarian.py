@@ -301,11 +301,11 @@ class CLibrarian(prototype.CPrototype):
                     if command < ASK_QUOTE_CMD:
     
                         # *** Хокку запрашивали?
-                        message = self.execute_hokku_commands(pfrom_user_name, word_list, command)
+                        message = self.execute_hokku_commands(puser_name, word_list, command)
                     else:
 
                         # *** Не, цитату
-                        message = self.execute_quotes_commands(pfrom_user_name, word_list, command)
+                        message = self.execute_quotes_commands(puser_name, word_list, command)
 
             if len(message) > 0:
 
