@@ -96,11 +96,14 @@ class CLibrarian(prototype.CPrototype):
 
                 if not found:
 
-                    for command in HINT:
+                    found = word_list[0] in HINT
+                    if not found:
 
-                        found = word_list[0] in command
-                        if found:
-                            break
+                        found = word_list[0] in RELOAD_LIBRARY
+                        if not found: 
+                            
+                            found = word_list[0] in SAVE_LIBRARY
+
         return found
 
 
@@ -243,38 +246,45 @@ class CLibrarian(prototype.CPrototype):
 
         return pchat_title in self.config[CHANNEL_LIST_KEY]
 
-    def librarian(self, pchat_title, pfrom_user_name: str, pmessage_text: str) -> str:
+    def librarian(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
 
         command: int = None
         message: str = ""
         word_list: list = func.parse_input(pmessage_text)
+        # print(word_list[0], SAVE_LIBRARY)
+        # print("*** 1", pchat_title, pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
+            # print(word_list[0], SAVE_LIBRARY)
+            # print("*** 2")
             # *** Возможно, запросили перезагрузку.
             if word_list[0] in RELOAD_LIBRARY:
 
                 # *** Пользователь хочет перезагрузить библиотеку
-                if pfrom_user_name == self.config["master"]:
+                # print(f"*{pfrom_user_name}*{self.config['master']}")
+                if puser_name == self.config["master"]:
 
                     self.reload()
                     message = "Библиотека обновлена"
                 else:
 
                     # *** Низзя
-                    message = (f"Извини, {pfrom_user_name}, "
+                    message = (f"Извини, {puser_name}, "
                             f"только {self.config['master_name']} может перезагружать библиотеку.")
             elif word_list[0] in SAVE_LIBRARY:
 
                 # *** Пользователь хочет сохранить книгу хокку
-                if pfrom_user_name == self.config["master"]:
+                if puser_name == self.config["master"]:
 
-                    message = self.save_book(self.hokku, HOKKU_FILE_NAME)
+                    self.save_book(self.hokku, HOKKU_FILE_NAME)
+                    self.save_book(self.quotes, QUOTES_FILE_NAME)
+                    message = "Библиотека сохранена" 
                 else:
 
                     # *** ... но не тут-то было...
-                    message = (f"Извини, {pfrom_user_name}, только "
-                            f"{self.config['master_name']} может сохранять книгу.")
+                    message = (f"Извини, {puser_name}, только "
+                            f"{self.config['master_name']} может сохранять библиотеку.")
 
             elif word_list[0] in HINT:
 
@@ -282,10 +292,10 @@ class CLibrarian(prototype.CPrototype):
 
             else:
                 # *** Получим код команды
-                print(word_list)
+                # print(word_list)
 
                 command = self.get_command(word_list)
-                print(command)
+                # print(command)
                 if command is not None:
 
                     if command < ASK_QUOTE_CMD:
@@ -349,9 +359,7 @@ class CLibrarian(prototype.CPrototype):
             for line in pbook:
 
                 out_file.write(line + "\n")
-        message = "Книга сохранена."
         # *** Ошибка. Восстанавливаем старую книгу.
         # os.rename(new_file_name, pbook_name)
         # message = "В процессе сохранения книги произошла ошибка."
-        return message
 

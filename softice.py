@@ -93,8 +93,9 @@ class CSoftIceBot:
                                                             user_name, user_title):
 
                             if not self.is_help_command_queried(command, chat_id, chat_title):
+
                                 # *** Передаём введённую команду модулям
-                                self.process_modules(chat_id, chat_title, user_id,
+                                self.process_modules(chat_id, chat_title, user_name,
                                                      user_title, message_text)
                 else:
 
@@ -289,21 +290,22 @@ class CSoftIceBot:
             self.robot.stop_polling()
 
     def process_modules(self, pchat_id: int, pchat_title: str,
-                        puser_id: int, puser_title: str,
+                        puser_name: str, puser_title: str,
                         pmessage_text):
         """Пытается обработать команду различными модулями."""
         assert pchat_id is not None, \
             "Assert: [softice.process_modules] No <pchat_id> parameter specified!"
         assert pchat_title is not None, \
             "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
-        assert puser_id is not None, \
-            "Assert: [softice.process_modules] No <puser_id> parameter specified!"
+        assert puser_name is not None, \
+            "Assert: [softice.process_modules] No <puser_name> parameter specified!"
         assert puser_title is not None, \
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
 
         # print(pchat_title, pmessage_text)
+        # print(pmessage_text)
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         message = self.barman.barman(pchat_title, pmessage_text, puser_title)
         if len(message) > 0:
@@ -311,13 +313,15 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, message)
         else:
 
+            # print("*", pmessage_text)
             message = self.theolog.theolog(pchat_title, pmessage_text)
             if len(message) > 0:
 
                 self.robot.send_message(pchat_id, message)
             else:
 
-                message = self.librarian.librarian(pchat_title, puser_title, pmessage_text)
+                # print("**", pmessage_text)
+                message = self.librarian.librarian(pchat_title, puser_name, puser_title, pmessage_text)
                 # pchat_id,
                 if len(message) > 0:
                     
