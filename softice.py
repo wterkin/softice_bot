@@ -61,7 +61,7 @@ class CSoftIceBot:
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
         # !!! barman.reload_bar()
-        librarian.reload_library()
+        # librarian.reload_library()
         self.barman = barman.CBarman(self.config)
         self.babbler = babbler.CBabbler(self.config)
         self.theolog = theolog.CTheolog(self.config)
@@ -101,33 +101,6 @@ class CSoftIceBot:
                     message = self.babbler.babbler(chat_title, message_text)
                     if len(message) > 0:
                         self.robot.send_message(chat_id, message)
-
-#    def call_librarian(self, pchat_id: int, pchat_title: str,
-#                       puser_title, pmessage_text):
-#        """ Если это команда библиотекаря... """
-#        assert pchat_id is not None, \
-#            "Assert: [softice.call_librarian] " \
-#            "No <pchat_id> parameter specified!"
-##        assert pchat_title is not None, \
-#            "Assert: [softice.call_librarian] " \
-#            "No <pchat_title> parameter specified!"
-#        assert puser_title is not None, \
-#            "Assert: [softice.call_librarian] No <puser_title> parameter specified!"
-#        assert pmessage_text is not None, \
-#            "Assert: [softice.call_librarian] " \
-#            "No <pmessage_text> parameter specified!"
-
-#        if librarian.can_process(self.config, pchat_title, pmessage_text):
-
-#            # *** как пить дать.
-#            message = librarian.librarian(self.config,
-#                                          puser_title,
-#                                          pmessage_text)
-#            if message is not None:
-#               print("Librarian answers.")
-#               self.robot.send_message(pchat_id, message)
-#               return True
-#       return False
 
     # def call_mafiozo(self, pchat_id: int, pchat_title: str,
     #                  puser_id: int, puser_title: str, pmessage_text: str):
@@ -220,13 +193,14 @@ class CSoftIceBot:
         if pcommand in HELP_COMMANDS:
 
             barman_message = self.barman.get_hint(pchat_title)
-            librarian_message = librarian.get_help(self.config, pchat_title)
+            librarian_message = self.librarian.get_hint(pchat_title)
             meteorolog_message = meteorolog.help()
             theolog_message = self.theolog.get_hint(pchat_title)  #
             if (barman_message or
                     librarian_message or
                     meteorolog_message or
                     theolog_message):
+
                 self.robot.send_message(pchat_id, HELP_MESSAGE)
 
             # *** Помощь от бармена
