@@ -71,14 +71,11 @@ class CSoftIceBot:
             """Обработчик сообщений."""
 
             message_text: str = pmessage.text
-            # print("*** ", message_text)
             command = pmessage.text[1:].lower()
             chat_id: int = pmessage.chat.id
             chat_title: str = pmessage.chat.title
             user_name = pmessage.from_user.username
-            # print(pmessage)
             user_title: str = pmessage.from_user.first_name
-            user_id: int = pmessage.from_user.id
 
             # *** Проверим, легитимный ли этот чат
             if self.check_is_this_chat_enabled(chat_id, chat_title):

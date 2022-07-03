@@ -8,20 +8,12 @@ import functions as func
 import prototype
 
 # *** Команды для цитатника хокку
-RUSSIAN_HOKKU_COMMANDS: list = ["хокку", "добхк", "удалхк", "сохрхк", "искхк"]  # X
-SHORT_RUS_HOKKU_COMMANDS: list = ["х", "х+", "х-", "х!", "х?"]  # X
-ENGLISH_HOKKU_COMMANDS: list = ["hokku", "addh", "delh", "saveh", "findh"]  # X
-SHORT_ENG_HOKKU_COMMANDS: list = ["h", "h+", "h-", "h!", "h?"]  # X
 ASK_HOKKU_CMD: int = 0
 ADD_HOKKU_CMD: int = 1
 DEL_HOKKU_CMD: int = 2
-FIND_HOKKU_CMD: int = 3 
+FIND_HOKKU_CMD: int = 3
 
 # *** Команды для цитатника высказываний
-RUSSIAN_QUOTES_COMMANDS: list = ["цитата", "добцт", "удалцт", "сохрцт", "искцт"]  # X
-SHORT_RUS_QUOTES_COMMANDS: list = ["ц", "ц+", "ц-", "ц!", "ц?"]  # X
-ENGLISH_QUOTES_COMMANDS: list = ["quotes", "addq", "delq", "saveq", "findq"]  # X
-SHORT_ENG_QUOTES_COMMANDS: list = ["q", "q+", "q-", "q!", "q?"]  # X
 ASK_QUOTE_CMD: int = 10
 ADD_QUOTE_CMD: int = 11
 DEL_QUOTE_CMD: int = 12
@@ -30,11 +22,8 @@ FIND_QUOTE_CMD: int = 13
 RELOAD_LIBRARY: list = ["libreload", "lrl"]
 SAVE_LIBRARY: list = ["libresave", "lsv"]
 # *** Ключ для списка доступных каналов в словаре конфига
-CHANNEL_LIST_KEY: str = "librarian_chats"  # X
-
 HOKKU_FILE_NAME: str = "data/hokku.txt"
 QUOTES_FILE_NAME: str = "data/quotes.txt"
-
 HOKKU_COMMANDS: list = [["хокку", "хк", "hokku", "hk"],
                         ["хоккудоб", "хк+", "hokkuadd", "hk+"],
                         ["хоккуудал", "хк-", "hokkudel", "hk-"],
@@ -43,9 +32,6 @@ QUOTES_COMMANDS: list = [["цитата", "цт", "quote", "qt"],
                          ["цитатдоб", "цт+", "quoteadd", "qt+"],
                          ["цитатудал", "цт-", "quotedel", "qt-"],
                          ["цитатиск", "цт?", "quotefind", "qt?"]]
-
-HOKKU_BOOK: list = []
-QUOTES_BOOK: list = []
 
 HINT = ["библиотека", "ббл", "library", "lib"]
 ENABLED_IN_CHATS_KEY: str = "librarian_chats"
@@ -100,8 +86,8 @@ class CLibrarian(prototype.CPrototype):
                     if not found:
 
                         found = word_list[0] in RELOAD_LIBRARY
-                        if not found: 
-                            
+                        if not found:
+
                             found = word_list[0] in SAVE_LIBRARY
 
         return found
@@ -170,7 +156,7 @@ class CLibrarian(prototype.CPrototype):
                         f"только {self.config['master_name']} может удалять цитаты.")
         elif pcommand == FIND_QUOTE_CMD:
 
-            message = self.find_in_book(QUOTES_BOOK, pword_list)
+            message = self.find_in_book(self.quotes, pword_list)
         return message
 
     def find_in_book(self, pbook: list, pword_list: list) -> str:  # noqa
@@ -244,7 +230,7 @@ class CLibrarian(prototype.CPrototype):
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если библиотекарь разрешен на этом канале."""
 
-        return pchat_title in self.config[CHANNEL_LIST_KEY]
+        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def librarian(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
@@ -252,17 +238,12 @@ class CLibrarian(prototype.CPrototype):
         command: int = None
         message: str = ""
         word_list: list = func.parse_input(pmessage_text)
-        # print(word_list[0], SAVE_LIBRARY)
-        # print("*** 1", pchat_title, pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
-            # print(word_list[0], SAVE_LIBRARY)
-            # print("*** 2")
             # *** Возможно, запросили перезагрузку.
             if word_list[0] in RELOAD_LIBRARY:
 
                 # *** Пользователь хочет перезагрузить библиотеку
-                # print(f"*{pfrom_user_name}*{self.config['master']}")
                 if puser_name == self.config["master"]:
 
                     self.reload()
@@ -270,7 +251,7 @@ class CLibrarian(prototype.CPrototype):
                 else:
 
                     # *** Низзя
-                    message = (f"Извини, {puser_name}, "
+                    message = (f"Извини, {puser_title}, "
                             f"только {self.config['master_name']} может перезагружать библиотеку.")
             elif word_list[0] in SAVE_LIBRARY:
 
@@ -279,11 +260,11 @@ class CLibrarian(prototype.CPrototype):
 
                     self.save_book(self.hokku, HOKKU_FILE_NAME)
                     self.save_book(self.quotes, QUOTES_FILE_NAME)
-                    message = "Библиотека сохранена" 
+                    message = "Библиотека сохранена"
                 else:
 
                     # *** ... но не тут-то было...
-                    message = (f"Извини, {puser_name}, только "
+                    message = (f"Извини, {puser_title}, только "
                             f"{self.config['master_name']} может сохранять библиотеку.")
 
             elif word_list[0] in HINT:
@@ -292,14 +273,11 @@ class CLibrarian(prototype.CPrototype):
 
             else:
                 # *** Получим код команды
-                # print(word_list)
-
                 command = self.get_command(word_list)
-                # print(command)
                 if command is not None:
 
                     if command < ASK_QUOTE_CMD:
-    
+
                         # *** Хокку запрашивали?
                         message = self.execute_hokku_commands(puser_name, word_list, command)
                     else:
@@ -351,7 +329,6 @@ class CLibrarian(prototype.CPrototype):
 
     def save_book(self, pbook: list, pbook_name: str) -> str:
         """Сохраняет заданную книгу."""
-        message: str = ""
         new_file_name: str = f"{pbook_name}_{dtime.now().strftime('%Y%m%d-%H%M%S')}"
         os.rename(pbook_name, new_file_name)
         with open(pbook_name, "w", encoding="utf8") as out_file:
@@ -359,7 +336,4 @@ class CLibrarian(prototype.CPrototype):
             for line in pbook:
 
                 out_file.write(line + "\n")
-        # *** Ошибка. Восстанавливаем старую книгу.
-        # os.rename(new_file_name, pbook_name)
-        # message = "В процессе сохранения книги произошла ошибка."
 
