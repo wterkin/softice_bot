@@ -1,4 +1,4 @@
-## -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль - цитатник для бота."""
 import os
@@ -92,9 +92,8 @@ class CLibrarian(prototype.CPrototype):
 
         return found
 
-
     def execute_hokku_commands(self, pfrom_user_name: str, pword_list: list,
-                            pcommand: int) -> str:
+                               pcommand: int) -> str:
         """Выполняет команды, касающиеся базы хокку."""
 
         message: str = ""
@@ -119,14 +118,13 @@ class CLibrarian(prototype.CPrototype):
 
                 # *** ... но не тут-то было...
                 message = (f"Извини, {pfrom_user_name}, "
-                        f"только {self.config['master_name']} может удалять хокку.")
+                           f"только {self.config['master_name']} может удалять хокку.")
         elif pcommand == FIND_HOKKU_CMD:
 
             # *** Пользователь хочет найти хокку по заданной строке
             message = self.find_in_book(self.hokku, pword_list)
 
         return message
-
 
     def execute_quotes_commands(self, pfrom_user_name: str,
                                 pword_list: list, pcommand: int) -> str:
@@ -153,7 +151,7 @@ class CLibrarian(prototype.CPrototype):
 
                 # *** ... но не тут-то было...
                 message = (f"Извини, {pfrom_user_name}, "
-                        f"только {self.config['master_name']} может удалять цитаты.")
+                           f"только {self.config['master_name']} может удалять цитаты.")
         elif pcommand == FIND_QUOTE_CMD:
 
             message = self.find_in_book(self.quotes, pword_list)
@@ -185,7 +183,7 @@ class CLibrarian(prototype.CPrototype):
         assert pword is not None, \
             "Assert: [librarian.get_command] " \
             "No <pword> parameter specified!"
-        result: int = None
+        result: int = -1
         for command_idx, command in enumerate(HOKKU_COMMANDS):
 
             if pword[0] in command:
@@ -235,7 +233,7 @@ class CLibrarian(prototype.CPrototype):
     def librarian(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
 
-        command: int = None
+        command: int
         message: str = ""
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
@@ -252,7 +250,7 @@ class CLibrarian(prototype.CPrototype):
 
                     # *** Низзя
                     message = (f"Извини, {puser_title}, "
-                            f"только {self.config['master_name']} может перезагружать библиотеку.")
+                               f"только {self.config['master_name']} может перезагружать библиотеку.")
             elif word_list[0] in SAVE_LIBRARY:
 
                 # *** Пользователь хочет сохранить книгу хокку
@@ -265,7 +263,7 @@ class CLibrarian(prototype.CPrototype):
 
                     # *** ... но не тут-то было...
                     message = (f"Извини, {puser_title}, только "
-                            f"{self.config['master_name']} может сохранять библиотеку.")
+                               f"{self.config['master_name']} может сохранять библиотеку.")
 
             elif word_list[0] in HINT:
 
@@ -273,8 +271,8 @@ class CLibrarian(prototype.CPrototype):
 
             else:
                 # *** Получим код команды
-                command = self.get_command(word_list)
-                if command is not None:
+                command = self.get_command(word_list[0])
+                if command >= 0:
 
                     if command < ASK_QUOTE_CMD:
 
@@ -291,8 +289,7 @@ class CLibrarian(prototype.CPrototype):
 
         return message
 
-
-    def load_book_from_file(self, pfile_name: str) -> list:
+    def load_book_from_file(self, pfile_name: str) -> list:  # noqa
         """Загружает файл в список"""
         content: list = []
         # *** откроем файл
@@ -327,7 +324,7 @@ class CLibrarian(prototype.CPrototype):
         self.quotes = self.load_book_from_file(QUOTES_FILE_NAME)
         print(f"Librarian successfully reload library - {len(self.hokku)} hokku and {len(self.quotes)}. quotes")
 
-    def save_book(self, pbook: list, pbook_name: str) -> str:
+    def save_book(self, pbook: list, pbook_name: str): # noqa
         """Сохраняет заданную книгу."""
         new_file_name: str = f"{pbook_name}_{dtime.now().strftime('%Y%m%d-%H%M%S')}"
         os.rename(pbook_name, new_file_name)
@@ -336,4 +333,3 @@ class CLibrarian(prototype.CPrototype):
             for line in pbook:
 
                 out_file.write(line + "\n")
-

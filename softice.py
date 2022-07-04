@@ -66,6 +66,7 @@ class CSoftIceBot:
         self.babbler = babbler.CBabbler(self.config)
         self.theolog = theolog.CTheolog(self.config)
         self.librarian = librarian.CLibrarian(self.config)
+
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
             """Обработчик сообщений."""
@@ -294,15 +295,11 @@ class CSoftIceBot:
             "Assert: [softice.process_modules] No <pchat_id> parameter specified!"
         assert pchat_title is not None, \
             "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
-        assert puser_name is not None, \
-            "Assert: [softice.process_modules] No <puser_name> parameter specified!"
         assert puser_title is not None, \
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
 
-        # print(pchat_title, pmessage_text)
-        # print(pmessage_text)
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         message = self.barman.barman(pchat_title, pmessage_text, puser_title)
         if len(message) > 0:
@@ -310,21 +307,17 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, message)
         else:
 
-            # print("*", pmessage_text)
             message = self.theolog.theolog(pchat_title, pmessage_text)
             if len(message) > 0:
 
                 self.robot.send_message(pchat_id, message)
             else:
 
-                # print("**", pmessage_text)
                 message = self.librarian.librarian(pchat_title, puser_name, puser_title, pmessage_text)
-                # pchat_id,
                 if len(message) > 0:
                     
                     self.robot.send_message(pchat_id, message)
                 else:
-
 
                     # if not self.call_mafiozo(pchat_id, pchat_title,
                     #                          puser_id, puser_title, pmessage_text):
