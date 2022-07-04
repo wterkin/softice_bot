@@ -66,6 +66,7 @@ class CSoftIceBot:
         self.babbler = babbler.CBabbler(self.config)
         self.theolog = theolog.CTheolog(self.config)
         self.librarian = librarian.CLibrarian(self.config)
+        self.meteorolog = meteorolog.CMeteorolog(self.config)
 
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
@@ -138,27 +139,27 @@ class CSoftIceBot:
     #             return True
     #     return False
 
-    def call_meteorolog(self, pchat_id: int, pchat_title: str,
-                        pmessage_text: str):
-        """По возможности обработать команду метеорологом"""
-        assert pchat_id is not None, \
-            "Assert: [softice.call_meteorolog] " \
-            "No <pchat_id> parameter specified!"
-        assert pchat_title is not None, \
-            "Assert: [softice.call_meteorolog] " \
-            "No <pchat_title> parameter specified!"
-        assert pmessage_text is not None, \
-            "Assert: [softice.call_meteorolog] " \
-            "No <pmessage_text> parameter specified!"
-        if meteorolog.can_process(self.config, pchat_title, pmessage_text):
-
-            # *** как пить дать.
-            message = meteorolog.meteorolog(pmessage_text)
-            if message is not None:
-                print(" Meteorolog answers.")
-                self.robot.send_message(pchat_id, message)
-                return True
-        return False
+    # def call_meteorolog(self, pchat_id: int, pchat_title: str,
+    #                     pmessage_text: str):
+    #     """По возможности обработать команду метеорологом"""
+    #     assert pchat_id is not None, \
+    #         "Assert: [softice.call_meteorolog] " \
+    #         "No <pchat_id> parameter specified!"
+    #     assert pchat_title is not None, \
+    #         "Assert: [softice.call_meteorolog] " \
+    #         "No <pchat_title> parameter specified!"
+    #     assert pmessage_text is not None, \
+    #         "Assert: [softice.call_meteorolog] " \
+    #         "No <pmessage_text> parameter specified!"
+    #     if meteorolog.can_process(self.config, pchat_title, pmessage_text):
+    #
+    #         # *** как пить дать.
+    #         message = meteorolog.meteorolog(pmessage_text)
+    #         if message is not None:
+    #             print(" Meteorolog answers.")
+    #             self.robot.send_message(pchat_id, message)
+    #             return True
+    #     return False
 
     def check_is_this_chat_enabled(self, pchat_id: int, pchat_title: str):
         """Проверяет, находится ли данный чат в списке разрешенных."""
@@ -193,8 +194,8 @@ class CSoftIceBot:
 
             barman_message = self.barman.get_hint(pchat_title)
             librarian_message = self.librarian.get_hint(pchat_title)
-            meteorolog_message = meteorolog.help()
-            theolog_message = self.theolog.get_hint(pchat_title)  #
+            meteorolog_message = self.meteorolog.get_hint(pchat_title)
+            theolog_message = self.theolog.get_hint(pchat_title)
             if (barman_message or
                     librarian_message or
                     meteorolog_message or
@@ -313,16 +314,22 @@ class CSoftIceBot:
                 self.robot.send_message(pchat_id, message)
             else:
 
-                message = self.librarian.librarian(pchat_title, puser_name, puser_title, pmessage_text)
+                message = self.librarian.librarian(pchat_title, puser_name,
+                                                   puser_title, pmessage_text)
                 if len(message) > 0:
-                    
+
                     self.robot.send_message(pchat_id, message)
                 else:
 
                     # if not self.call_mafiozo(pchat_id, pchat_title,
                     #                          puser_id, puser_title, pmessage_text):
 
-                    if not self.call_meteorolog(pchat_id, pchat_title, pmessage_text):
+                    message = self.meteorolog.meteorolog(pchat_title, pmessage_text)
+                    # if not self.call_meteorolog(pchat_id, pchat_title, pmessage_text):
+                    if len(message) > 0:
+
+                        self.robot.send_message(pchat_id, message)
+                    else:
 
                         print(" .. fail.")
 

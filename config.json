@@ -5,7 +5,7 @@
     "allowed_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку", "Mafiozo-City"],
     "barman_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
     "theolog_chats":["ПравЧат", "Ботовка"],
-    "meteorolog_chats":["ПравЧат", "Maftown", "Mafiozo-City"],
+    "meteorolog_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
     "librarian_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку", "Mafiozo-City"],
     "mafiozo_chats":["Ботовка"],
     "babbler_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],

@@ -3,17 +3,19 @@
 """Погодный модуль для бота."""
 
 # from sys import path
+import datetime
 import subprocess
 # import typing as tpn
+import requests
+import datetime as pdate
 
 import functions as func
 import prototype
-import requests
 # pylint: disable=wrong-import-position
 # path.insert(0, "./")
 # path.insert(0, "d:/Work/projects/")
 
-import owm
+# import owm
 # os.system()
 
 WEATHER_COMMANDS = ["погода", "пг", "weather", "wt"]
@@ -37,11 +39,12 @@ class CMeteorolog(prototype.CPrototype):
         if is_enabled(self.config, pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
-            return word_list[0] in WEATHER_COMMANDS
+            return word_list[0] in WEATHER_COMMANDS or word_list[0] in HINT
         return False
 
     # Проверка наличия в базе информации о нужном населенном пункте
     def get_city_id(self, pcity_name: str, plang: str = "ru"):
+        """Возвращает ID города"""
         city_id: int = 0
         try:
 
@@ -55,8 +58,8 @@ class CMeteorolog(prototype.CPrototype):
             print("city:", cities)
             city_id = data['list'][0]['id']
             print('city_id=', city_id)
-        except Exception as e:
-            print("Exception (find):", e)
+        except Exception as ex:
+            print("Exception (find):", ex)
             pass
         assert isinstance(city_id, int)
         return city_id
@@ -66,11 +69,9 @@ class CMeteorolog(prototype.CPrototype):
         command_list: str = ""
         for command in WEATHER_COMMANDS:
 
-            for kind in command:
-
-                command_list += kind + ", "
-            command_list = command_list[:-2]
-            command_list += "\n"
+            command_list += command + ", "
+        command_list = command_list[:-2]
+        command_list += "\n"
         return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
@@ -96,7 +97,7 @@ class CMeteorolog(prototype.CPrototype):
             if i == 0 and pdegree > 360 - 45 / 2.:
 
                 pdegree = pdegree - 360
-            if pdegree >= min_degree and pdegree <= max_degree:
+            if min_degree <= pdegree <= max_degree:
 
                 result = directions[i]
                 break
@@ -107,31 +108,55 @@ class CMeteorolog(prototype.CPrototype):
 
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def meteorolog(self, pmessage_text: str) -> str:
+    def meteorolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
 
-        message = None
+        message = ""
         word_list: list = func.parse_input(pmessage_text)
-        # *** Возможно, запросили меню.
-        if word_list[0] in WEATHER_COMMANDS:
+        if self.can_process(pchat_title, pmessage_text):
 
-            if len(word_list) > 1:
+            # *** Возможно, запросили меню.
+            if word_list[0] in HINT:
+                message = self.get_help()
 
-                city_name = word_list[1]
-                city_id = owm.get_city_id(city_name)
-                parameters = ["ansiweather", "-l", word_list[1], "-s", "true", "-a",
-                              "false", "-p", "false", "-f", "2"]
-                # print(parameters)
-                process = subprocess.run(parameters, capture_output=True, text=True, check=True)
-                print("Ok")
-                message = process.stdout
-                if message.split(" ")[0] == "ERROR:":
-                    message = "Нет погоды для этого города."
-            else:
+            if word_list[0] in WEATHER_COMMANDS:
 
-                message = "Какую тебе еще погоду?"
+                if len(word_list) > 1:
+
+                    city_name = word_list[1]
+                    city_id = self.get_city_id(city_name)
+                    # parameters = ["ansiweather", "-l", word_list[1], "-s", "true", "-a",
+                    #               "false", "-p", "false", "-f", "2"]
+                    # print(parameters)
+                    # process = subprocess.run(parameters, capture_output=True, text=True, check=True)
+                    # print("Ok")
+                    self.request_forecast(city_id)
+                    # message = process.stdout
+                    # if message.split(" ")[0] == "ERROR:":
+                    #     message = "Нет погоды для этого города."
+                else:
+
+                    message = "Какую тебе еще погоду?"
 
         return message
+    def parse_weather(self, pdata: list):
+        """Парсит выдачу погоды и формирует однострочный прогноз."""
+        message: str = ""
+        datetime_mask = "%Y-%m-%d %H:%M"
+        now = datetime.datetime.now()
+        # today = datetime.date.today()
+        tomorrow = now + pdate.timedelta(days=1)
+        tomorrow_str = tomorrow.strftime(datetime_mask)
+        temperature: list = []  # 2
+        wind: list = []  # 3
+        # direction:
+        for line in pdata:
+
+            items: list = line.split()
+        return message
+
+    def reload(self):
+        pass
 
     def request_forecast(self, pcity_id, plang: str = "ru"):
         """Запрос погоды на завтра."""
@@ -143,14 +168,16 @@ class CMeteorolog(prototype.CPrototype):
             data = res.json()
             print('city:', data['city']['name'], data['city']['country'])
             for i in data['list']:
+                # print(data)
                 print((i['dt_txt'])[:16], '{0:+3.0f}'.format(i['main']['temp']),
                       '{0:2.0f}'.format(i['wind']['speed']) + " м/с",
-                      get_wind_direction(i['wind']['deg']),
+                      self.get_wind_direction(i['wind']['deg']),
                       i['weather'][0]['description'])
-        except Exception as e:
-            print("Exception (forecast):", e)
-            pass
-
+                message = self.parse_weather(data)
+        except Exception as ex:
+            print("Exception (forecast):", ex)
+            # pass
+        return message
 # X
 def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
     """Возвращает True, если метеоролог может обработать эту команду"""
