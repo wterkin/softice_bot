@@ -81,7 +81,7 @@ ENABLED_IN_CHATS_KEY: str = "barman_chats"
 BAR_HINT: list = ["бар", "bar"]
 
 
-class CBarman(prototype.CPrototype, ABC):
+class CBarman(prototype.CPrototype):
     """Класс бармена."""
 
     def __init__(self, pconfig):

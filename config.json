@@ -9,5 +9,6 @@
     "librarian_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку", "Mafiozo-City"],
     "mafiozo_chats":["Ботовка"],
     "babbler_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
-    "token":"1978360349:AAH02ct7Vry0r9syAqVHUWbKtbFsNUru4y4"
+    "token":"1978360349:AAH02ct7Vry0r9syAqVHUWbKtbFsNUru4y4",
+    "api_key": "3c15fe44d0d0d93e28fd81b00a8e46bf"
 }
