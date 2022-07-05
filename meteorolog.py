@@ -130,7 +130,7 @@ class CMeteorolog(prototype.CPrototype):
                     # print(parameters)
                     # process = subprocess.run(parameters, capture_output=True, text=True, check=True)
                     # print("Ok")
-                    self.request_forecast(city_id)
+                    message = self.request_forecast(city_id)
                     # message = process.stdout
                     # if message.split(" ")[0] == "ERROR:":
                     #     message = "Нет погоды для этого города."
@@ -160,20 +160,52 @@ class CMeteorolog(prototype.CPrototype):
 
     def request_forecast(self, pcity_id, plang: str = "ru"):
         """Запрос погоды на завтра."""
+        message: str = ""
+        datetime_mask: str = "%Y-%m-%d %H:%M"
+        now: datetime.datetime = datetime.datetime.now()
+        tomorrow: datetime.datetime = now + pdate.timedelta(days=1)
+        min_temperature: int = 100
+        max_temperature: int = 0
+        min_pressure: int = 10000
+        max_pressure: int = 0
         try:
 
             res = requests.get(FORECAST_WEATHER_URL,
                                params={'id': pcity_id, 'units': 'metric',
                                        'lang': plang, 'APPID': self.config["api_key"]})
             data = res.json()
-            print('city:', data['city']['name'], data['city']['country'])
-            for i in data['list']:
-                # print(data)
-                print((i['dt_txt'])[:16], '{0:+3.0f}'.format(i['main']['temp']),
-                      '{0:2.0f}'.format(i['wind']['speed']) + " м/с",
-                      self.get_wind_direction(i['wind']['deg']),
-                      i['weather'][0]['description'])
-                message = self.parse_weather(data)
+            # print('city:', data['city']['name'], data['city']['country'])
+            for item in data['list']:
+
+                # 1. Выбираем только завтрашние данные
+                data_datetime: datetime.datetime = datetime.datetime.fromtimestamp(item['dt']) # / 1e3)
+                if data_datetime.date() == tomorrow.date():
+
+                    main = item['main']
+                    # *** Температура
+                    if main["temp"] < min_temperature:
+
+                        min_temperature = main["temp"]
+                    if main["temp"] > max_temperature:
+                        max_temperature = main["temp"]
+                    # *** Давление
+                    if main["pressure"] < min_pressure:
+                        min_pressure = main["pressure"]
+                    if main["pressure"] > max_pressure:
+
+                        max_pressure = main["pressure"]
+                    # print(data)
+                    # break
+                    # print((item['dt_txt'])[:16], '{0:+3.0f}'.format(item['main']['temp']),
+                    #       '{0:2.0f}'.format(item['wind']['speed']) + " м/с",
+                    #       self.get_wind_direction(item['wind']['deg']),
+                    #       item['weather'][0]['description'])
+
+            # print(f"Temperature: {round(min_temperature)} - {round(max_temperature})")
+            # print(f"Pressure: {min_pressure} - {max_pressure}")
+            message = f"Temperature: {round(min_temperature)} - {round(max_temperature)}\n"
+            message += f" Pressure: {round(min_pressure*0.75)} - {round(max_pressure*0.75)}"
+            # message = self.parse_weather(data)
         except Exception as ex:
             print("Exception (forecast):", ex)
             # pass
