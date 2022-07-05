@@ -11,6 +11,7 @@ import datetime as pdate
 
 import functions as func
 import prototype
+
 # pylint: disable=wrong-import-position
 # path.insert(0, "./")
 # path.insert(0, "d:/Work/projects/")
@@ -37,7 +38,6 @@ class CMeteorolog(prototype.CPrototype):
         """Возвращает True, если метеоролог может обработать эту команду"""
 
         if self.is_enabled(pchat_title):
-
             word_list: list = func.parse_input(pmessage_text)
             return word_list[0] in WEATHER_COMMANDS or word_list[0] in HINT
         return False
@@ -68,11 +68,36 @@ class CMeteorolog(prototype.CPrototype):
         """Пользователь запросил список команд."""
         command_list: str = ""
         for command in WEATHER_COMMANDS:
-
             command_list += command + ", "
         command_list = command_list[:-2]
         command_list += "\n"
         return command_list
+
+    def get_weather(self, picon):
+        result: str = ""
+        if picon == "01d" or picon == "02d":
+
+            result = "Ясно. 🌞"
+        elif picon == "01n" or picon == "02n":
+
+            result = "Ясно. 🌜"
+        elif picon == "03d" or \
+                picon == "03n" or \
+                picon == "04d" or \
+                picon == "04n":
+            result = "Облачно. ☁"
+        elif picon == "09d" or \
+                picon == "09n" or \
+                picon == "10d" or \
+                picon == "10n":
+            result = "Дождь. 🌧"
+        if picon == "11d" or picon == "11n":
+            result = "Гроза. 🌩"
+        if picon == "13d" or picon == "13n":
+            result = "Снег. ❄"
+        if picon == "50d" or picon == "50n":
+            result = "Туман.🌫"
+        return result
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """
@@ -81,7 +106,6 @@ class CMeteorolog(prototype.CPrototype):
             "No <pchat_title> parameter specified!"
 
         if self.is_enabled(pchat_title):
-
             return ", ".join(HINT)
         return ""
 
@@ -95,10 +119,8 @@ class CMeteorolog(prototype.CPrototype):
             min_degree = i * step - 45 / 2.
             max_degree = i * step + 45 / 2.
             if i == 0 and pdegree > 360 - 45 / 2.:
-
                 pdegree = pdegree - 360
             if min_degree <= pdegree <= max_degree:
-
                 result = directions[i]
                 break
         return result
@@ -117,7 +139,6 @@ class CMeteorolog(prototype.CPrototype):
 
             # *** Возможно, запросили меню.
             if word_list[0] in HINT:
-
                 message = self.get_help()
             if word_list[0] in WEATHER_COMMANDS:
 
@@ -164,40 +185,38 @@ class CMeteorolog(prototype.CPrototype):
                     main = item['main']
                     # *** Температура
                     if main["temp"] < min_temperature:
-
                         min_temperature = main["temp"]
                     if main["temp"] > max_temperature:
-
                         max_temperature = main["temp"]
                     # *** Давление
                     if main["pressure"] < min_pressure:
-
                         min_pressure = main["pressure"]
                     if main["pressure"] > max_pressure:
-
                         max_pressure = main["pressure"]
                     # *** Влажность
                     if main["humidity"] < min_humidity:
-
                         min_humidity = main["humidity"]
                     if main["humidity"] > max_humidity:
-
                         max_humidity = main["humidity"]
                     wind_speed = item["wind"]["speed"]
                     wind_angle = item["wind"]["deg"]
                     if wind_speed < min_wind_speed:
-
                         min_wind_speed = wind_speed
                         min_wind_angle = wind_angle
                     if wind_speed > max_wind_speed:
-
                         max_wind_speed = wind_speed
                         max_wind_angle = wind_angle
+                    # print(item)
+                    # break
+                    # weather = item["weather"][0]
+                    # print(weather["icon"])
+                    icon = item["weather"][0]["icon"]
+                    weather = self.get_weather(icon)
             message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C. " \
-                      f" Давл.: {round(min_pressure*0.75)} - {round(max_pressure*0.75)} мм.рт.ст. " \
+                      f" Давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)} мм.рт.ст. " \
                       f" Влажн.: {round(min_humidity)} - {round(max_humidity)}%. " \
                       f" Ветер.: {round(min_wind_speed)} м/с {self.get_wind_direction(min_wind_angle)} " \
-                      f"- {round(max_wind_speed)} м/с {self.get_wind_direction(max_wind_angle)}."
+                      f"- {round(max_wind_speed)} м/с {self.get_wind_direction(max_wind_angle)}. {icon}"
         except Exception as ex:
 
             print("Exception (forecast):", ex)

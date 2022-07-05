@@ -22,3 +22,13 @@
 # if call.data == "test":
 
 # SoftIceBot.edit_message_text(inline_message_id=call.inline_message_id, text="Бдыщь")
+june-johnny-caspian-19
+01d	01n	Чистое небо
+02d	02n	Малооблачно
+03d	03n	Рваная облачность
+04d	04n	Облачно с прояснениями
+09d	09n	Ливневый дождь
+10d	10n	Дождь
+11d	11n	Гроза
+13d	13n	Снег
+50d	50n	Туман
