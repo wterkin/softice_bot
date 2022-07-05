@@ -111,7 +111,7 @@ class CMeteorolog(prototype.CPrototype):
 
     def get_wind_direction(self, pdegree):  # noqa
         """Возвращает направление ветра."""
-        directions: list = ['С ', 'СВ', ' В', 'ЮВ', 'Ю ', 'ЮЗ', ' З', 'СЗ']
+        directions: list = ['сев. ', 'св', ' вост.', 'юв', 'юг ', 'юз', ' зап.', 'сз']
         result: str = ""
         for i in range(0, 8):
 
@@ -168,8 +168,10 @@ class CMeteorolog(prototype.CPrototype):
         max_humidity: int = 0
         min_wind_speed: int = 200
         max_wind_speed: int = 0
-        min_wind_angle = 360
-        max_wind_angle = 0
+        min_wind_angle: int = 360
+        max_wind_angle: int = 0
+        weather: list = []
+        weather_line: str = ""
         try:
 
             res = requests.get(FORECAST_WEATHER_URL,
@@ -209,14 +211,37 @@ class CMeteorolog(prototype.CPrototype):
                     # print(item)
                     # break
                     # weather = item["weather"][0]
-                    # print(weather["icon"])
+                    #print(icon[:-1])
                     icon = item["weather"][0]["icon"]
-                    weather = self.get_weather(icon)
-            message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C. " \
-                      f" Давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)} мм.рт.ст. " \
-                      f" Влажн.: {round(min_humidity)} - {round(max_humidity)}%. " \
-                      f" Ветер.: {round(min_wind_speed)} м/с {self.get_wind_direction(min_wind_angle)} " \
-                      f"- {round(max_wind_speed)} м/с {self.get_wind_direction(max_wind_angle)}. {icon}"
+
+                    #print(icon[:-1])
+                    #print(icon[0:2])
+
+                    if icon[0:2] != "01":
+
+                        icon = icon[0:2] + "d"
+                    if icon[0:2] == "04":
+
+                        icon = "03d"
+                    elif icon[0:2] == "10":
+
+                        icon = "09d"
+
+                    if icon not in weather:
+
+                        weather.append(icon)
+            print(weather)
+            for icon in weather:
+
+                weather_line += self.get_weather(icon) + " "
+            message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
+                      f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)} мм.рт.ст., " \
+                      f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, " \
+                      f" ветер: {round(min_wind_speed)} м/с {self.get_wind_direction(min_wind_angle)} " \
+                      f"- {round(max_wind_speed)} м/c {self.get_wind_direction(max_wind_angle)}, " \
+                      f" {weather_line}"
+
+
         except Exception as ex:
 
             print("Exception (forecast):", ex)
