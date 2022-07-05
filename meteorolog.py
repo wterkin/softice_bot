@@ -36,7 +36,7 @@ class CMeteorolog(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если метеоролог может обработать эту команду"""
 
-        if is_enabled(self.config, pchat_title):
+        if self.is_enabled(pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
             return word_list[0] in WEATHER_COMMANDS or word_list[0] in HINT
@@ -117,42 +117,18 @@ class CMeteorolog(prototype.CPrototype):
 
             # *** Возможно, запросили меню.
             if word_list[0] in HINT:
-                message = self.get_help()
 
+                message = self.get_help()
             if word_list[0] in WEATHER_COMMANDS:
 
                 if len(word_list) > 1:
 
                     city_name = word_list[1]
                     city_id = self.get_city_id(city_name)
-                    # parameters = ["ansiweather", "-l", word_list[1], "-s", "true", "-a",
-                    #               "false", "-p", "false", "-f", "2"]
-                    # print(parameters)
-                    # process = subprocess.run(parameters, capture_output=True, text=True, check=True)
-                    # print("Ok")
                     message = self.request_forecast(city_id)
-                    # message = process.stdout
-                    # if message.split(" ")[0] == "ERROR:":
-                    #     message = "Нет погоды для этого города."
                 else:
 
                     message = "Какую тебе еще погоду?"
-
-        return message
-    def parse_weather(self, pdata: list):
-        """Парсит выдачу погоды и формирует однострочный прогноз."""
-        message: str = ""
-        datetime_mask = "%Y-%m-%d %H:%M"
-        now = datetime.datetime.now()
-        # today = datetime.date.today()
-        tomorrow = now + pdate.timedelta(days=1)
-        tomorrow_str = tomorrow.strftime(datetime_mask)
-        temperature: list = []  # 2
-        wind: list = []  # 3
-        # direction:
-        for line in pdata:
-
-            items: list = line.split()
         return message
 
     def reload(self):
@@ -161,24 +137,28 @@ class CMeteorolog(prototype.CPrototype):
     def request_forecast(self, pcity_id, plang: str = "ru"):
         """Запрос погоды на завтра."""
         message: str = ""
-        datetime_mask: str = "%Y-%m-%d %H:%M"
         now: datetime.datetime = datetime.datetime.now()
         tomorrow: datetime.datetime = now + pdate.timedelta(days=1)
         min_temperature: int = 100
         max_temperature: int = 0
         min_pressure: int = 10000
         max_pressure: int = 0
+        min_humidity: int = 100
+        max_humidity: int = 0
+        min_wind_speed: int = 200
+        max_wind_speed: int = 0
+        min_wind_angle = 360
+        max_wind_angle = 0
         try:
 
             res = requests.get(FORECAST_WEATHER_URL,
                                params={'id': pcity_id, 'units': 'metric',
                                        'lang': plang, 'APPID': self.config["api_key"]})
             data = res.json()
-            # print('city:', data['city']['name'], data['city']['country'])
             for item in data['list']:
 
                 # 1. Выбираем только завтрашние данные
-                data_datetime: datetime.datetime = datetime.datetime.fromtimestamp(item['dt']) # / 1e3)
+                data_datetime: datetime.datetime = datetime.datetime.fromtimestamp(item['dt'])
                 if data_datetime.date() == tomorrow.date():
 
                     main = item['main']
@@ -187,74 +167,38 @@ class CMeteorolog(prototype.CPrototype):
 
                         min_temperature = main["temp"]
                     if main["temp"] > max_temperature:
+
                         max_temperature = main["temp"]
                     # *** Давление
                     if main["pressure"] < min_pressure:
+
                         min_pressure = main["pressure"]
                     if main["pressure"] > max_pressure:
 
                         max_pressure = main["pressure"]
-                    # print(data)
-                    # break
-                    # print((item['dt_txt'])[:16], '{0:+3.0f}'.format(item['main']['temp']),
-                    #       '{0:2.0f}'.format(item['wind']['speed']) + " м/с",
-                    #       self.get_wind_direction(item['wind']['deg']),
-                    #       item['weather'][0]['description'])
+                    # *** Влажность
+                    if main["humidity"] < min_humidity:
 
-            # print(f"Temperature: {round(min_temperature)} - {round(max_temperature})")
-            # print(f"Pressure: {min_pressure} - {max_pressure}")
-            message = f"Temperature: {round(min_temperature)} - {round(max_temperature)}\n"
-            message += f" Pressure: {round(min_pressure*0.75)} - {round(max_pressure*0.75)}"
-            # message = self.parse_weather(data)
+                        min_humidity = main["humidity"]
+                    if main["humidity"] > max_humidity:
+
+                        max_humidity = main["humidity"]
+                    wind_speed = item["wind"]["speed"]
+                    wind_angle = item["wind"]["deg"]
+                    if wind_speed < min_wind_speed:
+
+                        min_wind_speed = wind_speed
+                        min_wind_angle = wind_angle
+                    if wind_speed > max_wind_speed:
+
+                        max_wind_speed = wind_speed
+                        max_wind_angle = wind_angle
+            message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C. " \
+                      f" Давл.: {round(min_pressure*0.75)} - {round(max_pressure*0.75)} мм.рт.ст. " \
+                      f" Влажн.: {round(min_humidity)} - {round(max_humidity)}%. " \
+                      f" Ветер.: {round(min_wind_speed)} м/с {self.get_wind_direction(min_wind_angle)} " \
+                      f"- {round(max_wind_speed)} м/с {self.get_wind_direction(max_wind_angle)}."
         except Exception as ex:
+
             print("Exception (forecast):", ex)
-            # pass
         return message
-# X
-def can_process(pconfig: dict, pchat_title: str, pmessage_text: str) -> bool:
-    """Возвращает True, если метеоролог может обработать эту команду"""
-
-    if is_enabled(pconfig, pchat_title):
-        word_list: list = func.parse_input(pmessage_text)
-        return word_list[0] in WEATHER_COMMANDS
-
-    return False
-
-# X
-def help() -> str:
-    """Пользователь запросил помощь."""
-    command_list: str = ""
-    for command in enumerate(WEATHER_COMMANDS):
-        command_list += f"{command} "
-    return command_list
-
-# X
-def is_enabled(pconfig: dict, pchat_title: str) -> bool:
-    """Возвращает True, если метеоролог разрешен на этом канале."""
-
-    return pchat_title in pconfig[CHANNEL_LIST_KEY]
-
-# X
-def meteorolog(pmessage_text: str) -> str:
-    """Процедура разбора запроса пользователя."""
-
-    message = None
-    word_list: list = func.parse_input(pmessage_text)
-    # *** Возможно, запросили меню.
-    if word_list[0] in WEATHER_COMMANDS:
-
-        if len(word_list) > 1:
-
-            parameters = ["ansiweather", "-l", word_list[1], "-s", "true", "-a",
-                          "false", "-p", "false", "-f", "2"]
-            # print(parameters)
-            process = subprocess.run(parameters, capture_output=True, text=True, check=True)
-            print("Ok")
-            message = process.stdout
-            if message.split(" ")[0] == "ERROR:":
-                message = "Нет погоды для этого города."
-        else:
-
-            message = "Какую тебе еще погоду?"
-
-    return message
