@@ -3,9 +3,8 @@
 """Погодный модуль для бота."""
 
 # from sys import path
-import datetime
-import requests
 import datetime as pdate
+import requests
 
 import functions as func
 import prototype
@@ -21,10 +20,10 @@ WEATHER_COMMANDS = ["погода", "пг", "weather", "wt", "прогноз", "
 CHANNEL_LIST_KEY = "meteorolog_chats"  # X
 ENABLED_IN_CHATS_KEY = "meteorolog_chats"
 HINT = ["метео", "meteo"]
-FIND_CITY_URL = "http://api.openweathermap.org/data/2.5/find"
-FORECAST_WEATHER_URL = "http://api.openweathermap.org/data/2.5/forecast"
-ICON_CONVERT: dict = {"01d": "Ясно. 🌞",
-                      "02d": "Ясно. 🌞",
+FIND_CITY_URL = 'http://api.openweathermap.org/data/2.5/find'
+FORECAST_WEATHER_URL = 'http://api.openweathermap.org/data/2.5/forecast'
+ICON_CONVERT: dict = {"01d": "Ясно. ☀️",
+                      "02d": "Ясно. ☀️",
                       "01n": "Ясно. 🌜",
                       "02n": "Ясно. 🌜",
                       "03d": "Облачно. ☁",
@@ -70,15 +69,14 @@ class CMeteorolog(prototype.CPrototype):
                                        'units': 'metric', 'lang': plang,
                                        'APPID': self.config["api_key"]})
             data = res.json()
-            cities = ["{} ({})".format(d['name'], d['sys']['country'])
-                      for d in data['list']]
-            if len(cities) > 0:
-                # print("city:", cities)
+            # print(data)
+            # cities = ["{} ({})".format(d['name'], d['sys']['country'])
+            #           for d in data['list']]
+            if len(data['list']) > 0:
+
                 city_id = data['list'][0]['id']
-                # print('city_id=', city_id)
         except Exception as ex:
             print("Exception (find):", ex)
-            pass
         assert isinstance(city_id, int)
         return city_id
 
@@ -137,16 +135,16 @@ class CMeteorolog(prototype.CPrototype):
 
                 if len(word_list) > 1:
 
-                    city_name = word_list[1]
+                    city_name = " ".join(word_list[1:])
                     city_id = self.get_city_id(city_name)
                     if city_id > 0:
 
-                        now: datetime.datetime = datetime.datetime.now()
+                        now: pdate.datetime = pdate.datetime.now()
                         date_str: str = ""
                         weather_str: str = ""
                         if word_list[0] in ["прогноз", "пр", "forecast", "fr"]:
 
-                            tomorrow: datetime.datetime = now + pdate.timedelta(days=1)
+                            tomorrow: pdate.datetime = now + pdate.timedelta(days=1)
                             date_str = tomorrow.strftime(RUSSIAN_DATE_FORMAT)
                             weather_str = self.request_weather(city_id, tomorrow)
 
@@ -156,15 +154,15 @@ class CMeteorolog(prototype.CPrototype):
                             weather_str = self.request_weather(city_id, now)
                         message = f"{city_name} : {date_str} : {weather_str}"
 
-                else:
+                    else:
 
-                    message = f"Какой-такой {word_list[1]} ? не знаю такого города!"
+                        message = f"Какой-такой \" {' '.join(word_list[1:])}\" ? не знаю такого города!"
         return message
 
     def reload(self):
         pass
 
-    def request_weather(self, pcity_id, prequest_date: datetime.datetime, plang: str = "ru"):
+    def request_weather(self, pcity_id, prequest_date: pdate.datetime, plang: str = "ru"):
         """Запрос погоды на завтра."""
         message: str = ""
         min_temperature: int = 100
@@ -188,7 +186,7 @@ class CMeteorolog(prototype.CPrototype):
             for item in data['list']:
 
                 # 1. Выбираем только завтрашние данные
-                data_datetime: datetime.datetime = datetime.datetime.fromtimestamp(item['dt'])
+                data_datetime: pdate.datetime = pdate.datetime.fromtimestamp(item['dt'])
                 if data_datetime.date() == prequest_date.date():
 
                     main = item['main']
@@ -216,27 +214,39 @@ class CMeteorolog(prototype.CPrototype):
                         max_wind_speed = wind_speed
                         max_wind_angle = wind_angle
                     icon = item["weather"][0]["icon"]
+                    # *** Если это не "ясно", то ночь не нужна
+                    if icon[0:2] not in ["01", "02"]:
 
-                    if icon[0:2] != "01":
+                        # *** Переводим в день
                         icon = icon[0:2] + "d"
+                    else:
+
+                        # *** приводим всё к 1
+                        icon = "01d"
+                    # *** Если облачно
                     if icon[0:2] == "04":
 
+                        # *** приводим всё к 3
                         icon = "03d"
+                    # *** Если дождь
                     elif icon[0:2] == "10":
 
+                        # *** Приводим к 9
                         icon = "09d"
 
                     if icon not in weather:
+
                         weather.append(icon)
-            print(weather)
             for icon in weather:
                 # weather_line += self.get_weather(icon) + " "
                 weather_line += ICON_CONVERT[icon] + " "
 
             message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
-                      f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)} мм.рт.ст., " \
+                      f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" \
+                      f"мм.рт.ст., " \
                       f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, " \
-                      f" ветер: {round(min_wind_speed)} м/с {self.get_wind_direction(min_wind_angle)} " \
+                      f" ветер: {round(min_wind_speed)} " \
+                      f"м/с {self.get_wind_direction(min_wind_angle)} " \
                       f"- {round(max_wind_speed)} м/c {self.get_wind_direction(max_wind_angle)}, " \
                       f" {weather_line}"
 
