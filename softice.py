@@ -171,6 +171,9 @@ class CSoftIceBot:
             "No <pchat_title> parameter specified!"
 
         if pchat_title not in self.config[ALLOWED_CHATS]:
+
+            print(self.config[ALLOWED_CHATS])
+            print(pchat_title)
             self.robot.send_message(pchat_id, "Вашего чата нет в списке разрешённых. Чао!")
             self.robot.leave_chat(pchat_id)
             print(f"Караул! Меня похитили и затащили в чат {pchat_title}! Но я удрал.")
