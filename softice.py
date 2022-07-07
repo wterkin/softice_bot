@@ -54,14 +54,12 @@ class CSoftIceBot:
         """Конструктор класса."""
         super().__init__()
         self.config = {}
-        self.last_babbler_phrase_time: datetime = datetime.now()
         self.load_config()
         if self.config["proxy"]:
+
             apihelper.proxy = {'https': self.config["proxy"]}
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
-        # !!! barman.reload_bar()
-        # librarian.reload_library()
         self.barman = barman.CBarman(self.config)
         self.babbler = babbler.CBabbler(self.config)
         self.theolog = theolog.CTheolog(self.config)
@@ -101,65 +99,6 @@ class CSoftIceBot:
                     message = self.babbler.babbler(chat_title, message_text)
                     if len(message) > 0:
                         self.robot.send_message(chat_id, message)
-
-    # def call_mafiozo(self, pchat_id: int, pchat_title: str,
-    #                  puser_id: int, puser_title: str, pmessage_text: str):
-    #     """По возможности обработать команду мафиози"""
-    #     assert pchat_id is not None, \
-    #         "Assert: [softice.call_mafiozo] " \
-    #         "No <pchat_id> parameter specified!"
-    #     assert pchat_title is not None, \
-    #         "Assert: [softice.call_mafiozo] " \
-    #         "No <pchat_title> parameter specified!"
-    #     assert puser_id is not None, \
-    #         "Assert: [softice.call_mafiozo] No <puser_id> parameter specified!"
-    #     assert puser_title is not None, \
-    #         "Assert: [softice.call_mafiozo] No <puser_title> parameter specified!"
-    #     assert pmessage_text is not None, \
-    #         "Assert: [softice.call_mafiozo] " \
-    #         "No <pmessage_text> parameter specified!"
-    #
-    #     if mafiozo.can_process(self.config, pchat_title, pmessage_text):
-    #
-    #         message: str
-    #         markup: object
-    #         addressant: int
-    #         # *** как пить дать.
-    #         message, addressant, markup = mafiozo.mafiozo(self.config, pmessage_text, pchat_id,
-    #                                                       puser_id, puser_title)
-    #         if message:
-    #
-    #             print("Mafiozo answers.", addressant)
-    #             if markup is None:
-    #
-    #                 self.robot.send_message(addressant, message)
-    #             else:
-    #
-    #                 self.robot.send_message(addressant, message, reply_markup=markup)
-    #             return True
-    #     return False
-
-    # def call_meteorolog(self, pchat_id: int, pchat_title: str,
-    #                     pmessage_text: str):
-    #     """По возможности обработать команду метеорологом"""
-    #     assert pchat_id is not None, \
-    #         "Assert: [softice.call_meteorolog] " \
-    #         "No <pchat_id> parameter specified!"
-    #     assert pchat_title is not None, \
-    #         "Assert: [softice.call_meteorolog] " \
-    #         "No <pchat_title> parameter specified!"
-    #     assert pmessage_text is not None, \
-    #         "Assert: [softice.call_meteorolog] " \
-    #         "No <pmessage_text> parameter specified!"
-    #     if meteorolog.can_process(self.config, pchat_title, pmessage_text):
-    #
-    #         # *** как пить дать.
-    #         message = meteorolog.meteorolog(pmessage_text)
-    #         if message is not None:
-    #             print(" Meteorolog answers.")
-    #             self.robot.send_message(pchat_id, message)
-    #             return True
-    #     return False
 
     def check_is_this_chat_enabled(self, pchat_id: int, pchat_title: str):
         """Проверяет, находится ли данный чат в списке разрешенных."""
@@ -293,7 +232,7 @@ class CSoftIceBot:
 
     def process_modules(self, pchat_id: int, pchat_title: str,
                         puser_name: str, puser_title: str,
-                        pmessage_text):
+                        pmessage_text: str):
         """Пытается обработать команду различными модулями."""
         assert pchat_id is not None, \
             "Assert: [softice.process_modules] No <pchat_id> parameter specified!"

@@ -69,28 +69,29 @@ class CBabbler(prototype.CPrototype):
             # *** Болтун может? болтун может всегда!
             if self.can_process(pchat_title, pmessage_text):
 
-                word_list: list = pmessage_text.split(" ")
-                for word in word_list:
-
-                    clean_word = word.rstrip(string.punctuation).lower()
-                    if len(clean_word) > 2:  # or ")" in clean_word:
-
-                        for block in self.mind:
-
-                            for block_item in block:
-
-                                if clean_word in block_item:
-
-                                    answer = random.choice(block[REACTIONS_INDEX])
-                                    message = f"{answer}"
-                                    found = True
-                                    break
-                            if found:
-
-                                break
-                    if found:
-
-                        break
+                message = self.think(pmessage_text)
+                # word_list: list = pmessage_text.split(" ")
+                # for word in word_list:
+                #
+                #     clean_word = word.rstrip(string.punctuation).lower()
+                #     if len(clean_word) > 2:  # or ")" in clean_word:
+                #
+                #         for block in self.mind:
+                #
+                #             for block_item in block:
+                #
+                #                 if clean_word in block_item:
+                #
+                #                     answer = random.choice(block[REACTIONS_INDEX])
+                #                     message = f"{answer}"
+                #                     found = True
+                #                     break
+                #             if found:
+                #
+                #                 break
+                #     if found:
+                #
+                #         break
 
         if len(message) > 0:
 
@@ -151,3 +152,29 @@ class CBabbler(prototype.CPrototype):
         if self.mind:
 
             print("Babbler successfully reload his mind.")
+
+    def think(self, pmessage_text: str):
+        """Процесс принятия решений =)"""
+        word_list: list = pmessage_text.split(" ")
+        found: bool = False
+        message: str = ""
+        for word in word_list:
+
+            clean_word = word.rstrip(string.punctuation).lower()
+            if len(clean_word) > 2:
+
+                for block in self.mind:
+
+                    for block_item in block:
+
+                        if clean_word in block_item:
+                            answer = random.choice(block[REACTIONS_INDEX])
+                            message = f"{answer}"
+                            found = True
+                            break
+                    if found:
+                        break
+            if found:
+
+                break
+        return message

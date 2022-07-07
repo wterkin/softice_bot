@@ -3,7 +3,6 @@
 """Модуль бармена."""
 
 import random
-from abc import ABC
 
 import functions as func
 import prototype

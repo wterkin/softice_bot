@@ -32,3 +32,61 @@ june-johnny-caspian-19
 11d	11n	Гроза
 13d	13n	Снег
 50d	50n	Туман
+    # def call_mafiozo(self, pchat_id: int, pchat_title: str,
+    #                  puser_id: int, puser_title: str, pmessage_text: str):
+    #     """По возможности обработать команду мафиози"""
+    #     assert pchat_id is not None, \
+    #         "Assert: [softice.call_mafiozo] " \
+    #         "No <pchat_id> parameter specified!"
+    #     assert pchat_title is not None, \
+    #         "Assert: [softice.call_mafiozo] " \
+    #         "No <pchat_title> parameter specified!"
+    #     assert puser_id is not None, \
+    #         "Assert: [softice.call_mafiozo] No <puser_id> parameter specified!"
+    #     assert puser_title is not None, \
+    #         "Assert: [softice.call_mafiozo] No <puser_title> parameter specified!"
+    #     assert pmessage_text is not None, \
+    #         "Assert: [softice.call_mafiozo] " \
+    #         "No <pmessage_text> parameter specified!"
+    #
+    #     if mafiozo.can_process(self.config, pchat_title, pmessage_text):
+    #
+    #         message: str
+    #         markup: object
+    #         addressant: int
+    #         # *** как пить дать.
+    #         message, addressant, markup = mafiozo.mafiozo(self.config, pmessage_text, pchat_id,
+    #                                                       puser_id, puser_title)
+    #         if message:
+    #
+    #             print("Mafiozo answers.", addressant)
+    #             if markup is None:
+    #
+    #                 self.robot.send_message(addressant, message)
+    #             else:
+    #
+    #                 self.robot.send_message(addressant, message, reply_markup=markup)
+    #             return True
+    #     return False
+
+    # def call_meteorolog(self, pchat_id: int, pchat_title: str,
+    #                     pmessage_text: str):
+    #     """По возможности обработать команду метеорологом"""
+    #     assert pchat_id is not None, \
+    #         "Assert: [softice.call_meteorolog] " \
+    #         "No <pchat_id> parameter specified!"
+    #     assert pchat_title is not None, \
+    #         "Assert: [softice.call_meteorolog] " \
+    #         "No <pchat_title> parameter specified!"
+    #     assert pmessage_text is not None, \
+    #         "Assert: [softice.call_meteorolog] " \
+    #         "No <pmessage_text> parameter specified!"
+    #     if meteorolog.can_process(self.config, pchat_title, pmessage_text):
+    #
+    #         # *** как пить дать.
+    #         message = meteorolog.meteorolog(pmessage_text)
+    #         if message is not None:
+    #             print(" Meteorolog answers.")
+    #             self.robot.send_message(pchat_id, message)
+    #             return True
+    #     return False
