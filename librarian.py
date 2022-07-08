@@ -186,15 +186,17 @@ class CLibrarian(prototype.CPrototype):
         result: int = -1
         for command_idx, command in enumerate(HOKKU_COMMANDS):
 
-            if pword[0] in command:
+            # print(pword, command)
+            if pword in command:
 
                 result = command_idx
 
-        if result is None:
+        if result < 0:
 
             for command_idx, command in enumerate(QUOTES_COMMANDS):
 
-                if pword[0] in command:
+                print(pword, command)
+                if pword in command:
 
                     result = command_idx + 10
 
@@ -271,7 +273,9 @@ class CLibrarian(prototype.CPrototype):
 
             else:
                 # *** Получим код команды
+                # print(word_list[0])
                 command = self.get_command(word_list[0])
+                # print(command)
                 if command >= 0:
 
                     if command < ASK_QUOTE_CMD:

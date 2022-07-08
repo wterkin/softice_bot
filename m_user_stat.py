@@ -14,15 +14,15 @@ class CUserStat(m_ancestor.CAncestor):
     fuserid = Column(Integer, ForeignKey(m_users.CUser.id))
     fletters = Column(Integer, default=0)
     fwords = Column(Integer, default=0)
-    fsentences = Column(Integer, default=0)
+    fphrases = Column(Integer, default=0)
 
-    def __init__(self, puserid: int, pletters: int, pwords: int, psentences: int):
+    def __init__(self, puserid: int, pletters: int, pwords: int, pphrases: int):
         """Конструктор"""
         super().__init__()
         self.fuserid = puserid
         self.fletters = pletters
         self.fwords = pwords
-        self.fsentences = psentences
+        self.fphrases = pphrases
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
@@ -30,4 +30,4 @@ class CUserStat(m_ancestor.CAncestor):
                    User id:{self.fuserid}
                    Letters:{self.fletters},
                    Words: {self.fwords},
-                   Sentences: {self.fsentences}"""
+                   Sentences: {self.fphrases}"""
