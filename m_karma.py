@@ -7,7 +7,7 @@ import m_ancestor
 import m_users
 
 
-class CUserKarma(m_ancestor.CAncestor):
+class CKarma(m_ancestor.CAncestor):
     """Класс справочника тэгов."""
 
     __tablename__ = 'tbl_karma'

@@ -7,7 +7,7 @@ import m_ancestor
 import m_users
 
 
-class CUserStat(m_ancestor.CAncestor):
+class CStat(m_ancestor.CAncestor):
     """Класс статистики."""
 
     __tablename__ = 'tbl_karma'

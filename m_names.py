@@ -7,7 +7,7 @@ import m_ancestor
 import m_users
 
 
-class CUserName(m_ancestor.CAncestor):
+class CName(m_ancestor.CAncestor):
     """Класс справочника тэгов."""
 
     __tablename__ = 'tbl_names'
