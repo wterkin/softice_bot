@@ -61,7 +61,7 @@ class CBabbler(prototype.CPrototype):
         assert pmessage_text is not None, \
             "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
         message: str = ""
-        found: bool = False
+        # found: bool = False
         minutes = (datetime.now() - self.last_phrase_time).total_seconds() / BABBLER_PERIOD
         # *** Заданный период времени с последней фразы прошел?
         if minutes > 1:

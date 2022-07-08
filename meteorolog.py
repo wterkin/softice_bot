@@ -125,38 +125,58 @@ class CMeteorolog(prototype.CPrototype):
 
         message: str = ""
         word_list: list = func.parse_input(pmessage_text)
+        # *** Метеоролог может обработать эту команду?
         if self.can_process(pchat_title, pmessage_text):
 
-            # *** Возможно, запросили меню.
+            # *** Запросили помощь?
             if word_list[0] in HINT:
 
                 message = self.get_help()
-            if word_list[0] in WEATHER_COMMANDS:
+            # *** Запросили погоду?
+            else:
 
+                # *** А город указали?
                 if len(word_list) > 1:
 
+                    # *** Получим ID города
                     city_name = " ".join(word_list[1:])
                     city_id = self.get_city_id(city_name)
                     if city_id > 0:
 
+                        # *** Указан существующий город, работаем.
                         now: pdate.datetime = pdate.datetime.now()
                         date_str: str = ""
                         weather_str: str = ""
+                        # *** Прогноз на завтра?
                         if word_list[0] in ["прогноз", "пр", "forecast", "fr"]:
 
+                            # *** Да, так и есть.
                             tomorrow: pdate.datetime = now + pdate.timedelta(days=1)
                             date_str = tomorrow.strftime(RUSSIAN_DATE_FORMAT)
                             weather_str = self.request_weather(city_id, tomorrow)
 
                         elif word_list[0] in ["погода", "пг", "weather", "wt"]:
 
-                            date_str = now.strftime(RUSSIAN_DATE_FORMAT)
-                            weather_str = self.request_weather(city_id, now)
-                        message = f"{city_name} : {date_str} : {weather_str}"
+                            # *** Нет, на сегодня. Еще не поздно?
+                            if now.hour < 21:
 
+                                # *** Вполне еще можно
+                                date_str = now.strftime(RUSSIAN_DATE_FORMAT)
+                                weather_str = self.request_weather(city_id, now)
+                        # *** Если еще не поздно, то выдадим погоду, иначе дадим знать юзеру
+                        if now.hour < 21:
+
+                            message = f"{city_name} : {date_str} : {weather_str}"
+                        else:
+
+                            message = "Поздно уже, какая тебе погода??!"
                     else:
 
-                        message = f"Какой-такой \" {' '.join(word_list[1:])}\" ? не знаю такого города!"
+                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? 
+                                      не знаю такого города!"""
+                else:
+
+                    message = "А в каком городе погода нужна?"
         return message
 
     def reload(self):

@@ -4,7 +4,6 @@
 """Бот для Телеграмма"""
 
 import json
-from datetime import datetime
 import telebot
 from telebot import apihelper
 
@@ -12,7 +11,6 @@ import babbler
 import barman
 import theolog
 import librarian
-# import mafiozo
 import meteorolog
 
 ALLOWED_CHATS: str = "allowed_chats"
@@ -60,6 +58,7 @@ class CSoftIceBot:
             apihelper.proxy = {'https': self.config["proxy"]}
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
+
         self.barman = barman.CBarman(self.config)
         self.babbler = babbler.CBabbler(self.config)
         self.theolog = theolog.CTheolog(self.config)
