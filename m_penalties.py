@@ -14,7 +14,7 @@ RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
 class CPenalty(m_ancestor.CAncestor):
     """Класс справочника тэгов."""
 
-    __tablename__ = 'tbl_karma'
+    __tablename__ = 'tbl_penalties'
     fuserid = Column(Integer, ForeignKey(m_users.CUser.id))
     ftype: int = Column(Integer, default=0) # 1 - mute, 2 - ban
     fendsat: datetime = Column(Date, nullable=False)

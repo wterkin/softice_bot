@@ -10,7 +10,7 @@ import m_users
 class CStat(m_ancestor.CAncestor):
     """Класс статистики."""
 
-    __tablename__ = 'tbl_karma'
+    __tablename__ = 'tbl_stat'
     fuserid = Column(Integer, ForeignKey(m_users.CUser.id))
     fletters = Column(Integer, default=0)
     fwords = Column(Integer, default=0)

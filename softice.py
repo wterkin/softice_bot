@@ -7,6 +7,7 @@ import json
 import telebot
 from telebot import apihelper
 
+import database
 import babbler
 import barman
 import theolog
@@ -64,6 +65,10 @@ class CSoftIceBot:
         self.theolog = theolog.CTheolog(self.config)
         self.librarian = librarian.CLibrarian(self.config)
         self.meteorolog = meteorolog.CMeteorolog(self.config)
+        self.database = database.CDataBase(self.config)
+        if not self.database.exists():
+
+            self.database.create()
 
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):

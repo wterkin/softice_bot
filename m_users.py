@@ -12,7 +12,8 @@ class CUser(m_ancestor.CAncestor):
     __tablename__ = 'tbl_users'
     ftguserid = Column(Integer,
                        nullable=False,
-                       unique=True)
+                       unique=True,
+                       index=True)
 
     def __init__(self, ptguserid: str):
         """Конструктор"""

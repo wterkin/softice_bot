@@ -2,13 +2,14 @@
     "proxy":"",
     "master":"Pet_Rovich",
     "master_name":"Петрович",
-    "allowed_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку", "Mafiozo-City", "keytown-club"],
-    "barman_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
-    "theolog_chats":["ПравЧат", "Ботовка"],
-    "meteorolog_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "keytown-club"],
-    "librarian_chats":["ПравЧат", "Ботовка", "Maftown", "Хокку", "Mafiozo-City"],
-    "mafiozo_chats":["Ботовка"],
-    "babbler_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
+    "database_path":"D:/home/YandexDisk/Private/Common/softice/softice.db",
     "token":"1978360349:AAH02ct7Vry0r9syAqVHUWbKtbFsNUru4y4",
-    "api_key": "3c15fe44d0d0d93e28fd81b00a8e46bf"
+    "api_key": "3c15fe44d0d0d93e28fd81b00a8e46bf",
+    "allowed_chats":   ["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "Хокку", "keytown-club"],
+    "babbler_chats":   ["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "keytown-club"],
+    "barman_chats":    ["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City"],
+    "librarian_chats": ["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "Хокку"],
+    "meteorolog_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "keytown-club"],
+    "theolog_chats":   ["ПравЧат", "Ботовка"],
+    "mafiozo_chats":["Ботовка"]
 }
