@@ -82,12 +82,16 @@ class CMeteorolog(prototype.CPrototype):
 
     def get_help(self) -> str:  # noqa
         """Пользователь запросил список команд."""
-        command_list: str = ""
-        for command in WEATHER_COMMANDS:
-            command_list += command + ", "
-        command_list = command_list[:-2]
-        command_list += "\n"
-        return command_list
+        #command_list: str = ""
+        #for command in WEATHER_COMMANDS:
+
+            #command_list += command + ", "
+        if self.is_enabled(pchat_title):
+
+            command_list: list = ", ".join(WEATHER_COMMANDS)
+            command_list += "\n"
+            return command_list
+        return ""
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """
