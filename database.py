@@ -4,7 +4,7 @@
 # import sys
 
 from pathlib import Path
-
+from sys import platform
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -19,7 +19,8 @@ import m_users
 # py lint: disable=line-too-long
 
 DATABASE_VERSION: int = 1
-DATABASE_PATH_KEY: str = "database_path"
+LINUX_DATABASE_PATH_KEY: str = "linux_db_path"
+WINDOWS_DATABASE_PATH_KEY: str = "windows_db_path"
 
 
 class CDataBase:
@@ -38,9 +39,7 @@ class CDataBase:
 
     def connect(self):
         """Устанавливает соединение с БД."""
-        database_path: str = self.config[DATABASE_PATH_KEY]
-        # print("CDB:CNN:DBP ", database_path)
-        self.engine = create_engine('sqlite:///'+database_path, echo=False)
+        self.engine = create_engine('sqlite:///'+self.get_db_path(), echo=False)
         session = sessionmaker()
         session.configure(bind=self.engine)
         self.session = session()
@@ -67,8 +66,18 @@ class CDataBase:
 
     def exists(self):
         """Проверяет наличие базы данных по пути в конфигурации."""
-        db_folder_path = Path(self.config[DATABASE_PATH_KEY])
-        return db_folder_path.exists()
+        db_folder_path = self.get_db_path()
+        return Path(db_folder_path).exists()
+
+    def get_db_path(self):
+        """Возвращает путь к БД в зависимости от ОС."""
+        if platform in ("linux", "linux2"):
+
+            return self.config[LINUX_DATABASE_PATH_KEY]
+        else:
+
+            return self.config[WINDOWS_DATABASE_PATH_KEY]
+
 
     def get_session(self):
         """Возвращает экземпляр session."""
