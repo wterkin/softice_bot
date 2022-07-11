@@ -1,5 +1,5 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
-"""Модуль класса справочника событий."""
+"""Модуль класса модели таблицы справочника ID пользователей телеграмма."""
 
 from sqlalchemy import Column, Integer
 
@@ -7,7 +7,7 @@ import m_ancestor
 
 
 class CUser(m_ancestor.CAncestor):
-    """Класс справочника тэгов."""
+    """Класс модели таблицы справочника ID пользователей телеграмма."""
 
     __tablename__ = 'tbl_users'
     ftguserid = Column(Integer,
