@@ -10,6 +10,7 @@ from telebot import apihelper
 import database
 import babbler
 import barman
+import statistic
 import theolog
 import librarian
 import meteorolog
@@ -61,16 +62,16 @@ class CSoftIceBot:
             apihelper.proxy = {'https': self.config["proxy"]}
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
-
-        self.barman = barman.CBarman(self.config)
-        self.babbler = babbler.CBabbler(self.config)
-        self.theolog = theolog.CTheolog(self.config)
-        self.librarian = librarian.CLibrarian(self.config)
-        self.meteorolog = meteorolog.CMeteorolog(self.config)
         self.database = database.CDataBase(self.config)
         if not self.database.exists():
 
             self.database.create()
+        self.barman = barman.CBarman(self.config)
+        self.babbler = babbler.CBabbler(self.config)
+        self.librarian = librarian.CLibrarian(self.config)
+        self.meteorolog = meteorolog.CMeteorolog(self.config)
+        self.statistic = statistic.CStatistic(self.config, self.database)
+        self.theolog = theolog.CTheolog(self.config)
 
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
@@ -102,6 +103,7 @@ class CSoftIceBot:
                                                      user_title, message_text)
                 else:
 
+                    self.statistic.save_message(pmessage)
                     message = self.babbler.babbler(chat_title, message_text)
                     if len(message) > 0:
                         self.robot.send_message(chat_id, message)

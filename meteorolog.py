@@ -80,15 +80,11 @@ class CMeteorolog(prototype.CPrototype):
         assert isinstance(city_id, int)
         return city_id
 
-    def get_help(self) -> str:  # noqa
+    def get_help(self, pchat_title: str) -> str:  # noqa
         """Пользователь запросил список команд."""
-        #command_list: str = ""
-        #for command in WEATHER_COMMANDS:
-
-            #command_list += command + ", "
         if self.is_enabled(pchat_title):
 
-            command_list: list = ", ".join(WEATHER_COMMANDS)
+            command_list: str = ", ".join(WEATHER_COMMANDS)
             command_list += "\n"
             return command_list
         return ""
@@ -135,7 +131,7 @@ class CMeteorolog(prototype.CPrototype):
             # *** Запросили помощь?
             if word_list[0] in HINT:
 
-                message = self.get_help()
+                message = self.get_help(pchat_title)
             # *** Запросили погоду?
             else:
 
@@ -176,7 +172,7 @@ class CMeteorolog(prototype.CPrototype):
                             message = "Поздно уже, какая тебе погода??!"
                     else:
 
-                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? 
+                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ?
                                       не знаю такого города!"""
                 else:
 

@@ -18,7 +18,7 @@ class CPrototype:
         """Возвращает True, если модуль может обработать команду."""
 
     @abstractmethod
-    def get_help(self) -> str:
+    def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
 
     @abstractmethod

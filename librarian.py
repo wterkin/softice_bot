@@ -202,17 +202,19 @@ class CLibrarian(prototype.CPrototype):
 
         return result
 
-    def get_help(self) -> str:  # noqa
-        """Пользователь запросил список комманд."""
+    def get_help(self, pchat_title: str) -> str:  # noqa
+        """Пользователь запросил список команд."""
         command_list: str = ""
-        for command in HOKKU_COMMANDS:
+        if self.is_enabled(pchat_title):
 
-            command_list += ", ".join(command)
-            command_list += "\n"
-        for command in QUOTES_COMMANDS:
+            for command in HOKKU_COMMANDS:
 
-            command_list += ", ".join(command)
-            command_list += "\n"
+                command_list += ", ".join(command)
+                command_list += "\n"
+            for command in QUOTES_COMMANDS:
+
+                command_list += ", ".join(command)
+                command_list += "\n"
 
         return command_list
 
@@ -252,7 +254,8 @@ class CLibrarian(prototype.CPrototype):
 
                     # *** Низзя
                     message = (f"Извини, {puser_title}, "
-                               f"только {self.config['master_name']} может перезагружать библиотеку.")
+                               f"только {self.config['master_name']}"
+                               " может перезагружать библиотеку.")
             elif word_list[0] in SAVE_LIBRARY:
 
                 # *** Пользователь хочет сохранить книгу хокку
@@ -269,7 +272,7 @@ class CLibrarian(prototype.CPrototype):
 
             elif word_list[0] in HINT:
 
-                message = self.get_help()
+                message = self.get_help(pchat_title)
 
             else:
                 # *** Получим код команды
@@ -326,7 +329,8 @@ class CLibrarian(prototype.CPrototype):
         """Перезагружает библиотеку."""
         self.hokku = self.load_book_from_file(HOKKU_FILE_NAME)
         self.quotes = self.load_book_from_file(QUOTES_FILE_NAME)
-        print(f"Librarian successfully reload library - {len(self.hokku)} hokku and {len(self.quotes)}. quotes")
+        print(f"Librarian successfully reload library - {len(self.hokku)} hokku "
+              f"and {len(self.quotes)}. quotes")
 
     def save_book(self, pbook: list, pbook_name: str): # noqa
         """Сохраняет заданную книгу."""

@@ -107,7 +107,7 @@ class CBabbler(prototype.CPrototype):
             "Assert: [babbler.can_process] No <pmessage_text> parameter specified!"
         return self.is_enabled(pchat_title)
 
-    def get_help(self):
+    def get_help(self, pchat_title: str):
         """Возвращает список команд модуля, доступных пользователю."""
         return ""
 

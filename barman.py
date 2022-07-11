@@ -114,7 +114,8 @@ class CBarman(prototype.CPrototype):
             # *** Возможно, запросили меню.
             if word_list[0] in BAR_HINT:
 
-                message = "Сегодня в баре имеется следующий ассортимент: \n" + self.get_help()
+                message = "Сегодня в баре имеется следующий ассортимент: \n" + \
+                          self.get_help(pchat_title)
             elif word_list[0] in BAR_RELOAD:
 
                 self.reload()
@@ -204,11 +205,11 @@ class CBarman(prototype.CPrototype):
                 COOKIES_TRANSFER_KEY in self.cookies):
 
             source: str = random.choice(self.cookies[COOKIES_SOURCES_KEY])
-            can: str = "пачку"
+            # can: str = "пачку"
             cookies: str = random.choice(self.cookies[COOKIES_MARKS_KEY])
             transfer: str = random.choice(self.cookies[COOKIES_TRANSFER_KEY])
             # print(cookies, COOKIES_MARKS_KEY, self.cookies[COOKIES_MARKS_KEY])
-            return (f"Softice {source} {can} печенья \"{cookies}\" {transfer} "
+            return (f"Softice {source} печенье \"{cookies}\" {transfer} "
                     f"{puser_name} {COOKIE_EMODJI}")
         return "Нету печенья. Мыши съели. B("
 
@@ -333,17 +334,19 @@ class CBarman(prototype.CPrototype):
                 result = command_idx
         return result
 
-    def get_help(self) -> str:  # noqa
-        """Пользователь запросил список комманд."""
-        command_list: str = ""
-        for command in COMMANDS:
+    def get_help(self, pchat_title: str) -> str:  # noqa
+        """Пользователь запросил список команд."""
+        if self.is_enabled(pchat_title):
 
-            for kind in command:
+            command_list: str = ""
+            for command in COMMANDS:
 
-                command_list += kind + ", "
-            command_list = command_list[:-2]
-            command_list += "\n"
-        return command_list
+                for kind in command:
+
+                    command_list += kind + ", "
+                command_list = command_list[:-2]
+                command_list += "\n"
+            return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """

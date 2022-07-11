@@ -187,18 +187,20 @@ class CTheolog(prototype.CPrototype):
                         break
         return message
 
-    def get_help(self) -> str:
+    def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд, поддерживаемых модулем."""
 
         books: str = ""
-        for book in BIBLE_BOOKS:
+        if self.is_enabled(pchat_title):
 
-            if not book[0][0].isdigit():
+            for book in BIBLE_BOOKS:
 
-                books += f"{book[0].capitalize()}({book[1]}), "
-            else:
+                if not book[0][0].isdigit():
 
-                books += f"{book[0]}({book[1]}), "
+                    books += f"{book[0].capitalize()}({book[1]}), "
+                else:
+
+                    books += f"{book[0]}({book[1]}), "
         return books
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
@@ -273,7 +275,7 @@ class CTheolog(prototype.CPrototype):
 
                 if word_list[COMMAND_ARG] in THEOLOG_HINT:
 
-                    return self.get_help()
+                    return self.get_help(pchat_title)
             # *** Если есть два параметра, то это книга и глава/стих.
             elif param_count > 1:
 

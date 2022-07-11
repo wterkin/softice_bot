@@ -9,11 +9,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import m_ancestor
-import m_karma
-import m_names
-import m_penalties
-import m_stat
-import m_users
+import m_karma  # noqa
+import m_chats  # noqa
+import m_names  # noqa
+import m_penalties  # noqa
+import m_stat  # noqa
+import m_users  # noqa
 
 # py lint: disable=C0301
 # py lint: disable=line-too-long
@@ -74,10 +75,7 @@ class CDataBase:
         if platform in ("linux", "linux2"):
 
             return self.config[LINUX_DATABASE_PATH_KEY]
-        else:
-
-            return self.config[WINDOWS_DATABASE_PATH_KEY]
-
+        return self.config[WINDOWS_DATABASE_PATH_KEY]
 
     def get_session(self):
         """Возвращает экземпляр session."""
