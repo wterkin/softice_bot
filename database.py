@@ -24,6 +24,13 @@ LINUX_DATABASE_PATH_KEY: str = "linux_db_path"
 WINDOWS_DATABASE_PATH_KEY: str = "windows_db_path"
 
 
+def get_db_path_key():
+    """Возвращает путь к БД в зависимости от ОС."""
+    if platform in ("linux", "linux2"):
+        return LINUX_DATABASE_PATH_KEY
+    return WINDOWS_DATABASE_PATH_KEY
+
+
 class CDataBase:
     """Класс."""
     def __init__(self, pconfig):
