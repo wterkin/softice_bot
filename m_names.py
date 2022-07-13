@@ -12,9 +12,9 @@ class CName(m_ancestor.CAncestor):
 
     __tablename__ = 'tbl_names'
     fuserid = Column(Integer, ForeignKey(m_users.CUser.id))
-    fname = Column(String,
-                   nullable=False,
-                   )
+    fusername = Column(String,
+                       nullable=False,
+                       )
 
     def __init__(self, puserid: int, pusername: str):
         """Конструктор"""

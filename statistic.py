@@ -3,16 +3,18 @@
 """Модуль статистики для бота."""
 
 # from pathlib import Path
+import m_names
 import prototype
 import functions
 # import database
 import m_chats
 import m_users
+import m_stat
 # from sys import platform
 # from sqlalchemy import create_engine
 # from sqlalchemy.orm import sessionmaker
 
-import m_ancestor
+# import m_ancestor
 
 HINT = ["стат", "stat"]
 COMMANDS = ["топ10", "топ25", "топ50", "перс", "top10", "top25", "top50", "pers"]
@@ -77,66 +79,88 @@ class CStatistic(prototype.CPrototype):
     def save_message(self, pmessage):
         """Сохраняет фразу, произнесенную пользователем, в базе."""
         # print(pmessage)
+        session = self.database.get_session()
         message_text: str = pmessage.text
         tg_chat_id: int = pmessage.chat.id
-        tg_chat_title: str = pmessage.chat.title
-        user_id: int = pmessage.from_user.id
-        user_name: str = pmessage.from_user.username
-        user_title: str = pmessage.from_user.first_name
+        # tg_chat_title: str = pmessage.chat.title
+        tg_user_id: int = pmessage.from_user.id
+        tg_user_name: str = pmessage.from_user.username
+        # user_title: str = pmessage.from_user.first_name
+        if message_text[0] != "!":
+            # проверить, нет ли чата в таблице чатов
+            query = session.query(m_chats.CChat)
+            query = query.filter_by(fchatid=tg_chat_id)
+            data = query.first()
+            if data is None:
 
-        # проверить, нет ли юзера в таблице имен, если нет - добавить и получить id
-        # если есть - получить id
+                # если нет - добавить, и получить id
+                chat = m_chats.CChat(tg_chat_id)
+                session.add(chat)
+                session.commit()
+                chat_id = chat.id
+            else:
 
-        # проверить, нет ли чата в таблице чатов
-        query = self.database.get_session().query(m_chats.CChat)
-        query = query.filter_by(fchatid=tg_chat_id)
-        data = query.first()
-        if data is None:
+                chat_id = data.id
+            print("STT:SM:CHAT ID: ", chat_id)
+            # *** проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
+            query = session.query(m_users.CUser)
+            query = query.filter_by(ftguserid=tg_user_id)
+            data = query.first()
+            if data is None:
 
-            # если нет - добавить, и получить id
-            chat = m_chats.CChat(tg_chat_id)
-            self.database.get_session().add(chat)
-            self.database.get_session().commit()
-            chat_id = chat.id
-        else:
+                # *** если нет - добавить, и получить id
+                user = m_users.CUser(tg_user_id)
+                session.add(user)
+                session.commit()
+                user_id = user.id
+                # *** заодно сохраним имя пользователя
+                user_name = m_names.CName(user_id, tg_user_name)
+                session.add(user_name)
+                session.commit()
+                print(f"STT:SM:USR NAME: {user_name.id}")
+            else:
 
-            chat_id = data.id
-        print("STT:SM:CHAT ID: ", chat_id)
-        # проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
-        query = self.database.get_session().query(m_users.CUser)
-        query = query.filter_by(fchatid=user_id)
-        data = query.first()
-        if data is None:
+                user_id = data.id
+            print("STT:SM:USER ID: ", user_id)
+            # *** Проанализируем фразу
+            letters = len(message_text)
+            words = len(message_text.split(" "))
+            # *** Есть ли запись об этом человеке в таблице статистики?
+            # если есть - получить id
+            query = session.query(m_stat.CStat)
+            query = query.filter_by(fuserid=user_id)
+            data = query.first()
+            if data is None:
 
-            # если нет - добавить, и получить id
-            user = m_users.CUser(user_id)
-            self.database.get_session().add(user)
-            self.database.get_session().commit()
-            user_id = user.id
-        else:
+                # *** Добавляем информацию в базу
+                stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
+                session.add(stat_object)
+            else:
 
-            user_id = data.id
-        print("STT:SM:USER ID: ", user_id)
+                # *** Изменяем информацию в базе
+                query.update({m_stat.CStat.fletters: data.fletters + letters,
+                              m_stat.CStat.fwords: data.fwords + words,
+                              m_stat.CStat.fphrases: data.fphrases + 1}, synchronize_session=False)
+            session.commit()
 
-        # если есть - получить id
-        # if tg_chat_id.count() == 0:
-        #
-        #     #
-        #     chat = m_chats.CChat(chat_id)
-        #     self.database.get_session().add(chat)
-        #     self.database.get_session().commit()
-        #     print(f"{chat_title}:{chat_id}:{chat}")
-        #     # else:
-        #     #     # если есть - получить id
-        #     # query =
-        #     # print(tg_chat_id.all())
-        #
-        # # tg_id_data = self.database.get_session().query(m_users.CUser).filter_by(ftguserid=user_id)
-        # # if tg_id_data.count() == 0:
-        # select seq
-        # from sqlite_sequence where
-        # name = "table_name"
-        # me = User(nickname, email, passw)
-        #     db.session.add(me)
-        #     db.session.commit()
-        #     print(me.id)
+            # if tg_chat_id.count() == 0:
+            #
+            #     #
+            #     chat = m_chats.CChat(chat_id)
+            #     self.database.get_session().add(chat)
+            #     self.database.get_session().commit()
+            #     print(f"{chat_title}:{chat_id}:{chat}")
+            #     # else:
+            #     #     # если есть - получить id
+            #     # query =
+            #     # print(tg_chat_id.all())
+            #
+            # # tg_id_data = self.database.get_session().query(m_users.CUser).filter_by(ftguserid=user_id)
+            # # if tg_id_data.count() == 0:
+            # select seq
+            # from sqlite_sequence where
+            # name = "table_name"
+            # me = User(nickname, email, passw)
+            #     db.session.add(me)
+            #     db.session.commit()
+            #     print(me.id)

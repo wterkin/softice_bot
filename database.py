@@ -52,9 +52,9 @@ class CDataBase:
         self.engine = create_engine('sqlite:///'+self.get_db_path(),
                                     echo=False,
                                     connect_args={'check_same_thread': False})
-        session = sessionmaker()
-        session.configure(bind=self.engine)
-        self.session = session()
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        self.session = Session()
         m_ancestor.Base.metadata.bind = self.engine
 
     def create(self):
