@@ -15,7 +15,7 @@ class CUser(m_ancestor.CAncestor):
                        unique=True,
                        index=True)
 
-    def __init__(self, ptguserid: str):
+    def __init__(self, ptguserid: int):
         """Конструктор"""
         super().__init__()
         self.ftguserid = ptguserid

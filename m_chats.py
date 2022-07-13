@@ -15,7 +15,7 @@ class CChat(m_ancestor.CAncestor):
                      unique=True,
                      index=True)
 
-    def __init__(self, pchatid: str):
+    def __init__(self, pchatid: int):
         """Конструктор"""
         super().__init__()
         self.fchatid = pchatid

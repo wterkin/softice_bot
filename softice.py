@@ -70,7 +70,7 @@ class CSoftIceBot:
         self.babbler = babbler.CBabbler(self.config)
         self.librarian = librarian.CLibrarian(self.config)
         self.meteorolog = meteorolog.CMeteorolog(self.config)
-        self.statistic = statistic.CStatistic(self.config)
+        self.statistic = statistic.CStatistic(self.config, self.database)
         self.theolog = theolog.CTheolog(self.config)
 
         @self.robot.message_handler(content_types=['text'])
@@ -103,7 +103,7 @@ class CSoftIceBot:
                                                      user_title, message_text)
                 else:
 
-                    # self.statistic.save_message(pmessage)
+                    self.statistic.save_message(pmessage)
                     message = self.babbler.babbler(chat_title, message_text)
                     if len(message) > 0:
                         self.robot.send_message(chat_id, message)

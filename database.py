@@ -47,7 +47,11 @@ class CDataBase:
 
     def connect(self):
         """Устанавливает соединение с БД."""
-        self.engine = create_engine('sqlite:///'+self.get_db_path(), echo=False)
+        # SQLALCHEMY_DATABASE_URIна
+        # firebird + fdb: // login_on_firebird: password_on_firebird @ localhost:3050 / + os.path.join(basedir,
+        self.engine = create_engine('sqlite:///'+self.get_db_path(),
+                                    echo=False,
+                                    connect_args={'check_same_thread': False})
         session = sessionmaker()
         session.configure(bind=self.engine)
         self.session = session()

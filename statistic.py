@@ -2,15 +2,15 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль статистики для бота."""
 
-from pathlib import Path
+# from pathlib import Path
 import prototype
 import functions
-import database
+# import database
 import m_chats
 import m_users
 # from sys import platform
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
 
 import m_ancestor
 
@@ -22,28 +22,30 @@ ENABLED_IN_CHATS_KEY = "statistic_chats"
 class CStatistic(prototype.CPrototype):
     """Класс метеоролога."""
 
-    def __init__(self, pconfig):
+    def __init__(self, pconfig, pdatabase):
         super().__init__()
         self.config = pconfig
-        self.application_folder = Path.cwd()
-        database_path = self.config[database.get_db_path_key()]
-        if Path(database_path).exists():
-
-            self.engine = create_engine('sqlite:///'+database_path,
-                                        echo=False,
-                                        connect_args={'check_same_thread': False})
-            session = sessionmaker()
-            session.configure(bind=self.engine)
-            self.session = session()
-            m_ancestor.Base.metadata.bind = self.engine
-
-        else:
-
-            raise IOError
+        self.database = pdatabase
+        # self.application_folder = Path.cwd()
+        # database_path = self.config[database.get_db_path_key()]
+        # if Path(database_path).exists():
+        #
+        #     self.engine = create_engine('sqlite:///'+database_path,
+        #                                 echo=False,
+        #                                 connect_args={'check_same_thread': False})
+        #     session = sessionmaker()
+        #     session.configure(bind=self.engine)
+        #     self.session = session()
+        #     m_ancestor.Base.metadata.bind = self.engine
+        #
+        # else:
+        #
+        #     raise IOError
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         if self.is_enabled(pchat_title):
+
             word_list: list = functions.parse_input(pmessage_text)
             return word_list[0] in COMMANDS or word_list[0] in HINT
         return False
@@ -67,6 +69,7 @@ class CStatistic(prototype.CPrototype):
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
+        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
@@ -80,36 +83,42 @@ class CStatistic(prototype.CPrototype):
         user_id: int = pmessage.from_user.id
         user_name: str = pmessage.from_user.username
         user_title: str = pmessage.from_user.first_name
-        # проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
-        # если есть - получить id
+
         # проверить, нет ли юзера в таблице имен, если нет - добавить и получить id
         # если есть - получить id
 
         # проверить, нет ли чата в таблице чатов
-        print("STT:SM:TGTIT: ", tg_chat_title)
-        print("STT:SM:TGTID: ", tg_chat_id)
-        query = self.session.query(m_chats.CChat)
+        query = self.database.get_session().query(m_chats.CChat)
         query = query.filter_by(fchatid=tg_chat_id)
-        print("--------------------------")
-        print(tg_chat_id)
-        print("--------------------------")
-        print(query)
-        print("--------------------------")
-        print(query.count())
-        print("--------------------------")
         data = query.first()
         if data is None:
 
+            # если нет - добавить, и получить id
             chat = m_chats.CChat(tg_chat_id)
-            self.session.add(chat)
-            self.session.commit()
+            self.database.get_session().add(chat)
+            self.database.get_session().commit()
             chat_id = chat.id
-            # print(f"{tg_chat_title}:{tg_chat_id}:{chat}")
         else:
 
             chat_id = data.id
-        print("STT:SM:STGID: ", chat_id)
-        # если нет - добавить, и получить id
+        print("STT:SM:CHAT ID: ", chat_id)
+        # проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
+        query = self.database.get_session().query(m_users.CUser)
+        query = query.filter_by(fchatid=user_id)
+        data = query.first()
+        if data is None:
+
+            # если нет - добавить, и получить id
+            user = m_users.CUser(user_id)
+            self.database.get_session().add(user)
+            self.database.get_session().commit()
+            user_id = user.id
+        else:
+
+            user_id = data.id
+        print("STT:SM:USER ID: ", user_id)
+
+        # если есть - получить id
         # if tg_chat_id.count() == 0:
         #
         #     #
