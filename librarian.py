@@ -22,8 +22,9 @@ FIND_QUOTE_CMD: int = 13
 RELOAD_LIBRARY: list = ["libreload", "lrl"]
 SAVE_LIBRARY: list = ["libresave", "lsv"]
 # *** Ключ для списка доступных каналов в словаре конфига
-HOKKU_FILE_NAME: str = "data/hokku.txt"
-QUOTES_FILE_NAME: str = "data/quotes.txt"
+LIBRARIAN_FOLDER = "librarian/"
+HOKKU_FILE_NAME: str = "hokku.txt"
+QUOTES_FILE_NAME: str = "quotes.txt"
 HOKKU_COMMANDS: list = [["хокку", "хк", "hokku", "hk"],
                         ["хоккудоб", "хк+", "hokkuadd", "hk+"],
                         ["хоккуудал", "хк-", "hokkudel", "hk-"],
@@ -40,10 +41,11 @@ ENABLED_IN_CHATS_KEY: str = "librarian_chats"
 class CLibrarian(prototype.CPrototype):
     """Класс библиотекаря."""
 
-    def __init__(self, pconfig):
+    def __init__(self, pconfig: dict, pdata_path: str):
 
         super().__init__()
         self.config = pconfig
+        self.data_path = pdata_path + LIBRARIAN_FOLDER
         self.hokku: list = []
         self.quotes: list = []
         self.reload()
@@ -261,8 +263,8 @@ class CLibrarian(prototype.CPrototype):
                 # *** Пользователь хочет сохранить книгу хокку
                 if puser_name == self.config["master"]:
 
-                    self.save_book(self.hokku, HOKKU_FILE_NAME)
-                    self.save_book(self.quotes, QUOTES_FILE_NAME)
+                    self.save_book(self.hokku, self.data_path + HOKKU_FILE_NAME)
+                    self.save_book(self.quotes, self.data_path + QUOTES_FILE_NAME)
                     message = "Библиотека сохранена"
                 else:
 
@@ -327,8 +329,8 @@ class CLibrarian(prototype.CPrototype):
 
     def reload(self):
         """Перезагружает библиотеку."""
-        self.hokku = self.load_book_from_file(HOKKU_FILE_NAME)
-        self.quotes = self.load_book_from_file(QUOTES_FILE_NAME)
+        self.hokku = self.load_book_from_file(self.data_path + HOKKU_FILE_NAME)
+        self.quotes = self.load_book_from_file(self.data_path + QUOTES_FILE_NAME)
         print(f"Librarian successfully reload library - {len(self.hokku)} hokku "
               f"and {len(self.quotes)}. quotes")
 

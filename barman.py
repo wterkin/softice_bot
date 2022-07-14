@@ -29,50 +29,51 @@ COFFEE_EMODJI: str = "☕️"
 COGNAC_EMODJI: str = "🥃"
 COCKTAIL_EMODJI: str = "🍹"
 COOKIE_EMODJI: str = "🍪"
+BARMAN_FOLDER: str = "barman/"
 # *** Команда перегрузки текстов
 BAR_RELOAD: list = ["barreload", "brl"]
 
-BEER_CANS_PATH: str = "data/bar/beer_cans.txt"
-BEER_MARKS_PATH: str = "data/bar/beer_marks.txt"
+BEER_CANS_PATH: str = "beer_cans.txt"
+BEER_MARKS_PATH: str = "beer_marks.txt"
 BEER_CANS_KEY: str = "bcans"
 BEER_MARKS_KEY: str = "bmarks"
 
-COCKTAIL_MARKS_PATH: str = "data/bar/cocktail_marks.txt"
+COCKTAIL_MARKS_PATH: str = "cocktail_marks.txt"
 
-COFFEE_MARKS_PATH: str = "data/bar/coffee_marks.txt"
+COFFEE_MARKS_PATH: str = "coffee_marks.txt"
 COFFEE_MARKS_KEY: str = "cfmarks"
-COFFEE_FILLS_PATH: str = "data/bar/coffee_fills.txt"
+COFFEE_FILLS_PATH: str = "coffee_fills.txt"
 COFFEE_FILLS_KEY: str = "cffills"
 
-COGNAC_CANS_PATH: str = "data/bar/cognac_cans.txt"
+COGNAC_CANS_PATH: str = "cognac_cans.txt"
 COGNAC_CANS_KEY: str = "cgcans"
-COGNAC_MARKS_PATH: str = "data/bar/cognac_marks.txt"
+COGNAC_MARKS_PATH: str = "cognac_marks.txt"
 COGNAC_MARKS_KEY: str = "cgmarks"
-COGNAC_FILLS_PATH: str = "data/bar/cognac_fills.txt"
+COGNAC_FILLS_PATH: str = "cognac_fills.txt"
 COGNAC_FILLS_KEY: str = "cgfills"
 
-COOKIES_SOURCES_PATH: str = "data/bar/cookies_sources.txt"
+COOKIES_SOURCES_PATH: str = "cookies_sources.txt"
 COOKIES_SOURCES_KEY: str = "cksrc"
-COOKIES_MARKS_PATH: str = "data/bar/cookies_marks.txt"
+COOKIES_MARKS_PATH: str = "cookies_marks.txt"
 COOKIES_MARKS_KEY: str = "ckmrk"
-COOKIES_TRANSFER_PATH: str = "data/bar/cookies_transfer.txt"
+COOKIES_TRANSFER_PATH: str = "cookies_transfer.txt"
 COOKIES_TRANSFER_KEY: str = "cktrf"
 
-DRINKS_SOURCES_PATH: str = "data/bar/drink_sources.txt"
+DRINKS_SOURCES_PATH: str = "drink_sources.txt"
 DRINKS_SOURCES_KEY: str = "drsrc"
-DRINKS_TRANSFER_PATH: str = "data/bar/drink_transfer.txt"
+DRINKS_TRANSFER_PATH: str = "drink_transfer.txt"
 DRINKS_TRANSFER_KEY: str = "drtrf"
 
-TEA_MARKS_PATH: str = "data/bar/tea_marks.txt"
+TEA_MARKS_PATH: str = "tea_marks.txt"
 TEA_MARKS_KEY: str = "teamr"
-TEA_FILLS_PATH: str = "data/bar/tea_fills.txt"
+TEA_FILLS_PATH: str = "tea_fills.txt"
 TEA_FILLS_KEY: str = "teafl"
 
-VODKA_CANS_PATH: str = "data/bar/vodka_cans.txt"
+VODKA_CANS_PATH: str = "vodka_cans.txt"
 VODKA_CANS_KEY: str = "vdcans"
-VODKA_MARKS_PATH: str = "data/bar/vodka_marks.txt"
+VODKA_MARKS_PATH: str = "vodka_marks.txt"
 VODKA_MARKS_KEY: str = "vdmarks"
-VODKA_FILLS_PATH: str = "data/bar/vodka_fills.txt"
+VODKA_FILLS_PATH: str = "vodka_fills.txt"
 VODKA_FILLS_KEY: str = "vdfills"
 
 # *** Ключ для списка доступных каналов в словаре конфига
@@ -83,10 +84,12 @@ BAR_HINT: list = ["бар", "bar"]
 class CBarman(prototype.CPrototype):
     """Класс бармена."""
 
-    def __init__(self, pconfig):
+    def __init__(self, pconfig, pdata_path):
 
         super().__init__()
         self.config = pconfig
+        self.data_path = pdata_path+BARMAN_FOLDER
+        print(self.data_path)
         self.beer: dict = {}
         self.cocktail: list = []
         self.cognac: dict = {}
@@ -374,13 +377,13 @@ class CBarman(prototype.CPrototype):
 
     def load_beer(self):
         """Загружает данные пива."""
-        beer_cans: list = func.load_from_file(BEER_CANS_PATH)
+        beer_cans: list = func.load_from_file(self.data_path + BEER_CANS_PATH)
         if beer_cans:
 
             print("Barmen loads ", len(beer_cans), " beer cans.")
             self.beer[BEER_CANS_KEY] = beer_cans
 
-            beer_marks: list = func.load_from_file(BEER_MARKS_PATH)
+            beer_marks: list = func.load_from_file(self.data_path + BEER_MARKS_PATH)
             if beer_marks:
 
                 print("Barmen loads ", len(beer_marks), " beer marks.")
@@ -390,13 +393,13 @@ class CBarman(prototype.CPrototype):
 
     def load_coffee(self):
         """Загружает данные пива."""
-        coffee_marks: list = func.load_from_file(COFFEE_MARKS_PATH)
+        coffee_marks: list = func.load_from_file(self.data_path + COFFEE_MARKS_PATH)
         if coffee_marks:
 
             print("Barmen loads ", len(coffee_marks), " coffee marks.")
             self.coffee[COFFEE_MARKS_KEY] = coffee_marks
 
-            coffee_fills: list = func.load_from_file(COFFEE_FILLS_PATH)
+            coffee_fills: list = func.load_from_file(self.data_path + COFFEE_FILLS_PATH)
             if coffee_fills:
 
                 print("Barmen loads ", len(coffee_fills), " coffee fills.")
@@ -406,7 +409,7 @@ class CBarman(prototype.CPrototype):
 
     def load_cocktail(self):
         """Загружает данные коктейлей"""
-        self.cocktail = func.load_from_file(COCKTAIL_MARKS_PATH)
+        self.cocktail = func.load_from_file(self.data_path + COCKTAIL_MARKS_PATH)
         if self.cocktail:
 
             print("Barmen loads ", len(self.cocktail), " cocktail marks.")
@@ -415,19 +418,19 @@ class CBarman(prototype.CPrototype):
 
     def load_cognac(self):
         """Загружает данные пива."""
-        cognac_cans: list = func.load_from_file(COGNAC_CANS_PATH)
+        cognac_cans: list = func.load_from_file(self.data_path + COGNAC_CANS_PATH)
         if cognac_cans:
 
             print("Barmen loads ", len(cognac_cans), " cognac cans.")
             self.cognac[COGNAC_CANS_KEY] = cognac_cans
 
-            cognac_marks: list = func.load_from_file(COGNAC_MARKS_PATH)
+            cognac_marks: list = func.load_from_file(self.data_path + COGNAC_MARKS_PATH)
             if cognac_marks:
 
                 print("Barmen loads ", len(cognac_marks), " cognac marks.")
                 self.cognac[COGNAC_MARKS_KEY] = cognac_marks
 
-                cognac_fills: list = func.load_from_file(COGNAC_FILLS_PATH)
+                cognac_fills: list = func.load_from_file(self.data_path + COGNAC_FILLS_PATH)
                 if cognac_fills:
 
                     print("Barmen loads ", len(cognac_fills), " cognac fills.")
@@ -437,19 +440,19 @@ class CBarman(prototype.CPrototype):
 
     def load_cookies(self):
         """Загружает данные пива."""
-        cookies_sources: list = func.load_from_file(COOKIES_SOURCES_PATH)
+        cookies_sources: list = func.load_from_file(self.data_path + COOKIES_SOURCES_PATH)
         if cookies_sources:
 
             print("Barmen loads ", len(cookies_sources), " cookies sources.")
             self.cookies[COOKIES_SOURCES_KEY] = cookies_sources
 
-            cookies_marks: list = func.load_from_file(COOKIES_MARKS_PATH)
+            cookies_marks: list = func.load_from_file(self.data_path + COOKIES_MARKS_PATH)
             if cookies_marks:
 
                 print("Barmen loads ", len(cookies_marks), " cookies marks.")
                 self.cookies[COOKIES_MARKS_KEY] = cookies_marks
 
-                cookies_transfer: list = func.load_from_file(COOKIES_TRANSFER_PATH)
+                cookies_transfer: list = func.load_from_file(self.data_path + COOKIES_TRANSFER_PATH)
                 if cookies_transfer:
 
                     print("Barmen loads ", len(cookies_transfer), " cookies transfer.")
@@ -459,13 +462,13 @@ class CBarman(prototype.CPrototype):
 
     def load_drinks(self):
         """Загружает данные пива."""
-        drinks_sources: list = func.load_from_file(DRINKS_SOURCES_PATH)
+        drinks_sources: list = func.load_from_file(self.data_path + DRINKS_SOURCES_PATH)
         if drinks_sources:
 
             print("Barmen loads ", len(drinks_sources), " drinks sources.")
             self.drinks[DRINKS_SOURCES_KEY] = drinks_sources
 
-            drinks_transfer: list = func.load_from_file(DRINKS_TRANSFER_PATH)
+            drinks_transfer: list = func.load_from_file(self.data_path + DRINKS_TRANSFER_PATH)
             if drinks_transfer:
 
                 print("Barmen loads ", len(drinks_transfer), " drinks transfer.")
@@ -475,13 +478,13 @@ class CBarman(prototype.CPrototype):
 
     def load_tea(self):
         """Загружает данные пива."""
-        tea_marks: list = func.load_from_file(TEA_MARKS_PATH)
+        tea_marks: list = func.load_from_file(self.data_path + TEA_MARKS_PATH)
         if tea_marks:
 
             print("Barmen loads ", len(tea_marks), " tea marks.")
             self.tea[TEA_MARKS_KEY] = tea_marks
 
-            tea_fills: list = func.load_from_file(TEA_FILLS_PATH)
+            tea_fills: list = func.load_from_file(self.data_path + TEA_FILLS_PATH)
             if tea_fills:
 
                 print("Barmen loads ", len(tea_fills), " tea fills.")
@@ -491,19 +494,19 @@ class CBarman(prototype.CPrototype):
 
     def load_vodka(self):
         """Загружает данные пива."""
-        vodka_cans: list = func.load_from_file(VODKA_CANS_PATH)
+        vodka_cans: list = func.load_from_file(self.data_path + VODKA_CANS_PATH)
         if vodka_cans:
 
             print("Barmen loads ", len(vodka_cans), " vodka cans.")
             self.vodka[VODKA_CANS_KEY] = vodka_cans
 
-            vodka_marks: list = func.load_from_file(VODKA_MARKS_PATH)
+            vodka_marks: list = func.load_from_file(self.data_path + VODKA_MARKS_PATH)
             if vodka_marks:
 
                 print("Barmen loads ", len(vodka_marks), " vodka marks.")
                 self.vodka[VODKA_MARKS_KEY] = vodka_marks
 
-                vodka_fills: list = func.load_from_file(VODKA_FILLS_PATH)
+                vodka_fills: list = func.load_from_file(self.data_path + VODKA_FILLS_PATH)
                 if vodka_fills:
 
                     print("Barmen loads ", len(vodka_fills), " vodka fills.")

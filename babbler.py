@@ -9,30 +9,30 @@ from pathlib import Path
 import functions as func
 import prototype
 
-BABBLER_BASE = "data/babbling"
-
 # *** Команда перегрузки текстов
 BABBLER_RELOAD: list = ["babreload", "bblr"]
 
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "babbler_chats"
 
-GREETINGS_WORDS: list = []
-GREETINGS_WORDS_FILE: str = "data/babbling/greetings_words.txt"
-GREETINGS_ANSWERS: list = []
-GREETINGS_ANSWERS_FILE: str = "data/babbling/greetings_answers.txt"
+# GREETINGS_WORDS: list = []
+# GREETINGS_WORDS_FILE: str = "greetings_words.txt"
+# GREETINGS_ANSWERS: list = []
+# GREETINGS_ANSWERS_FILE: str = "/babbling/greetings_answers.txt"
+#
+# WEATHER_WORDS: list = []
+# WEATHER_WORDS_FILE: str = "data/babbling/weather_words.txt"
+# WEATHER_ANSWERS: list = []
+# WEATHER_ANSWERS_FILE: str = "data/babbling/weather_answers.txt"
+#
+# BEAUTY_WORDS: list = []
+# BEAUTY_WORDS_FILE: str = "data/babbling/beauty_words.txt"
+# BEAUTY_ANSWERS: list = []
+# BEAUTY_ANSWERS_FILE: str = "data/babbling/beauty_answers.txt"
 
-WEATHER_WORDS: list = []
-WEATHER_WORDS_FILE: str = "data/babbling/weather_words.txt"
-WEATHER_ANSWERS: list = []
-WEATHER_ANSWERS_FILE: str = "data/babbling/weather_answers.txt"
+# BABBLER_DATA: str = "data/babbling/"
+BABBLER_PATH: str = "babbler/"
 
-BEAUTY_WORDS: list = []
-BEAUTY_WORDS_FILE: str = "data/babbling/beauty_words.txt"
-BEAUTY_ANSWERS: list = []
-BEAUTY_ANSWERS_FILE: str = "data/babbling/beauty_answers.txt"
-
-BABBLER_DATA: str = "data/babbling/"
 BABBLER_PERIOD: int = 10  # !
 TRIGGERS_FOLDER: str = "triggers"
 REACTIONS_FOLDER: str = "reactions"
@@ -46,10 +46,11 @@ BABBLER_EMODJI: list = ["😎", "😊", "☺", "😊", "😋"]
 class CBabbler(prototype.CPrototype):
     """Класс болтуна."""
 
-    def __init__(self, pconfig):
+    def __init__(self, pconfig, pdata_path):
         """"Конструктор."""
         super().__init__()
         self.config = pconfig
+        self.data_path = pdata_path + BABBLER_PATH
         self.mind: list = []
         self.last_phrase_time: datetime = datetime.now()
         self.reload()
@@ -132,9 +133,10 @@ class CBabbler(prototype.CPrototype):
     def reload(self):
         """Загружает тексты болтуна."""
         # *** Собираем пути
-        triggers_path = Path(BABBLER_DATA) / TRIGGERS_FOLDER
+        # BABBLER_FOLDER
+        triggers_path = Path(self.data_path) / TRIGGERS_FOLDER
         assert triggers_path.is_dir(), f"{TRIGGERS_FOLDER} must be folder"
-        reactions_path = Path(BABBLER_DATA) / REACTIONS_FOLDER
+        reactions_path = Path(self.data_path) / REACTIONS_FOLDER
         assert reactions_path.is_dir(), f"{REACTIONS_FOLDER} must be folder"
         for trigger in triggers_path.iterdir():
 

@@ -2,6 +2,8 @@
     "proxy":"",
     "master":"Pet_Rovich",
     "master_name":"Петрович",
+    "windows_data_folder":"D:/home/YandexDisk/Private/app_data/softice/",
+    "linux_data_folder":"/media/data/Clouds/YandexDisk/Private/app_data/softice/",
     "windows_db_path":"D:/home/YandexDisk/Private/Common/softice/softice.db",
     "linux_db_path":"/media/data/Clouds/YandexDisk/Private/Common/softice/softice.db",
     "token":"1978360349:AAH02ct7Vry0r9syAqVHUWbKtbFsNUru4y4",

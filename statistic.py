@@ -87,61 +87,67 @@ class CStatistic(prototype.CPrototype):
         tg_user_name: str = pmessage.from_user.username
         # user_title: str = pmessage.from_user.first_name
         if message_text[0] != "!":
-            # проверить, нет ли чата в таблице чатов
-            query = session.query(m_chats.CChat)
-            query = query.filter_by(fchatid=tg_chat_id)
-            data = query.first()
-            if data is None:
 
-                # если нет - добавить, и получить id
-                chat = m_chats.CChat(tg_chat_id)
-                session.add(chat)
+            if tg_user_name is not None and \
+               tg_user_name != "TrueMafiaBot" and \
+               tg_user_name != "MafiaWarBot":
+
+                # проверить, нет ли чата в таблице чатов
+                query = session.query(m_chats.CChat)
+                query = query.filter_by(fchatid=tg_chat_id)
+                data = query.first()
+                if data is None:
+
+                    # если нет - добавить, и получить id
+                    chat = m_chats.CChat(tg_chat_id)
+                    session.add(chat)
+                    session.commit()
+                    chat_id = chat.id
+                else:
+
+                    chat_id = data.id
+                print("STT:SM:CHAT ID: ", chat_id)
+                # *** проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
+                query = session.query(m_users.CUser)
+                query = query.filter_by(ftguserid=tg_user_id)
+                data = query.first()
+                if data is None:
+
+                    # *** если нет - добавить, и получить id
+                    user = m_users.CUser(tg_user_id)
+                    session.add(user)
+                    session.commit()
+                    user_id = user.id
+                    # *** заодно сохраним имя пользователя
+                    user_name = m_names.CName(user_id, tg_user_name)
+                    session.add(user_name)
+                    session.commit()
+                    print(f"STT:SM:USR NAME: {user_name.id}")
+                else:
+
+                    user_id = data.id
+                print("STT:SM:USER NAME: ", tg_user_name)
+                print("STT:SM:USER ID: ", user_id)
+                # *** Проанализируем фразу
+                letters = len(message_text)
+                words = len(message_text.split(" "))
+                # *** Есть ли запись об этом человеке в таблице статистики?
+                # если есть - получить id
+                query = session.query(m_stat.CStat)
+                query = query.filter_by(fuserid=user_id)
+                data = query.first()
+                if data is None:
+
+                    # *** Добавляем информацию в базу
+                    stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
+                    session.add(stat_object)
+                else:
+
+                    # *** Изменяем информацию в базе
+                    query.update({m_stat.CStat.fletters: data.fletters + letters,
+                                  m_stat.CStat.fwords: data.fwords + words,
+                                  m_stat.CStat.fphrases: data.fphrases + 1}, synchronize_session=False)
                 session.commit()
-                chat_id = chat.id
-            else:
-
-                chat_id = data.id
-            print("STT:SM:CHAT ID: ", chat_id)
-            # *** проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
-            query = session.query(m_users.CUser)
-            query = query.filter_by(ftguserid=tg_user_id)
-            data = query.first()
-            if data is None:
-
-                # *** если нет - добавить, и получить id
-                user = m_users.CUser(tg_user_id)
-                session.add(user)
-                session.commit()
-                user_id = user.id
-                # *** заодно сохраним имя пользователя
-                user_name = m_names.CName(user_id, tg_user_name)
-                session.add(user_name)
-                session.commit()
-                print(f"STT:SM:USR NAME: {user_name.id}")
-            else:
-
-                user_id = data.id
-            print("STT:SM:USER ID: ", user_id)
-            # *** Проанализируем фразу
-            letters = len(message_text)
-            words = len(message_text.split(" "))
-            # *** Есть ли запись об этом человеке в таблице статистики?
-            # если есть - получить id
-            query = session.query(m_stat.CStat)
-            query = query.filter_by(fuserid=user_id)
-            data = query.first()
-            if data is None:
-
-                # *** Добавляем информацию в базу
-                stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
-                session.add(stat_object)
-            else:
-
-                # *** Изменяем информацию в базе
-                query.update({m_stat.CStat.fletters: data.fletters + letters,
-                              m_stat.CStat.fwords: data.fwords + words,
-                              m_stat.CStat.fphrases: data.fphrases + 1}, synchronize_session=False)
-            session.commit()
 
             # if tg_chat_id.count() == 0:
             #

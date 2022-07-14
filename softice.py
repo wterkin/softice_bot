@@ -3,6 +3,7 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
 
+from sys import platform
 import json
 import telebot
 from telebot import apihelper
@@ -14,6 +15,9 @@ import statistic
 import theolog
 import librarian
 import meteorolog
+
+LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
+WINDOWS_DATA_FOLDER_KEY: str = "windows_data_folder"
 
 ALLOWED_CHATS: str = "allowed_chats"
 BOT_NAME: str = "SoftIceBot"
@@ -66,9 +70,17 @@ class CSoftIceBot:
         if not self.database.exists():
 
             self.database.create()
-        self.barman = barman.CBarman(self.config)
-        self.babbler = babbler.CBabbler(self.config)
-        self.librarian = librarian.CLibrarian(self.config)
+        # *** Где у нас данные лежат?
+        if platform in ("linux", "linux2"):
+
+            self.data_path = self.config[LINUX_DATA_FOLDER_KEY]
+        else:
+
+            self.data_path = self.config[WINDOWS_DATA_FOLDER_KEY]
+
+        self.barman = barman.CBarman(self.config, self.data_path)
+        self.babbler = babbler.CBabbler(self.config, self.data_path)
+        self.librarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog = meteorolog.CMeteorolog(self.config)
         self.statistic = statistic.CStatistic(self.config, self.database)
         self.theolog = theolog.CTheolog(self.config)
