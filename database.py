@@ -20,24 +20,19 @@ import m_users  # noqa
 # py lint: disable=line-too-long
 
 DATABASE_VERSION: int = 1
-LINUX_DATABASE_PATH_KEY: str = "linux_db_path"
-WINDOWS_DATABASE_PATH_KEY: str = "windows_db_path"
-
-
-def get_db_path_key():
-    """Возвращает путь к БД в зависимости от ОС."""
-    if platform in ("linux", "linux2"):
-        return LINUX_DATABASE_PATH_KEY
-    return WINDOWS_DATABASE_PATH_KEY
+DATABASE_NAME: str = "softice.db"
+# LINUX_DATABASE_PATH_KEY: str = "linux_db_path"
+# WINDOWS_DATABASE_PATH_KEY: str = "windows_db_path"
 
 
 class CDataBase:
     """Класс."""
-    def __init__(self, pconfig):
+    def __init__(self, pconfig, pdata_path):
         """Конструктор класса."""
         # super(CMainWindow, self).__init__()
         self.application_folder = Path.cwd()
         self.config = pconfig
+        self.data_path = pdata_path
         self.session = None
         self.engine = None
         self.connect()
@@ -49,7 +44,7 @@ class CDataBase:
         """Устанавливает соединение с БД."""
         # SQLALCHEMY_DATABASE_URIна
         # firebird + fdb: // login_on_firebird: password_on_firebird @ localhost:3050 / + os.path.join(basedir,
-        self.engine = create_engine('sqlite:///'+self.get_db_path(),
+        self.engine = create_engine('sqlite:///' + self.data_path + DATABASE_NAME,
                                     echo=False,
                                     connect_args={'check_same_thread': False})
         Session = sessionmaker()
@@ -78,15 +73,7 @@ class CDataBase:
 
     def exists(self):
         """Проверяет наличие базы данных по пути в конфигурации."""
-        db_folder_path = self.get_db_path()
-        return Path(db_folder_path).exists()
-
-    def get_db_path(self):
-        """Возвращает путь к БД в зависимости от ОС."""
-        if platform in ("linux", "linux2"):
-
-            return self.config[LINUX_DATABASE_PATH_KEY]
-        return self.config[WINDOWS_DATABASE_PATH_KEY]
+        return Path(self.data_path + DATABASE_NAME).exists()
 
     def get_session(self):
         """Возвращает экземпляр session."""

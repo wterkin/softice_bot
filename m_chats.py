@@ -1,7 +1,7 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль класса справочника чатов."""
 
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, String
 
 import m_ancestor
 
@@ -14,13 +14,18 @@ class CChat(m_ancestor.CAncestor):
                      nullable=False,
                      unique=True,
                      index=True)
+    fchatname = Column(String,
+                       nullable=False,
+                       )
 
-    def __init__(self, pchatid: int):
+    def __init__(self, pchat_id: int, pchat_name: str):
         """Конструктор"""
         super().__init__()
-        self.fchatid = pchatid
+        self.fchatid = pchat_id
+        self.fchatname = pchat_name
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
-                   Chat ID:{self.fchatid}"""
+                   Chat ID:{self.fchatid}
+                   Chat Name:{self.fchatname}"""

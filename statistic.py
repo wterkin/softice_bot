@@ -6,15 +6,20 @@
 import m_names
 import prototype
 import functions
-# import database
+import database
 import m_chats
 import m_users
 import m_stat
+
 # from sys import platform
 # from sqlalchemy import create_engine
 # from sqlalchemy.orm import sessionmaker
 
 # import m_ancestor
+TOP_10_COMMAND = 0
+TOP_25_COMMAND = 1
+TOP_50_COMMAND = 2
+PERS_COMMAND = 3
 
 HINT = ["стат", "stat"]
 COMMANDS = ["топ10", "топ25", "топ50", "перс", "top10", "top25", "top50", "pers"]
@@ -24,38 +29,39 @@ ENABLED_IN_CHATS_KEY = "statistic_chats"
 class CStatistic(prototype.CPrototype):
     """Класс метеоролога."""
 
-    def __init__(self, pconfig, pdatabase):
+    def __init__(self, pconfig: dict, pdatabase: database.CDataBase):
         super().__init__()
-        self.config = pconfig
-        self.database = pdatabase
-        # self.application_folder = Path.cwd()
-        # database_path = self.config[database.get_db_path_key()]
-        # if Path(database_path).exists():
-        #
-        #     self.engine = create_engine('sqlite:///'+database_path,
-        #                                 echo=False,
-        #                                 connect_args={'check_same_thread': False})
-        #     session = sessionmaker()
-        #     session.configure(bind=self.engine)
-        #     self.session = session()
-        #     m_ancestor.Base.metadata.bind = self.engine
-        #
-        # else:
-        #
-        #     raise IOError
+        self.config: dict = pconfig
+        self.database: database.CDataBase = pdatabase
+        self.busy: bool = False
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         if self.is_enabled(pchat_title):
-
             word_list: list = functions.parse_input(pmessage_text)
             return word_list[0] in COMMANDS or word_list[0] in HINT
         return False
 
+    def get_command(self, pword: str) -> int:  # noqa
+        """Распознает команду и возвращает её код, в случае неудачи - None.
+        """
+        assert pword is not None, \
+            "Assert: [librarian.get_command] " \
+            "No <pword> parameter specified!"
+        result: int = -1
+        for command_idx, command in enumerate(COMMANDS):
+
+            if pword in command:
+                result = command_idx
+
+        if result > 3:
+            result = result - 4
+
+        return result
+
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
         if self.is_enabled(pchat_title):
-
             command_list: str = ", ".join(COMMANDS)
             command_list += "\n"
             return command_list
@@ -65,9 +71,49 @@ class CStatistic(prototype.CPrototype):
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
         if self.is_enabled(pchat_title):
-
             return ", ".join(HINT)
         return ""
+
+    def get_personal_information(self, ptg_chat_id: int, puser_title: str):
+        """Возвращает информацию о пользователе"""
+        message: str = ""
+        session = self.database.get_session()
+        query = session.query(m_names.CName)
+        query = query.filter_by(fusername=puser_title)
+        data = query.first()
+        if data is not None:
+
+            user_id: int = data.fuserid
+            print("*** STAT:GPI:UID ", user_id)
+            # *** Получим ID чата в базе
+            query = session.query(m_chats.CChat)
+            query = query.filter_by(fchatid=ptg_chat_id)
+            data = query.first()
+            if data is not None:
+
+                chat_id: int = data.id
+                print("*** STAT:GPI:СID ", user_id)
+                query = session.query(m_stat.CStat)
+                query = query.filter_by(fuserid=user_id)
+                query = query.filter_by(fchatid=chat_id)
+                data = query.first()
+                if data is not None:
+
+                    print("*** STAT:GPI:STAT ", data.fphrases)
+                    message = f"{puser_title} наболтал {data.fphrases} фраз, " \
+                              f"{data.fwords} слов, {data.fletters} букв."
+        return message
+
+    def get_statistic(self, ptg_chat_id: int, puser_title: str, pcount: int):
+        """Получает из базы статистику по самым говорливым юзерам."""
+        session = self.database.session
+        query = session.query(m_chats.CChat)
+        query = query.filter_by(fchatid=pchat_id)
+        data = query.first()
+        if data is not None:
+            chat_id: int = data.id
+
+        return -1
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
@@ -82,24 +128,31 @@ class CStatistic(prototype.CPrototype):
         session = self.database.get_session()
         message_text: str = pmessage.text
         tg_chat_id: int = pmessage.chat.id
-        # tg_chat_title: str = pmessage.chat.title
+        tg_chat_title: str = pmessage.chat.title
         tg_user_id: int = pmessage.from_user.id
         tg_user_name: str = pmessage.from_user.username
-        # user_title: str = pmessage.from_user.first_name
+        tg_user_title: str = pmessage.from_user.first_name
         if message_text[0] != "!":
 
             if tg_user_name is not None and \
-               tg_user_name != "TrueMafiaBot" and \
-               tg_user_name != "MafiaWarBot":
+                    tg_user_name != "TrueMafiaBot" and \
+                    tg_user_name != "MafiaWarBot":
 
+                # *** Если кто-то уже залочил базу, подождём
+                while self.busy:
+                    pass
+
+                # *** Лочим запись в базу и пишем сами
+                self.busy = True
                 # проверить, нет ли чата в таблице чатов
+                chat_id: int = -1
                 query = session.query(m_chats.CChat)
                 query = query.filter_by(fchatid=tg_chat_id)
                 data = query.first()
                 if data is None:
 
                     # если нет - добавить, и получить id
-                    chat = m_chats.CChat(tg_chat_id)
+                    chat = m_chats.CChat(tg_chat_id, tg_chat_title)
                     session.add(chat)
                     session.commit()
                     chat_id = chat.id
@@ -119,7 +172,7 @@ class CStatistic(prototype.CPrototype):
                     session.commit()
                     user_id = user.id
                     # *** заодно сохраним имя пользователя
-                    user_name = m_names.CName(user_id, tg_user_name)
+                    user_name = m_names.CName(user_id, tg_user_title)
                     session.add(user_name)
                     session.commit()
                     print(f"STT:SM:USR NAME: {user_name.id}")
@@ -134,13 +187,14 @@ class CStatistic(prototype.CPrototype):
                 # *** Есть ли запись об этом человеке в таблице статистики?
                 # если есть - получить id
                 query = session.query(m_stat.CStat)
-                query = query.filter_by(fuserid=user_id)
+                query = query.filter_by(fuserid=user_id, fchatid = chat_id)
                 data = query.first()
                 if data is None:
 
                     # *** Добавляем информацию в базу
                     stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
                     session.add(stat_object)
+
                 else:
 
                     # *** Изменяем информацию в базе
@@ -148,6 +202,8 @@ class CStatistic(prototype.CPrototype):
                                   m_stat.CStat.fwords: data.fwords + words,
                                   m_stat.CStat.fphrases: data.fphrases + 1}, synchronize_session=False)
                 session.commit()
+                # *** Запись окончена, разлочиваем базу
+                self.busy = False
 
             # if tg_chat_id.count() == 0:
             #
@@ -170,3 +226,30 @@ class CStatistic(prototype.CPrototype):
             #     db.session.add(me)
             #     db.session.commit()
             #     print(me.id)
+
+    def statistic(self, pchat_title: str, pchat_id: int, puser_title, pmessage_text: str):
+        """Обработчик команд."""
+        command: int
+        message: str = ""
+        word_list: list = functions.parse_input(pmessage_text)
+        if self.can_process(pchat_title, pmessage_text):
+
+            # *** Получим код команды
+            command = self.get_command(word_list[0])
+            print(word_list[0], command)
+            if command >= 0:
+
+                count: int
+                if command == TOP_10_COMMAND:
+
+                    count = 10
+                elif command == TOP_25_COMMAND:
+
+                    count = 25
+                elif command == TOP_50_COMMAND:
+
+                    count = 50
+                elif command == PERS_COMMAND:
+
+                    message = self.get_personal_information(pchat_id, puser_title)
+        return message

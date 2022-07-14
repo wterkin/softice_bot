@@ -66,10 +66,6 @@ class CSoftIceBot:
             apihelper.proxy = {'https': self.config["proxy"]}
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
-        self.database = database.CDataBase(self.config)
-        if not self.database.exists():
-
-            self.database.create()
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -77,13 +73,16 @@ class CSoftIceBot:
         else:
 
             self.data_path = self.config[WINDOWS_DATA_FOLDER_KEY]
+        self.database = database.CDataBase(self.config, self.data_path)
+        if not self.database.exists():
 
+            self.database.create()
         self.barman = barman.CBarman(self.config, self.data_path)
         self.babbler = babbler.CBabbler(self.config, self.data_path)
         self.librarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog = meteorolog.CMeteorolog(self.config)
         self.statistic = statistic.CStatistic(self.config, self.database)
-        self.theolog = theolog.CTheolog(self.config)
+        self.theolog = theolog.CTheolog(self.config, self.data_path)
 
         @self.robot.message_handler(content_types=['text'])
         def process_message(pmessage):
@@ -115,9 +114,15 @@ class CSoftIceBot:
                                                      user_title, message_text)
                 else:
 
-                    self.statistic.save_message(pmessage)
+                    # *** Сохраним введённую фразу в базу,
+                    #     если в этом чате статистик разрешен
+                    if self.statistic.is_enabled(chat_title):
+
+                        self.statistic.save_message(pmessage)
+
                     message = self.babbler.babbler(chat_title, message_text)
                     if len(message) > 0:
+
                         self.robot.send_message(chat_id, message)
 
     def check_is_this_chat_enabled(self, pchat_id: int, pchat_title: str):
@@ -293,7 +298,13 @@ class CSoftIceBot:
                         self.robot.send_message(pchat_id, message)
                     else:
 
-                        print(" .. fail.")
+                        message = self.statistic.statistic(pchat_title, pchat_id, puser_title, pmessage_text)
+                        if len(message) > 0:
+
+                            self.robot.send_message(pchat_id, message)
+                        else:
+
+                            print(" .. fail.")
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)

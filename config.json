@@ -13,6 +13,7 @@
     "barman_chats":    ["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "Арда. Чат фанатов Толкина."],
     "librarian_chats": ["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "Хокку", "Арда. Чат фанатов Толкина."],
     "meteorolog_chats":["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "keytown-club", "Арда. Чат фанатов Толкина."],
+    "statistic_chats": ["ПравЧат", "Ботовка", "Maftown", "Mafiozo-City", "keytown-club", "Арда. Чат фанатов Толкина."],
     "theolog_chats":   ["ПравЧат", "Ботовка"],
     "mafiozo_chats":["Ботовка"]
 }

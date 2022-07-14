@@ -9,8 +9,8 @@ import functions as func
 import prototype
 
 # *** Путь к файлам Библии
-BIBLE_PATH: str = "data/bible/"
-
+# BIBLE_PATH: str = "data/bible/"
+THEOLOG_FOLDER: str = "theolog/"
 # *** Константы частей сообщения
 COMMAND_ARG: int = 0
 LINE_ARG: int = 1
@@ -101,10 +101,11 @@ THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMEN
 class CTheolog(prototype.CPrototype):
     """Класс теолога."""
 
-    def __init__(self, pconfig):
+    def __init__(self, pconfig: dict, pdata_path):
         """"Конструктор."""
         super().__init__()
-        self.config = pconfig
+        self.config:dict = pconfig
+        self.data_path: str = pdata_path + THEOLOG_FOLDER
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если теолог может обработать эту команду."""
@@ -141,8 +142,7 @@ class CTheolog(prototype.CPrototype):
                     break
         return message
 
-    @staticmethod
-    def find_in_book(pbook_idx: int, pline_id: str, pbook: str,
+    def find_in_book(self, pbook_idx: int, pline_id: str, pbook: str,
                      pline_count: int) -> str:  # noqa
         """Ищет заданную строку в файле."""
         assert pbook_idx is not None, \
@@ -155,7 +155,7 @@ class CTheolog(prototype.CPrototype):
             "Assert: [theolog.find_in_book] No <pline_count> parameter specified!"
         message: str = ""
         # *** Путь к файлу
-        book_name: str = f"{BIBLE_PATH}{pbook_idx + 1}.txt"
+        book_name: str = f"{self.data_path}{pbook_idx + 1}.txt"
         with open(book_name, "r", encoding="utf-8") as book_file:
 
             for line in book_file:
@@ -232,7 +232,7 @@ class CTheolog(prototype.CPrototype):
         for book in search_range:
             # print("** ", pphrase)
             book_title: str = BIBLE_BOOKS[book-1][2]
-            book_name: str = f"{BIBLE_PATH}{book}.txt"
+            book_name: str = f"{self.data_path}{book}.txt"
             with open(book_name, "r", encoding="utf-8") as book_file:
 
                 for line in book_file:
