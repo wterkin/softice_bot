@@ -38,7 +38,9 @@ class CStatistic(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         if self.is_enabled(pchat_title):
+
             word_list: list = functions.parse_input(pmessage_text)
+            print(word_list[0])
             return word_list[0] in COMMANDS or word_list[0] in HINT
         return False
 
@@ -104,16 +106,39 @@ class CStatistic(prototype.CPrototype):
                               f"{data.fwords} слов, {data.fletters} букв."
         return message
 
-    def get_statistic(self, ptg_chat_id: int, puser_title: str, pcount: int):
+    def get_statistic(self, ptg_chat_id: int, pcount: int):
         """Получает из базы статистику по самым говорливым юзерам."""
         session = self.database.session
         query = session.query(m_chats.CChat)
-        query = query.filter_by(fchatid=pchat_id)
+        query = query.filter_by(fchatid=ptg_chat_id)
         data = query.first()
         if data is not None:
-            chat_id: int = data.id
 
-        return -1
+            chat_id: int = data.id
+            # query = session.query(m_stat.CStat, m_users.CUser, m_names)
+            query = session.query(m_stat.CStat.fchatid,
+                                  m_stat.CStat.fuserid,
+                                  m_stat.CStat.fphrases,
+                                  # m_stat.CStat.fwords,
+                                  # m_stat.CStat.fletters
+                                  m_users.CUser.id,
+                                  m_names.CName.fusername)
+            # print(query)
+            query = query.filter_by(fchatid=chat_id)
+            # print(query)
+            # query = query.join(m_users.CUser)
+            # query = query.join(m_names.CName)
+            # print(query)
+            # query = query.order_by(m_stat.CStat.fphrases.desc())
+            print(query)
+            data = query.limit(pcount)
+            if data is not None:
+
+                print("*** STAT:GPI:STAT ", data)
+                # message = f"{puser_title} наболтал {data.fphrases} фраз, " \
+                #           f"{data.fwords} слов, {data.fletters} букв."
+
+        return ""
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
@@ -239,16 +264,15 @@ class CStatistic(prototype.CPrototype):
             print(word_list[0], command)
             if command >= 0:
 
-                count: int
                 if command == TOP_10_COMMAND:
 
-                    count = 10
+                    message = self.get_statistic(pchat_id, 10)
                 elif command == TOP_25_COMMAND:
 
-                    count = 25
+                    message = self.get_statistic(pchat_id, 25)
                 elif command == TOP_50_COMMAND:
 
-                    count = 50
+                    message = self.get_statistic(pchat_id, 50)
                 elif command == PERS_COMMAND:
 
                     message = self.get_personal_information(pchat_id, puser_title)

@@ -298,13 +298,14 @@ class CSoftIceBot:
                         self.robot.send_message(pchat_id, message)
                     else:
 
-                        message = self.statistic.statistic(pchat_title, pchat_id, puser_title, pmessage_text)
-                        if len(message) > 0:
+                        # message = self.statistic.statistic(pchat_title, pchat_id, puser_title, pmessage_text)
+                        # if len(message) > 0:
+                        #
+                        #     # print(message)
+                        #     self.robot.send_message(pchat_id, message)
+                        # else:
 
-                            self.robot.send_message(pchat_id, message)
-                        else:
-
-                            print(" .. fail.")
+                        print(" .. fail.")
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)
