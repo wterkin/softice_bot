@@ -356,7 +356,6 @@ class CBarman(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [barman.get_hint] " \
             "No <pchat_title> parameter specified!"
-
         if self.is_enabled(pchat_title):
 
             return ", ".join(BAR_HINT)

@@ -48,6 +48,8 @@ class CQuitByDemand(Exception):
         super().__init__(self.message)
 
 
+# pylint: disable=too-many-instance-attributes
+# а что еще делать???
 class CSoftIceBot:
     """Универсальный бот для Телеграмма."""
 
@@ -102,7 +104,6 @@ class CSoftIceBot:
 
                     # *** Да, команду. Это команда перезагрузки конфига?
                     if command in CONFIG_COMMANDS:
-
                         self.reload_config(chat_id, user_name, user_title)
                         return
                     # *** Нет. Запросили выход?
@@ -113,14 +114,16 @@ class CSoftIceBot:
                     # *** Опять нет. Запросили помощь?
                     if command in HELP_COMMANDS:
 
-                        self.send_help(chat_id, chat_title)
+                        answer = self.send_help(chat_title)
+                        self.robot.send_message(chat_id, answer)
                         return
                     # *** Нет. Ну и пусть работники разбираются....
                     answer = self.process_modules(chat_title, user_name,
                                                   user_title, message_text)
                     if len(answer) > 0:
-                        self.robot.send_message(chat_id, answer)
 
+                        self.robot.send_message(chat_id, answer)
+                        return
                 else:
 
                     # *** Нет, не команда.. Сохраним введённую фразу в базу,
@@ -130,21 +133,15 @@ class CSoftIceBot:
                     # *** Болтуну есть что ответить?
                     answer = self.babbler.babbler(chat_title, message_text)
                     if len(answer) > 0:
-
                         self.robot.send_message(chat_id, answer)
             else:
 
                 self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
                 self.robot.leave_chat(chat_id)
                 print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
-    
+
     def is_this_chat_enabled(self, pchat_title: str):
-        """Проверяет, находится ли данный чат в списке разрешенных.
-        >>> self.is_this_chat_enabled('Ботовка')
-        True
-        >>> self.is_this_chat_enabled('Test1')
-        False
-        """
+        """Проверяет, находится ли данный чат в списке разрешенных."""
         assert pchat_title is not None, \
             "Assert: [softice.check_is_this_chat_enabled] " \
             "No <pchat_title> parameter specified!"
@@ -164,16 +161,8 @@ class CSoftIceBot:
             self.bot_status = QUIT_BY_DEMAND
             self.robot.stop_polling()
 
-    def send_help(self, pchat_id: int, pchat_title: str):
-        """Проверяет, не была ли запрошена подсказка.
-        # >>> len(self.send_help(-583831606, 'Ботовка')) > 0
-        True
-        #>>> len(self.send_help(0, 'Test1')) > 0
-        False
-        """
-        assert pchat_id is not None, \
-            "Assert: [softice.is_help_command_queried] " \
-            "No <pchat_id> parameter specified!"
+    def send_help(self, pchat_title: str):
+        """Проверяет, не была ли запрошена подсказка."""
         assert pchat_title is not None, \
             "Assert: [softice.is_help_command_queried] " \
             "No <pchat_title> parameter specified!"
@@ -182,10 +171,15 @@ class CSoftIceBot:
                           \n{self.librarian.get_hint(pchat_title)}
                           \n{self.meteorolog.get_hint(pchat_title)}
                           \n{self.statistic.get_hint(pchat_title)}
-                          \n{self.theolog.get_hint(pchat_title)}"""
+                          \n{self.theolog.get_hint(pchat_title)}""".strip()
         # *** Если ответы есть, отвечаем на запрос
+        # print(pchat_title)
         if len(answer) > 0:
-            self.robot.send_message(pchat_id, HELP_MESSAGE + answer)
+
+            # print("!!! [", answer, "]")
+            # print("!!! ", len(answer))
+            return HELP_MESSAGE + answer
+        return answer
 
     def stop_working(self, pchat_id: int, puser_name: str, puser_title: str):
         """Проверка, вдруг была команда выхода."""
