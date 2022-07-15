@@ -11,7 +11,6 @@ import prototype
 
 # *** Команда перегрузки текстов
 BABBLER_RELOAD: list = ["babreload", "bblr"]
-
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "babbler_chats"
 BABBLER_PATH: str = "babbler/"
@@ -22,6 +21,7 @@ TRIGGERS_INDEX: int = 0
 REACTIONS_INDEX: int = 1
 BABBLER_MIND: list = []
 BABBLER_EMODJI: list = ["😎", "😊", "☺", "😊", "😋"]
+# ToDo: Реализовать перезагрузку текстов по команде
 
 
 class CBabbler(prototype.CPrototype):
@@ -51,10 +51,10 @@ class CBabbler(prototype.CPrototype):
             if self.can_process(pchat_title, pmessage_text):
 
                 answer = self.think(pmessage_text)
-        if len(answer) > 0:
+                if len(answer) > 0:
 
-            print(f"Babbler answers: {answer[:16]}...")
-            self.last_phrase_time = datetime.now()
+                    print(f"Babbler answers: {answer[:16]}...")
+                    self.last_phrase_time = datetime.now()
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -90,7 +90,6 @@ class CBabbler(prototype.CPrototype):
     def reload(self):
         """Загружает тексты болтуна."""
         # *** Собираем пути
-        # BABBLER_FOLDER
         triggers_path = Path(self.data_path) / TRIGGERS_FOLDER
         assert triggers_path.is_dir(), f"{TRIGGERS_FOLDER} must be folder"
         reactions_path = Path(self.data_path) / REACTIONS_FOLDER
@@ -127,11 +126,13 @@ class CBabbler(prototype.CPrototype):
                     for block_item in block:
 
                         if clean_word in block_item:
+
                             answer = random.choice(block[REACTIONS_INDEX])
                             message = f"{answer}"
                             found = True
                             break
                     if found:
+
                         break
             if found:
 
