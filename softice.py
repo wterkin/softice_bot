@@ -112,6 +112,7 @@ class CSoftIceBot:
                         self.stop_working(chat_id, user_name, user_title)
                         return
                     # *** Опять нет. Запросили помощь?
+
                     if command in HELP_COMMANDS:
 
                         answer = self.send_help(chat_title)
@@ -129,6 +130,7 @@ class CSoftIceBot:
                     # *** Нет, не команда.. Сохраним введённую фразу в базу,
                     #     если в этом чате статистик разрешен
                     if self.statistic.is_enabled(chat_title):
+
                         self.statistic.save_message(pmessage)
                     # *** Болтуну есть что ответить?
                     answer = self.babbler.babbler(chat_title, message_text)
@@ -227,22 +229,31 @@ class CSoftIceBot:
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
-        answer: str
         # *** Проверим, не запросил ли пользователь что-то у бармена...
-        answer = self.barman.barman(pchat_title, pmessage_text, puser_title)
+        answer: str = self.barman.barman(pchat_title, pmessage_text, puser_title)
         if len(answer) == 0:
 
+            # *** ... или у теолога...
             answer = self.theolog.theolog(pchat_title, pmessage_text)
             if len(answer) == 0:
 
+                # *** ... или у библиотекаря...
                 answer = self.librarian.librarian(pchat_title, puser_name,
                                                   puser_title, pmessage_text)
                 if len(answer) == 0:
 
+                    # *** ... или у метеоролога...
                     answer = self.meteorolog.meteorolog(pchat_title, pmessage_text)
                     if len(answer) == 0:
+
+                        # *** ... или у статистика...
+                        # answer = self.statistic.statistic(pchat_title, pchat_id,
+                        #                                   puser_title, pmessage_text)
+                        # if len(answer) == 0:
+
+                        # *** Незнакомая команда.
                         print(" .. fail.")
-        return answer
+        return answer.strip()
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)

@@ -14,29 +14,10 @@ BABBLER_RELOAD: list = ["babreload", "bblr"]
 
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "babbler_chats"
-
-# GREETINGS_WORDS: list = []
-# GREETINGS_WORDS_FILE: str = "greetings_words.txt"
-# GREETINGS_ANSWERS: list = []
-# GREETINGS_ANSWERS_FILE: str = "/babbling/greetings_answers.txt"
-#
-# WEATHER_WORDS: list = []
-# WEATHER_WORDS_FILE: str = "data/babbling/weather_words.txt"
-# WEATHER_ANSWERS: list = []
-# WEATHER_ANSWERS_FILE: str = "data/babbling/weather_answers.txt"
-#
-# BEAUTY_WORDS: list = []
-# BEAUTY_WORDS_FILE: str = "data/babbling/beauty_words.txt"
-# BEAUTY_ANSWERS: list = []
-# BEAUTY_ANSWERS_FILE: str = "data/babbling/beauty_answers.txt"
-
-# BABBLER_DATA: str = "data/babbling/"
 BABBLER_PATH: str = "babbler/"
-
-BABBLER_PERIOD: int = 10  # !
+BABBLER_PERIOD: int = 10
 TRIGGERS_FOLDER: str = "triggers"
 REACTIONS_FOLDER: str = "reactions"
-
 TRIGGERS_INDEX: int = 0
 REACTIONS_INDEX: int = 1
 BABBLER_MIND: list = []
@@ -46,11 +27,11 @@ BABBLER_EMODJI: list = ["😎", "😊", "☺", "😊", "😋"]
 class CBabbler(prototype.CPrototype):
     """Класс болтуна."""
 
-    def __init__(self, pconfig, pdata_path):
+    def __init__(self, pconfig: dict, pdata_path: str):
         """"Конструктор."""
         super().__init__()
-        self.config = pconfig
-        self.data_path = pdata_path + BABBLER_PATH
+        self.config: dict = pconfig
+        self.data_path: str = pdata_path + BABBLER_PATH
         self.mind: list = []
         self.last_phrase_time: datetime = datetime.now()
         self.reload()
@@ -61,8 +42,7 @@ class CBabbler(prototype.CPrototype):
             "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
-        message: str = ""
-        # found: bool = False
+        answer: str = ""
         minutes = (datetime.now() - self.last_phrase_time).total_seconds() / BABBLER_PERIOD
         # *** Заданный период времени с последней фразы прошел?
         if minutes > 1:
@@ -70,35 +50,12 @@ class CBabbler(prototype.CPrototype):
             # *** Болтун может? болтун может всегда!
             if self.can_process(pchat_title, pmessage_text):
 
-                message = self.think(pmessage_text)
-                # word_list: list = pmessage_text.split(" ")
-                # for word in word_list:
-                #
-                #     clean_word = word.rstrip(string.punctuation).lower()
-                #     if len(clean_word) > 2:  # or ")" in clean_word:
-                #
-                #         for block in self.mind:
-                #
-                #             for block_item in block:
-                #
-                #                 if clean_word in block_item:
-                #
-                #                     answer = random.choice(block[REACTIONS_INDEX])
-                #                     message = f"{answer}"
-                #                     found = True
-                #                     break
-                #             if found:
-                #
-                #                 break
-                #     if found:
-                #
-                #         break
+                answer = self.think(pmessage_text)
+        if len(answer) > 0:
 
-        if len(message) > 0:
-
-            print(f"Babbler answers: {message[:16]}...")
+            print(f"Babbler answers: {answer[:16]}...")
             self.last_phrase_time = datetime.now()
-        return message
+        return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Болтун всегда может обработать эту команду."""

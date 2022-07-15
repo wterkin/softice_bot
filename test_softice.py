@@ -14,3 +14,7 @@ class CTestSoftIceBot(TestCase):
         self.assertNotEqual(len(self.bot.send_help('Ботовка')), 0)
         self.assertEqual(len(self.bot.send_help('Test1')), 0)
 
+    def test_process_modules(self):
+
+        self.assertEqual(self.bot.process_modules("Ботовка", "Pet_Rovich", "Петрович",
+                                                  "!Экспекто патронум"), "")
