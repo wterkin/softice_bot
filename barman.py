@@ -339,9 +339,9 @@ class CBarman(prototype.CPrototype):
 
     def get_help(self, pchat_title: str) -> str:  # noqa
         """Пользователь запросил список команд."""
+        command_list: str = ""
         if self.is_enabled(pchat_title):
 
-            command_list: str = ""
             for command in COMMANDS:
 
                 for kind in command:
@@ -349,7 +349,7 @@ class CBarman(prototype.CPrototype):
                     command_list += kind + ", "
                 command_list = command_list[:-2]
                 command_list += "\n"
-            return command_list
+        return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """

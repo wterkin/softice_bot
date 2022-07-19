@@ -21,9 +21,6 @@ import m_users  # noqa
 
 DATABASE_VERSION: int = 1
 DATABASE_NAME: str = "softice.db"
-# LINUX_DATABASE_PATH_KEY: str = "linux_db_path"
-# WINDOWS_DATABASE_PATH_KEY: str = "windows_db_path"
-
 
 class CDataBase:
     """Класс."""
@@ -42,8 +39,6 @@ class CDataBase:
 
     def connect(self):
         """Устанавливает соединение с БД."""
-        # SQLALCHEMY_DATABASE_URIна
-        # firebird + fdb: // login_on_firebird: password_on_firebird @ localhost:3050 / + os.path.join(basedir,
         self.engine = create_engine('sqlite:///' + self.data_path + DATABASE_NAME,
                                     echo=False,
                                     connect_args={'check_same_thread': False})

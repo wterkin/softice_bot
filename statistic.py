@@ -110,26 +110,6 @@ class CStatistic(prototype.CPrototype):
     def get_statistic(self, ptg_chat_id: int, pcount: int):
         """Получает из базы статистику по самым говорливым юзерам."""
         session = self.database.session
-        # query = session.query(m_chats.CChat)
-        # *** Что мы хотим получить?
-        # *** Мы хотим выбрать pcount людей, которые больше всего болтали.
-        #     и количество фраз, сказанных ими, разумеется.
-        #     Что мы имеем?
-        #     Идентификатор чата, телеграмский.
-        #     Наши действия?
-        #     Делаем выборку из таблицы chats по tg id
-        """
-        query = session.query(m_chats.CChat.id,
-                              m_stat.CStat.fphrases,
-                              m_users.CUser.id,
-                              m_names.CName.fusername)
-        query = query.filter_by(fchatid=ptg_chat_id)
-        data = query.limit(pcount).all()
-        query = query.join(UserRole, UserRole.user_id == User.id)
-        query = query.join(Role, Role.id == UserRole.role_id)
-        query = query.join(Order, Order.user_id == User.id)
-        query = query.join(Product, Product.id == Order.product_id)
-            """
         query = session.query(m_chats.CChat, m_stat.CStat, m_names.CName)
         query = query.filter_by(fchatid=ptg_chat_id)
         query = query.join(m_stat.CStat, m_stat.CStat.fchatid == m_chats.CChat.id)

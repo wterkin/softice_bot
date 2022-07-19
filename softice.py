@@ -48,6 +48,15 @@ class CQuitByDemand(Exception):
         super().__init__(self.message)
 
 
+def decode_message(pmessage):
+    """Возвращает куски сообщения, $#^^^!!!! """
+    return pmessage.text, \
+        pmessage.text[1:].lower(), \
+        pmessage.chat.id, \
+        pmessage.chat.title, \
+        pmessage.from_user.username, \
+        pmessage.from_user.first_name
+
 # pylint: disable=too-many-instance-attributes
 # а что еще делать???
 class CSoftIceBot:
@@ -60,10 +69,12 @@ class CSoftIceBot:
         self.load_config()
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
+
             apihelper.proxy = {'https': self.config["proxy"]}
         # *** Создаём собственно бота.
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
+        self.message_text: str = ""
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -74,6 +85,7 @@ class CSoftIceBot:
         # *** Открываем БД
         self.database: database.CDataBase = database.CDataBase(self.config, self.data_path)
         if not self.database.exists():
+
             # *** А нету ещё БД, создавать треба.
             self.database.create()
         # *** Поехали создавать работников =)
@@ -89,21 +101,19 @@ class CSoftIceBot:
         def process_message(pmessage):
             """Обработчик сообщений."""
 
-            message_text: str = pmessage.text
-            command: str = pmessage.text[1:].lower()
-            chat_id: int = pmessage.chat.id
-            chat_title: str = pmessage.chat.title
-            user_name: str = pmessage.from_user.username
-            user_title: str = pmessage.from_user.first_name
+            self.message_text = pmessage.text
+            self.message_text, command, chat_id, chat_title, user_name, user_title = \
+                decode_message(pmessage)
             answer: str = ""
             # *** Проверим, легитимный ли этот чат
             if self.is_this_chat_enabled(chat_title):
 
                 # *** Да, вполне легитимный. Боту дали команду?
-                if message_text[0:1] in COMMAND_SIGNS:
+                if self.message_text[0:1] in COMMAND_SIGNS:
 
                     # *** Да, команду. Это команда перезагрузки конфига?
                     if command in CONFIG_COMMANDS:
+
                         self.reload_config(chat_id, user_name, user_title)
                         return
                     # *** Нет. Запросили выход?
@@ -120,27 +130,33 @@ class CSoftIceBot:
                         return
                     # *** Нет. Ну и пусть работники разбираются....
                     answer = self.process_modules(chat_id, chat_title, user_name,
-                                                  user_title, message_text)
-                    if len(answer) > 0:
+                                                  user_title)
+                    if answer:
 
                         self.robot.send_message(chat_id, answer)
                         return
                 else:
 
-                    # *** Нет, не команда.. Сохраним введённую фразу в базу,
+                    # *** Нет, не команда.. Проапдейтим базу статистика,
                     #     если в этом чате статистик разрешен
                     if self.statistic.is_enabled(chat_title):
 
                         self.statistic.save_message(pmessage)
                     # *** Болтуну есть что ответить?
-                    answer = self.babbler.babbler(chat_title, message_text)
-                    if len(answer) > 0:
+                    answer = self.babbler.babbler(chat_title, self.message_text)
+                    if answer:
+
                         self.robot.send_message(chat_id, answer)
             else:
 
+                # *** Бота привели на чужой канал. Выходим.
                 self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
                 self.robot.leave_chat(chat_id)
                 print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+
+    def is_master(self, puser_name: str) -> bool:
+        """Проверяет, хозяин ли отдал команду."""
+        return puser_name == self.config["master"]
 
     def is_this_chat_enabled(self, pchat_title: str):
         """Проверяет, находится ли данный чат в списке разрешенных."""
@@ -154,6 +170,7 @@ class CSoftIceBot:
         try:
 
             while self.bot_status == CONTINUE_RUNNING:
+
                 self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
                 print(f"Bot status = {BOT_STATUS}")
 
@@ -175,11 +192,8 @@ class CSoftIceBot:
                           \n{self.statistic.get_hint(pchat_title)}
                           \n{self.theolog.get_hint(pchat_title)}""".strip()
         # *** Если ответы есть, отвечаем на запрос
-        # print(pchat_title)
-        if len(answer) > 0:
+        if answer:
 
-            # print("!!! [", answer, "]")
-            # print("!!! ", len(answer))
             return HELP_MESSAGE + answer
         return answer
 
@@ -191,7 +205,8 @@ class CSoftIceBot:
         assert puser_title is not None, \
             "Assert: [softice.is_quit_command_queried] " \
             "No <puser_title> parameter specified!"
-        if puser_name == self.config["master"]:
+        if self.is_master(puser_name):
+
             self.robot.send_message(pchat_id, "Всем пока!")
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
@@ -205,7 +220,7 @@ class CSoftIceBot:
             "Assert: [softice.is_reload_config_command_queried] " \
             "No <puser_title> parameter specified!"
         # *** Такое запрашивать может только хозяин
-        if puser_name == self.config["master"]:
+        if self.is_master(puser_name):
 
             self.robot.send_message(pchat_id, "Обновляю конфигурацию.")
             self.load_config()
@@ -217,43 +232,41 @@ class CSoftIceBot:
     def load_config(self):
         """Загружает конфигурацию из JSON."""
         with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
+
             self.config = json.load(json_file)
 
-    def process_modules(self, pchat_id, pchat_title: str,
-                        puser_name: str, puser_title: str,
-                        pmessage_text: str):
+    def process_modules(self, pchat_id: int, pchat_title: str,
+                        puser_name: str, puser_title: str):
         """Пытается обработать команду различными модулями."""
         assert pchat_title is not None, \
             "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
         assert puser_title is not None, \
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
-        assert pmessage_text is not None, \
-            "Assert: [softice.process_modules] No <pmessage_text> parameter specified!"
         # *** Проверим, не запросил ли пользователь что-то у бармена...
-        answer: str = self.barman.barman(pchat_title, pmessage_text, puser_title)
-        if len(answer) == 0:
+        answer: str = self.barman.barman(pchat_title, self.message_text, puser_title).strip()
+        if not answer:
 
             # *** ... или у теолога...
-            answer = self.theolog.theolog(pchat_title, pmessage_text)
-            if len(answer) == 0:
+            answer = self.theolog.theolog(pchat_title, self.message_text).strip()
+            if not answer:
 
                 # *** ... или у библиотекаря...
                 answer = self.librarian.librarian(pchat_title, puser_name,
-                                                  puser_title, pmessage_text)
-                if len(answer) == 0:
+                                                  puser_title, self.message_text).strip()
+                if not answer:
 
                     # *** ... или у метеоролога...
-                    answer = self.meteorolog.meteorolog(pchat_title, pmessage_text)
-                    if len(answer) == 0:
+                    answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
+                    if not answer:
 
                         # *** ... или у статистика...
                         answer = self.statistic.statistic(pchat_id, pchat_title,
-                                                          puser_title, pmessage_text)
-                        if len(answer) == 0:
+                                                          puser_title, self.message_text).strip()
+                        if not answer:
 
                             # *** Незнакомая команда.
                             print(" .. fail.")
-        return answer.strip()
+        return answer
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)
