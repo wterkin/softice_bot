@@ -9,12 +9,21 @@ import prototype
 
 # *** Идентификаторы, они же индексы, напитков
 BEER_ID: int = 0
+BEER_KEY: str = "beer"
 VODKA_ID: int = 1
+VODKA_KEY: str = "vodka"
 COGNAC_ID: int = 2
+COGNAC_KEY: str = "cognac"
 COCKTAIL_ID: int = 3
+COCKTAIL_KEY: str = "cocktail"
 TEA_ID: int = 4
+TEA_KEY: str = "tea"
 COFFEE_ID: int = 5
+COFFEE_KEY: str = "coffee"
 COOKIES_ID: int = 6
+COOKIES_KEY: str = "cookies"
+CHOCOLATE_ID: int = 7
+CHOCOLATE_KEY: str = "choco"
 
 COMMANDS: list = [["пиво", "beer", "пв", "br"],
                   ["водка", "vodka", "вк", "vk"],
@@ -22,42 +31,91 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],
                   ["коктейль", "cocktail", "кт", "ct"],
                   ["чай", "tea", "чй", "te"],
                   ["кофе", "coffee", "кф", "cf"],
-                  ["печеньки", "cookies", "пч", "ck"]]
+                  ["печеньки", "cookies", "пч", "ck"],
+                  ["шоколад", "chocolate", "шк", "ch"]]
 
 BEER_EMODJI: str = "🍺"
 COFFEE_EMODJI: str = "☕️"
 COGNAC_EMODJI: str = "🥃"
 COCKTAIL_EMODJI: str = "🍹"
 COOKIE_EMODJI: str = "🍪"
+CHOCOLATE_EMODJI: str = "🍫"
 BARMAN_FOLDER: str = "barman/"
 # *** Команда перегрузки текстов
 BAR_RELOAD: list = ["barreload", "brl"]
 
-BEER_CANS_PATH: str = "beer_cans.txt"
-BEER_MARKS_PATH: str = "beer_marks.txt"
-BEER_CANS_KEY: str = "bcans"
-BEER_MARKS_KEY: str = "bmarks"
+# 1. Источник - source - все, кроме чая и кофе +
+# 2. Марка - marks - все +
+# 3. Ёмкость - can -  пиво, коньяк и водка +
+# 4. Разлив - fill - кофе и чай +
+# 5. Доставка - transfer - все +
+#
+#
 
-COCKTAIL_MARKS_PATH: str = "cocktail_marks.txt"
+SOURCES_KEY: str = "sources"
+MARKS_KEY: str = "marks"
+CANS_KEY: str = "cans"
+FILLS_KEY: str = "fills"
+TRANSFER_KEY: str = "transfer"
 
-COFFEE_MARKS_PATH: str = "coffee_marks.txt"
-COFFEE_MARKS_KEY: str = "cfmarks"
-COFFEE_FILLS_PATH: str = "coffee_fills.txt"
-COFFEE_FILLS_KEY: str = "cffills"
+BEER_PROPERTIES: dict = {CANS_KEY: "beer_cans.txt",
+                         MARKS_KEY: "beer_marks.txt"}
+BEER_KEYS: tuple = (CANS_KEY, MARKS_KEY)
 
-COGNAC_CANS_PATH: str = "cognac_cans.txt"
-COGNAC_CANS_KEY: str = "cgcans"
-COGNAC_MARKS_PATH: str = "cognac_marks.txt"
-COGNAC_MARKS_KEY: str = "cgmarks"
-COGNAC_FILLS_PATH: str = "cognac_fills.txt"
-COGNAC_FILLS_KEY: str = "cgfills"
+BEER_CANS_PATH: str = "beer_cans.txt"  # X
+BEER_MARKS_PATH: str = "beer_marks.txt"  # X
+BEER_CANS_KEY: str = "bcans"  # X
+BEER_MARKS_KEY: str = "bmarks"  # X
 
-COOKIES_SOURCES_PATH: str = "cookies_sources.txt"
-COOKIES_SOURCES_KEY: str = "cksrc"
-COOKIES_MARKS_PATH: str = "cookies_marks.txt"
-COOKIES_MARKS_KEY: str = "ckmrk"
-COOKIES_TRANSFER_PATH: str = "cookies_transfer.txt"
-COOKIES_TRANSFER_KEY: str = "cktrf"
+CHOCOLATE_PROPERTIES: dict = {SOURCES_KEY: "chocolate_sources.txt",
+                              MARKS_KEY: "chocolate_marks.txt",
+                              TRANSFER_KEY: "chocolate_transfer.txt"}
+CHOCOLATE_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
+
+CHOCOLATE_MARKS_PATH: str = "chocolate_marks.txt"   # X
+CHOCOLATE_MARKS_KEY: str = "chkmarks"  # X
+CHOCOLATE_SOURCES_PATH: str = "chocolate_sources.txt"   # X
+CHOCOLATE_SOURCES_KEY: str = "chksrc"  # X
+CHOCOLATE_TRANSFER_PATH: str = "chocolate_transfer.txt"  # X
+CHOCOLATE_TRANSFER_KEY: str = "chktrf"  # X
+
+COCKTAIL_PROPERTIES: dict = {MARKS_KEY: "chocolate_marks.txt"}
+COCKTAIL_KEYS: tuple = (MARKS_KEY, )
+
+COCKTAIL_MARKS_PATH: str = "cocktail_marks.txt"  # X
+
+COFFEE_PROPERTIES: dict = {MARKS_KEY: "coffee_marks.txt",
+                           FILLS_KEY: "coffee_fills.txt"}
+COFFEE_KEYS: tuple = (MARKS_KEY, FILLS_KEY)
+
+COFFEE_MARKS_PATH: str = "coffee_marks.txt"   # X
+COFFEE_MARKS_KEY: str = "cfmarks"  # X
+COFFEE_FILLS_PATH: str = "coffee_fills.txt"  # X
+COFFEE_FILLS_KEY: str = "cffills"  # X
+
+COGNAC_PROPERTIES: dict = {CANS_KEY: "cognac_cans.txt",
+                           MARKS_KEY: "cognac_marks.txt",
+                           FILLS_KEY: "cognac_fills.txt"}
+COGNAC_KEYS: tuple = (CANS_KEY, MARKS_KEY, FILLS_KEY)
+
+COGNAC_CANS_PATH: str = "cognac_cans.txt"   # X
+COGNAC_CANS_KEY: str = "cgcans"  # X
+COGNAC_MARKS_PATH: str = "cognac_marks.txt"  # X
+COGNAC_MARKS_KEY: str = "cgmarks"  # X
+COGNAC_FILLS_PATH: str = "cognac_fills.txt"  # X
+COGNAC_FILLS_KEY: str = "cgfills"  # X
+
+COOKIES_PROPERTIES: dict = {SOURCES_KEY: "cookies_sources.txt",
+                            MARKS_KEY: "cookies_marks.txt",
+                            TRANSFER_KEY: "cookies_transfer.txt"}
+COOKIES_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
+
+COOKIES_SOURCES_PATH: str = "cookies_sources.txt"   # X
+COOKIES_SOURCES_KEY: str = "cksrc"  # X
+COOKIES_MARKS_PATH: str = "cookies_marks.txt"  # X
+COOKIES_MARKS_KEY: str = "ckmrk"  # X
+COOKIES_TRANSFER_PATH: str = "cookies_transfer.txt"  # X
+COOKIES_TRANSFER_KEY: str = "cktrf"  # X
 
 DRINKS_SOURCES_PATH: str = "drink_sources.txt"
 DRINKS_SOURCES_KEY: str = "drsrc"
@@ -91,6 +149,8 @@ class CBarman(prototype.CPrototype):
         self.data_path = pdata_path+BARMAN_FOLDER
         print(self.data_path)
         self.beer: dict = {}
+        self._beer: dict = {}
+        self.chocolate: dict = {}
         self.cocktail: list = []
         self.cognac: dict = {}
         self.vodka: dict = {}
@@ -153,6 +213,22 @@ class CBarman(prototype.CPrototype):
             transfer: str = random.choice(self.drinks[DRINKS_TRANSFER_KEY])
             return f"Softice {source} {can} пива \"{beer}\" {transfer} {puser_name} {BEER_EMODJI}"
         return "А нету пива! :("
+
+    def bring_chocolate(self, puser_name: str) -> str:
+        """Пользователь запросил шоколад."""
+        assert puser_name is not None, \
+            "Assert: [barman.bring_chocolate] No <puser_name> parameter specified!"
+        # print(self.chocolate)
+        if (CHOCOLATE_SOURCES_KEY in self.chocolate and
+                CHOCOLATE_MARKS_KEY in self.chocolate and
+                CHOCOLATE_TRANSFER_KEY in self.chocolate):
+
+            source: str = random.choice(self.chocolate[CHOCOLATE_SOURCES_KEY])
+            marks: str = random.choice(self.chocolate[CHOCOLATE_MARKS_KEY])
+            transfer: str = random.choice(self.chocolate[CHOCOLATE_TRANSFER_KEY])
+            return (f"Softice {source} {marks} {transfer} "
+                    f"{puser_name} {CHOCOLATE_EMODJI}")
+        return "Нету шоколадок. Неурожай какао. 8("
 
     def bring_cocktail(self, puser_name: str) -> str:
         """Пользователь запросил коктейль."""
@@ -247,14 +323,7 @@ class CBarman(prototype.CPrototype):
         return "А водочка-то тютю. Кончилась вся. 8(  ]"
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
-        """Возвращает True, если бармен может обработать эту команду
-        >>> self.can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!vodka')
-        True
-        >>> self.can_process({'barman_chats':'Хокку'}, 'Ботовка', '!vodka')
-        False
-        >>> self.can_process({'barman_chats':'Ботовка'}, 'Ботовка', '!мартини')
-        False
-        """
+        """Возвращает True, если бармен может обработать эту команду"""
         assert pchat_title is not None, \
             "Assert: [barman.can_process] " \
             "No <pchat_title> parameter specified!"
@@ -311,6 +380,9 @@ class CBarman(prototype.CPrototype):
         if pcommand == VODKA_ID:
 
             message = self.bring_vodka(pname_to)
+        if pcommand == CHOCOLATE_ID:
+
+            message = self.bring_chocolate(pname_to)
         return message
 
     def get_command(self, pword: str) -> int:  # noqa
@@ -374,6 +446,9 @@ class CBarman(prototype.CPrototype):
 
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
+    def load_assortiment(self):
+        """Загружает ассортимент бара"""
+
     def load_beer(self):
         """Загружает данные пива."""
         beer_cans: list = func.load_from_file(self.data_path + BEER_CANS_PATH)
@@ -388,6 +463,29 @@ class CBarman(prototype.CPrototype):
                 print("Barmen loads ", len(beer_marks), " beer marks.")
                 self.beer[BEER_MARKS_KEY] = beer_marks
                 return True
+        return False
+
+    def load_chocolate(self):
+        """Загружает данные пива."""
+        chocolate_sources: list = func.load_from_file(self.data_path + CHOCOLATE_SOURCES_PATH)
+        if chocolate_sources:
+
+            print("Barmen loads ", len(chocolate_sources), " chocolate sources.")
+            self.chocolate[CHOCOLATE_SOURCES_KEY] = chocolate_sources
+
+            chocolate_marks: list = func.load_from_file(self.data_path + CHOCOLATE_MARKS_PATH)
+            if chocolate_marks:
+
+                print("Barmen loads ", len(chocolate_marks), " chocolate marks.")
+                self.chocolate[CHOCOLATE_MARKS_KEY] = chocolate_marks
+
+                chocolate_transfer: list = func.load_from_file(self.data_path +
+                                                               CHOCOLATE_TRANSFER_PATH)
+                if chocolate_transfer:
+
+                    print("Barmen loads ", len(chocolate_transfer), " chocolate transfer.")
+                    self.chocolate[CHOCOLATE_TRANSFER_KEY] = chocolate_transfer
+                    return True
         return False
 
     def load_coffee(self):
@@ -520,7 +618,8 @@ class CBarman(prototype.CPrototype):
                 self.load_cocktail() and
                 self.load_cognac()):
 
-            if (self.load_cookies() and
+            if (self.load_chocolate() and
+                    self.load_cookies() and
                     self.load_drinks() and
                     self.load_tea() and
                     self.load_vodka()):
