@@ -119,7 +119,7 @@ class CSoftIceBot:
                         self.robot.send_message(chat_id, answer)
                         return
                     # *** Нет. Ну и пусть работники разбираются....
-                    answer = self.process_modules(chat_title, user_name,
+                    answer = self.process_modules(chat_id, chat_title, user_name,
                                                   user_title, message_text)
                     if len(answer) > 0:
 
@@ -219,7 +219,7 @@ class CSoftIceBot:
         with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
             self.config = json.load(json_file)
 
-    def process_modules(self, pchat_title: str,
+    def process_modules(self, pchat_id, pchat_title: str,
                         puser_name: str, puser_title: str,
                         pmessage_text: str):
         """Пытается обработать команду различными модулями."""
@@ -247,12 +247,12 @@ class CSoftIceBot:
                     if len(answer) == 0:
 
                         # *** ... или у статистика...
-                        # answer = self.statistic.statistic(pchat_title, pchat_id,
-                        #                                   puser_title, pmessage_text)
-                        # if len(answer) == 0:
+                        answer = self.statistic.statistic(pchat_id, pchat_title,
+                                                          puser_title, pmessage_text)
+                        if len(answer) == 0:
 
-                        # *** Незнакомая команда.
-                        print(" .. fail.")
+                            # *** Незнакомая команда.
+                            print(" .. fail.")
         return answer.strip()
 
 

@@ -26,4 +26,4 @@ class CName(m_ancestor.CAncestor):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
                    User ID:{self.fuserid}, 
-                   User name:{self.fname}"""
+                   User name:{self.fusername}"""
