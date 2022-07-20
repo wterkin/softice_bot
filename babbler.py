@@ -17,11 +17,8 @@ BABBLER_PATH: str = "babbler/"
 BABBLER_PERIOD: int = 10
 TRIGGERS_FOLDER: str = "triggers"
 REACTIONS_FOLDER: str = "reactions"
-TRIGGERS_INDEX: int = 0
 REACTIONS_INDEX: int = 1
-BABBLER_MIND: list = []
 BABBLER_EMODJI: list = ["😎", "😊", "☺", "😊", "😋"]
-# ToDo: Реализовать перезагрузку текстов по команде
 
 
 class CBabbler(prototype.CPrototype):
@@ -43,18 +40,27 @@ class CBabbler(prototype.CPrototype):
         assert pmessage_text is not None, \
             "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
         answer: str = ""
-        minutes = (datetime.now() - self.last_phrase_time).total_seconds() / BABBLER_PERIOD
-        # *** Заданный период времени с последней фразы прошел?
-        if minutes > 1:
+        word_list: list = func.parse_input(pmessage_text)
+        if self.can_process(pchat_title, pmessage_text):
 
-            # *** Болтун может? болтун может всегда!
-            if self.can_process(pchat_title, pmessage_text):
+            # *** Возможно, запросили перезагрузку базы.
+            if word_list[0] in BABBLER_RELOAD:
+                self.reload()
+                answer = "База болтуна обновлена"
+        else:
 
-                answer = self.think(pmessage_text)
-                if len(answer) > 0:
+            # *** Заданный период времени с последней фразы прошел?
+            minutes: float = (datetime.now() - self.last_phrase_time).total_seconds() / \
+                             BABBLER_PERIOD
+            if minutes > 1:
 
-                    print(f"Babbler answers: {answer[:16]}...")
-                    self.last_phrase_time = datetime.now()
+                # *** Болтун может? болтун может всегда!
+                if self.can_process(pchat_title, pmessage_text):
+
+                    answer = self.think(pmessage_text)
+                    if answer:
+                        print(f"Babbler answers: {answer[:16]}...")
+                        self.last_phrase_time = datetime.now()
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -72,8 +78,6 @@ class CBabbler(prototype.CPrototype):
     def get_hint(self, pchat_title: str):
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
-        assert pchat_title is not None, \
-            "Assert: [babbler.get_hint] No <pchat_title> parameter specified!"
         return ""
 
     def is_enabled(self, pchat_title: str) -> bool:
@@ -101,21 +105,39 @@ class CBabbler(prototype.CPrototype):
                 module = Path(trigger).resolve().name
                 reaction = reactions_path / module
                 if reaction.is_file():
-
                     trigger_content: list = func.load_from_file(str(trigger))
                     block: list = [trigger_content]
                     reaction_content: list = func.load_from_file(str(reaction))
                     block.append(reaction_content)
                     self.mind.append(block)
         if self.mind:
-
             print("Babbler successfully reload his mind.")
+
+    def talk(self, pchat_title: str, pmessage_text: str) -> str:
+        """Улучшенная версия болтуна."""
+        assert pchat_title is not None, \
+            "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
+        answer: str = ""
+        # *** Заданный период времени с последней фразы прошел?
+        if self.is_enabled(pchat_title):
+
+            minutes: float = (datetime.now() - self.last_phrase_time).total_seconds() / \
+                             BABBLER_PERIOD
+            if minutes > 1:
+
+                answer = self.think(pmessage_text)
+            if answer:
+
+                print(f"Babbler answers: {answer[:16]}...")
+                self.last_phrase_time = datetime.now()
+        return answer
 
     def think(self, pmessage_text: str):
         """Процесс принятия решений =)"""
         word_list: list = pmessage_text.split(" ")
-        found: bool = False
-        message: str = ""
+        answer: str = ""
         for word in word_list:
 
             clean_word = word.rstrip(string.punctuation).lower()
@@ -125,16 +147,14 @@ class CBabbler(prototype.CPrototype):
 
                     for block_item in block:
 
-                        if clean_word in block_item:
+                        if clean_word.strip() in block_item:
 
-                            answer = random.choice(block[REACTIONS_INDEX])
-                            message = f"{answer}"
-                            found = True
+                            answer = f"{random.choice(block[REACTIONS_INDEX])}"
                             break
-                    if found:
+                    if answer:
 
                         break
-            if found:
+            if answer:
 
                 break
-        return message
+        return answer

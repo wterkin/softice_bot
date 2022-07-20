@@ -38,6 +38,7 @@ SMILES: list = ["8)", "=)", ";)", ":)", "%)", "^_^"]
 # ToDo: реализовать отработку команды reload по всем модулям
 # ToDo: и чтоб в каждом модуле шла проверка на то,
 #       что команда отдана хозяином.
+# babbler, barman, librarian,
 
 
 class CQuitByDemand(Exception):
@@ -56,6 +57,7 @@ def decode_message(pmessage):
         pmessage.chat.title, \
         pmessage.from_user.username, \
         pmessage.from_user.first_name
+
 
 # pylint: disable=too-many-instance-attributes
 # а что еще делать???
@@ -143,7 +145,7 @@ class CSoftIceBot:
 
                         self.statistic.save_message(pmessage)
                     # *** Болтуну есть что ответить?
-                    answer = self.babbler.babbler(chat_title, self.message_text)
+                    answer = self.babbler.talk(chat_title, self.message_text)
                     if answer:
 
                         self.robot.send_message(chat_id, answer)
@@ -264,8 +266,11 @@ class CSoftIceBot:
                                                           puser_title, self.message_text).strip()
                         if not answer:
 
-                            # *** Незнакомая команда.
-                            print(" .. fail.")
+                            answer = self.babbler.babbler(pchat_title, self.message_text).strip()
+                            if not answer:
+
+                                # *** Незнакомая команда.
+                                print(" .. fail.")
         return answer
 
 

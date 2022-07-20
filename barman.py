@@ -169,20 +169,19 @@ class CBarman(prototype.CPrototype):
         assert pmessage_text is not None, \
             "Assert: [barman.barman] No <pmessage_text> parameter specified!"
         command: int
-        message: str = ""
+        answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
-
         if self.can_process(pchat_title, pmessage_text):
 
             # *** Возможно, запросили меню.
             if word_list[0] in BAR_HINT:
 
-                message = "Сегодня в баре имеется следующий ассортимент: \n" + \
+                answer = "Сегодня в баре имеется следующий ассортимент: \n" + \
                           self.get_help(pchat_title)
             elif word_list[0] in BAR_RELOAD:
 
                 self.reload()
-                message = "Содержимое бара обновлено"
+                answer = "Содержимое бара обновлено"
             else:
 
                 # *** Нет, видимо, напиток.
@@ -192,11 +191,11 @@ class CBarman(prototype.CPrototype):
 
                     name_to = word_list[1]
                 # *** В зависимости от команды выполняем действия
-                message = self.execute_command(command, name_to)
-        if len(message) > 0:
+                answer = self.execute_command(command, name_to)
+        if answer:
 
-            print(f"Barman answers: {message[:16]}")
-        return message
+            print(f"Barman answers: {answer[:16]}")
+        return answer
 
     def bring_beer(self, puser_name: str) -> str:
         """Пользователь запросил пиво."""
