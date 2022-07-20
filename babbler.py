@@ -47,20 +47,6 @@ class CBabbler(prototype.CPrototype):
             if word_list[0] in BABBLER_RELOAD:
                 self.reload()
                 answer = "База болтуна обновлена"
-        else:
-
-            # *** Заданный период времени с последней фразы прошел?
-            minutes: float = (datetime.now() - self.last_phrase_time).total_seconds() / \
-                             BABBLER_PERIOD
-            if minutes > 1:
-
-                # *** Болтун может? болтун может всегда!
-                if self.can_process(pchat_title, pmessage_text):
-
-                    answer = self.think(pmessage_text)
-                    if answer:
-                        print(f"Babbler answers: {answer[:16]}...")
-                        self.last_phrase_time = datetime.now()
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -95,8 +81,10 @@ class CBabbler(prototype.CPrototype):
         """Загружает тексты болтуна."""
         # *** Собираем пути
         triggers_path = Path(self.data_path) / TRIGGERS_FOLDER
+        # print(triggers_path)
         assert triggers_path.is_dir(), f"{TRIGGERS_FOLDER} must be folder"
         reactions_path = Path(self.data_path) / REACTIONS_FOLDER
+        # print(reactions_path)
         assert reactions_path.is_dir(), f"{REACTIONS_FOLDER} must be folder"
         for trigger in triggers_path.iterdir():
 
