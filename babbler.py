@@ -14,7 +14,7 @@ BABBLER_RELOAD: list = ["babreload", "bblr"]
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "babbler_chats"
 BABBLER_PATH: str = "babbler/"
-BABBLER_PERIOD: int = 10
+BABBLER_PERIOD_KEY = "babbler_period"
 TRIGGERS_FOLDER: str = "triggers"
 REACTIONS_FOLDER: str = "reactions"
 REACTIONS_INDEX: int = 1
@@ -67,12 +67,7 @@ class CBabbler(prototype.CPrototype):
         return ""
 
     def is_enabled(self, pchat_title: str) -> bool:
-        """Возвращает True, если бармен разрешен на этом канале.
-        >>> self.is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
-        True
-        >>> self.is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
-        False
-        """
+        """Возвращает True, если бармен разрешен на этом канале."""
         assert pchat_title is not None, \
             "Assert: [babbler.is_enabled] No <pchat_title> parameter specified!"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
@@ -81,11 +76,11 @@ class CBabbler(prototype.CPrototype):
         """Загружает тексты болтуна."""
         # *** Собираем пути
         triggers_path = Path(self.data_path) / TRIGGERS_FOLDER
-        # print(triggers_path)
         assert triggers_path.is_dir(), f"{TRIGGERS_FOLDER} must be folder"
         reactions_path = Path(self.data_path) / REACTIONS_FOLDER
-        # print(reactions_path)
         assert reactions_path.is_dir(), f"{REACTIONS_FOLDER} must be folder"
+        result: bool = False
+        self.mind.clear()
         for trigger in triggers_path.iterdir():
 
             if trigger.is_file():
@@ -93,13 +88,17 @@ class CBabbler(prototype.CPrototype):
                 module = Path(trigger).resolve().name
                 reaction = reactions_path / module
                 if reaction.is_file():
+
                     trigger_content: list = func.load_from_file(str(trigger))
                     block: list = [trigger_content]
                     reaction_content: list = func.load_from_file(str(reaction))
                     block.append(reaction_content)
                     self.mind.append(block)
+                    result = True
         if self.mind:
+
             print("Babbler successfully reload his mind.")
+        return result
 
     def talk(self, pchat_title: str, pmessage_text: str) -> str:
         """Улучшенная версия болтуна."""
@@ -112,7 +111,7 @@ class CBabbler(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             minutes: float = (datetime.now() - self.last_phrase_time).total_seconds() / \
-                             BABBLER_PERIOD
+                             int(self.config[BABBLER_PERIOD_KEY])
             if minutes > 1:
 
                 answer = self.think(pmessage_text)

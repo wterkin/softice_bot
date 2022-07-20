@@ -1,3 +1,4 @@
+from time import sleep
 from unittest import TestCase
 import json
 import babbler
@@ -20,17 +21,18 @@ class CTestBabbler(TestCase):
         self.assertEqual(self.babbler.can_process('superchat', ''), True)
         self.assertNotEqual(self.babbler.babbler('gigachat', ''), True)
 
-    #
-    # def test_is_this_chat_enabled(self):
-    #     self.assertEqual(self.bot.is_this_chat_enabled('Ботовка'), True)
-    #     self.assertEqual(self.bot.is_this_chat_enabled('Test'), False)
-    #
-    # # assertIn(элемент, список)
-    # def test_send_help(self):
-    #     self.assertNotEqual(len(self.bot.send_help('Ботовка')), 0)
-    #     self.assertEqual(len(self.bot.send_help('Test1')), 0)
-    #
-    # def test_process_modules(self):
-    #
-    #     self.assertEqual(self.bot.process_modules("Ботовка", "Pet_Rovich", "Петрович",
-    #                                               "!Экспекто патронум"), "")
+    def test_is_enabled(self):
+        self.assertEqual(self.babbler.can_process('superchat', ''), True)
+        self.assertNotEqual(self.babbler.babbler('gigachat', ''), True)
+
+    def test_reload(self):
+        self.assertEqual(self.babbler.reload(), True)
+
+    def test_talk(self):
+        sleep(int(self.babbler.config["babbler_period"]))
+        self.assertNotEqual(self.babbler.talk('superchat', 'Трям'), "")
+
+    def test_think(self):
+        self.assertNotEqual(self.babbler.think('Трям'), "")
+        self.assertNotEqual(self.babbler.think('Привет'), "")
+        self.assertEqual(self.babbler.think('Кукареку'), "")
