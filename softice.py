@@ -23,16 +23,15 @@ BOT_NAME: str = "SoftIceBot"
 COMMAND_SIGNS: str = "/!."
 CONFIG_FILE_NAME: str = "config.json"
 CONFIG_COMMANDS: list = ["конфиг", "config"]  # !
-CONTINUE_RUNNING: int = 0
 EXIT_COMMANDS: list = ["прощай", "bye", "!!"]  # !
 HELP_COMMANDS: list = ["помощь", "help"]  # !
-HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие команды:"  # !
+HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие команды: \n"
 NON_STOP: bool = True
 POLL_INTERVAL: int = 0
+CONTINUE_RUNNING: int = 0
 QUIT_BY_DEMAND: int = 1
 TOKEN_KEY: str = "token"  # !
 BOT_STATUS: int = CONTINUE_RUNNING
-SMILES: list = ["8)", "=)", ";)", ":)", "%)", "^_^"]
 
 
 # ToDo: реализовать отработку команды reload по всем модулям
@@ -76,7 +75,9 @@ class CSoftIceBot:
         # *** Создаём собственно бота.
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
+        self.exiting: bool = False
         self.message_text: str = ""
+        self.last_chat_id: int = -1
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -103,7 +104,6 @@ class CSoftIceBot:
         def process_message(pmessage):
             """Обработчик сообщений."""
 
-            self.message_text = pmessage.text
             self.message_text, command, chat_id, chat_title, user_name, user_title = \
                 decode_message(pmessage)
             answer: str = ""
@@ -113,30 +113,16 @@ class CSoftIceBot:
                 # *** Да, вполне легитимный. Боту дали команду?
                 if self.message_text[0:1] in COMMAND_SIGNS:
 
-                    # *** Да, команду. Это команда перезагрузки конфига?
-                    if command in CONFIG_COMMANDS:
+                    if not self.process_command(command, chat_id, chat_title,
+                                                {"name": user_name, "title": user_title}):
 
-                        self.reload_config(chat_id, user_name, user_title)
-                        return
-                    # *** Нет. Запросили выход?
-                    if command in EXIT_COMMANDS:
+                        # *** Нет. Ну и пусть работники разбираются....
+                        answer = self.process_modules(chat_id, chat_title, user_name,
+                                                      user_title)
+                        if answer:
 
-                        self.stop_working(chat_id, user_name, user_title)
-                        return
-                    # *** Опять нет. Запросили помощь?
-
-                    if command in HELP_COMMANDS:
-
-                        answer = self.send_help(chat_title)
-                        self.robot.send_message(chat_id, answer)
-                        return
-                    # *** Нет. Ну и пусть работники разбираются....
-                    answer = self.process_modules(chat_id, chat_title, user_name,
-                                                  user_title)
-                    if answer:
-
-                        self.robot.send_message(chat_id, answer)
-                        return
+                            self.last_chat_id = chat_id
+                            # self.robot.send_message(chat_id, answer)
                 else:
 
                     # *** Нет, не команда.. Проапдейтим базу статистика,
@@ -146,12 +132,14 @@ class CSoftIceBot:
                         self.statistic.save_message(pmessage)
                     # *** Болтуну есть что ответить?
                     answer = self.babbler.talk(chat_title, self.message_text)
-                    if answer:
+                if answer:
 
-                        self.robot.send_message(chat_id, answer)
+                    self.last_chat_id = chat_id
+                    self.robot.send_message(chat_id, answer)
             else:
 
                 # *** Бота привели на чужой канал. Выходим.
+                answer = "Вашего чата нет в списке разрешённых. Чао!"
                 self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
                 self.robot.leave_chat(chat_id)
                 print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
@@ -182,6 +170,28 @@ class CSoftIceBot:
             self.bot_status = QUIT_BY_DEMAND
             self.robot.stop_polling()
 
+    def process_command(self, pcommand: str, pchat_id: int, pchat_title: str,
+                        puser: dict):
+        """Обрабатывает системные команды"""
+        result: bool = False
+        # *** Да, команду. Это команда перезагрузки конфига?
+        if pcommand in CONFIG_COMMANDS:
+
+            self.reload_config(pchat_id, puser["name"], puser["title"])
+            result = True
+        # *** Нет. Запросили выход?
+        elif pcommand in EXIT_COMMANDS:
+
+            self.stop_working(pchat_id, puser["name"], puser["title"])
+            result = True
+        # *** Опять нет. Запросили помощь?
+        elif pcommand in HELP_COMMANDS:
+
+            answer: str = self.send_help(pchat_title)
+            self.robot.send_message(pchat_id, answer)
+            result = True
+        return result
+
     def send_help(self, pchat_title: str):
         """Проверяет, не была ли запрошена подсказка."""
         assert pchat_title is not None, \
@@ -210,6 +220,7 @@ class CSoftIceBot:
         if self.is_master(puser_name):
 
             self.robot.send_message(pchat_id, "Всем пока!")
+            self.exiting = True
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
 
@@ -250,27 +261,27 @@ class CSoftIceBot:
 
             # *** ... или у теолога...
             answer = self.theolog.theolog(pchat_title, self.message_text).strip()
-            if not answer:
+        if not answer:
 
-                # *** ... или у библиотекаря...
-                answer = self.librarian.librarian(pchat_title, puser_name,
-                                                  puser_title, self.message_text).strip()
-                if not answer:
+            # *** ... или у библиотекаря...
+            answer = self.librarian.librarian(pchat_title, puser_name,
+                                              puser_title, self.message_text).strip()
+        if not answer:
 
-                    # *** ... или у метеоролога...
-                    answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
-                    if not answer:
+            # *** ... или у метеоролога...
+            answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
+        if not answer:
 
-                        # *** ... или у статистика...
-                        answer = self.statistic.statistic(pchat_id, pchat_title,
-                                                          puser_title, self.message_text).strip()
-                        if not answer:
+            # *** ... или у статистика...
+            answer = self.statistic.statistic(pchat_id, pchat_title,
+                                              puser_title, self.message_text).strip()
+        if not answer:
 
-                            answer = self.babbler.babbler(pchat_title, self.message_text).strip()
-                            if not answer:
+            answer = self.babbler.babbler(pchat_title, self.message_text).strip()
+        if not answer:
 
-                                # *** Незнакомая команда.
-                                print(" .. fail.")
+            # *** Незнакомая команда.
+            print(" .. fail.")
         return answer
 
 
@@ -282,5 +293,15 @@ class CSoftIceBot:
 #                     call.from_user.id, call.from_user.username, call.data)
 
 if __name__ == "__main__":
-    SofticeBot = CSoftIceBot()
-    SofticeBot.poll()
+
+    SofticeBot: CSoftIceBot = CSoftIceBot()
+    try:
+
+        SofticeBot.poll()
+    finally:
+
+        if not SofticeBot.exiting:
+
+            if SofticeBot.last_chat_id >= 0:
+                SofticeBot.robot.send_message(SofticeBot.last_chat_id,
+                                              "Ой, матушки, падаю!")

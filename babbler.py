@@ -5,6 +5,7 @@
 import random
 import string
 from datetime import datetime
+from time import sleep
 from pathlib import Path
 import functions as func
 import prototype
@@ -137,6 +138,7 @@ class CBabbler(prototype.CPrototype):
                         if clean_word.strip() in block_item:
 
                             answer = f"{random.choice(block[REACTIONS_INDEX])}"
+                            sleep(1)
                             break
                     if answer:
 
