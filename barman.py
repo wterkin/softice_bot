@@ -18,6 +18,10 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],
                   ["шоколад", "chocolate", "шк", "ch"]]
 
 # *** Идентификаторы, они же индексы, напитков, их ключи и эмодзи
+ID_KEY: str = "id"
+KEY_KEY: str = "key"
+KEYS_KEY: str = "keys"
+EMODJI_KEY: str = "emodji"
 COMMAND_KEY: str = "command"
 SOURCES_KEY: str = "sources"
 MARKS_KEY: str = "marks"
@@ -91,6 +95,65 @@ CHOCOLATE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[CHOCOLATE_ID],
                               MARKS_KEY: "chocolate_marks.txt",
                               TRANSFER_KEY: "chocolate_transfer.txt"}
 CHOCOLATE_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
+
+ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
+                       KEY_KEY: BEER_KEY,
+                       EMODJI_KEY: BEER_EMODJI,
+                       COMMAND_KEY: COMMANDS[BEER_ID],
+                       CANS_KEY: "beer_cans.txt",
+                       MARKS_KEY: "beer_marks.txt",
+                       KEYS_KEY: BEER_KEYS},
+                      {ID_KEY: VODKA_ID,
+                       KEY_KEY: VODKA_KEY,
+                       EMODJI_KEY: VODKA_EMODJI,
+                       COMMAND_KEY: COMMANDS[BEER_ID],
+                       CANS_KEY: "beer_cans.txt",
+                       MARKS_KEY: "beer_marks.txt",
+                       KEYS_KEY: VODKA_KEYS},
+                      {ID_KEY: COGNAC_ID,
+                       KEY_KEY: COGNAC_KEY,
+                       EMODJI_KEY:COGNAC_EMODJI,
+                       COMMAND_KEY: COMMANDS[COGNAC_ID],
+                       CANS_KEY: "cognac_cans.txt",
+                       MARKS_KEY: "cognac_marks.txt",
+                       FILLS_KEY: "cognac_fills.txt",
+                       KEYS_KEY: COGNAC_KEYS},
+                      {ID_KEY: COCKTAIL_ID,
+                       KEY_KEY: COCKTAIL_KEY,
+                       EMODJI_KEY: COCKTAIL_EMODJI,
+                       COMMAND_KEY: COMMANDS[COCKTAIL_ID],
+                       MARKS_KEY: "cocktail_marks.txt",
+                       KEYS_KEY: COCKTAIL_KEYS},
+                      {ID_KEY: TEA_ID,
+                       KEY_KEY: TEA_KEY,
+                       EMODJI_KEY: TEA_EMODJI,
+                       COMMAND_KEY: COMMANDS[TEA_ID],
+                       MARKS_KEY: "tea_marks.txt",
+                       FILLS_KEY: "tea_fills.txt",
+                       KEYS_KEY: TEA_KEYS},
+                      {ID_KEY: COFFEE_ID,
+                       KEY_KEY: COFFEE_KEY,
+                       EMODJI_KEY: COFFEE_EMODJI,
+                       COMMAND_KEY: COMMANDS[COFFEE_ID],
+                       MARKS_KEY: "coffee_marks.txt",
+                       FILLS_KEY: "coffee_fills.txt"
+                       KEYS_KEY: COFFEE_KEYS},
+                      {ID_KEY: COOKIE_ID,
+                       KEY_KEY: COOKIE_KEY,
+                       EMODJI_KEY: COOKIE_EMODJI,
+                       COMMAND_KEY: COMMANDS[COOKIE_ID],
+                       SOURCES_KEY: "cookies_sources.txt",
+                       MARKS_KEY: "cookies_marks.txt",
+                       TRANSFER_KEY: "cookies_transfer.txt",
+                       KEYS_KEY: COOKIE_KEYS},
+                      {ID_KEY: CHOCOLATE_ID,
+                       KEY_KEY: CHOCOLATE_KEY,
+                       EMODJI_KEY: CHOCOLATE_EMODJI,
+                       COMMAND_KEY: COMMANDS[CHOCOLATE_ID],
+                       SOURCES_KEY: "chocolate_sources.txt",
+                       MARKS_KEY: "chocolate_marks.txt",
+                       TRANSFER_KEY: "chocolate_transfer.txt",
+                       KEYS_KEY: CHOCOLATE_KEYS})
 
 # *** Команда перегрузки текстов
 BAR_RELOAD: list = ["barreload", "barl"]
@@ -319,7 +382,7 @@ class CBarman(prototype.CPrototype):
             fill: str = random.choice(self.tea[TEA_FILLS_KEY])
             tea: str = random.choice(self.tea[TEA_MARKS_KEY])
             transfer: str = random.choice(self.drinks[DRINKS_TRANSFER_KEY])
-            return f"Softice {fill} {tea} {transfer} {puser_name}"
+            return f"Softice {fill} {tea} {transfer} {puser_name} {TEA_EMODJI}"
         return "Чаю нет. 8()"
 
     def bring_vodka(self, puser_name: str) -> str:
@@ -335,7 +398,7 @@ class CBarman(prototype.CPrototype):
             can: str = random.choice(self.vodka[VODKA_CANS_KEY])
             vodka: str = random.choice(self.vodka[VODKA_MARKS_KEY])
             transfer: str = random.choice(self.vodka[VODKA_FILLS_KEY])
-            return f"Softice {source} {can} {vodka} и {transfer} {puser_name}"
+            return f"Softice {source} {can} {vodka} и {transfer} {puser_name} {VODKA_EMODJI}"
         return "А водочка-то тютю. Кончилась вся. 8(  ]"
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -462,8 +525,17 @@ class CBarman(prototype.CPrototype):
 
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def load_assortiment(self, pmainkey: str, pkeys: tuple, pproperties: dict):
-        """Загружает ассортимент бара"""
+    def load_assortiment(self):
+
+
+    def load_item(self, pmainkey: str, pkeys: tuple, pproperties: dict):
+        """Загружает одно наименование ассортимента бара."""
+        storage: dict = {}
+        for key in pkeys:
+
+            storage[key] = func.load_from_file(self.data_path + pproperties[key])
+
+        self.bar[pmainkey] = storage
 
     def load_beer(self):
         """Загружает данные пива."""

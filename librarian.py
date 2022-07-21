@@ -332,7 +332,7 @@ class CLibrarian(prototype.CPrototype):
         self.hokku = self.load_book_from_file(self.data_path + HOKKU_FILE_NAME)
         self.quotes = self.load_book_from_file(self.data_path + QUOTES_FILE_NAME)
         print(f"Librarian successfully reload library - {len(self.hokku)} hokku "
-              f"and {len(self.quotes)}. quotes")
+              f"and {len(self.quotes)} quotes")
 
     def save_book(self, pbook: list, pbook_name: str): # noqa
         """Сохраняет заданную книгу."""
