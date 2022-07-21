@@ -196,6 +196,7 @@ COOKIES_MARKS_KEY: str = "ckmrk"  # X
 COOKIES_TRANSFER_PATH: str = "cookies_transfer.txt"  # X
 COOKIES_TRANSFER_KEY: str = "cktrf"  # X
 
+# ToDo: Как тут быть?
 DRINKS_SOURCES_PATH: str = "drink_sources.txt"
 DRINKS_SOURCES_KEY: str = "drsrc"
 DRINKS_TRANSFER_PATH: str = "drink_transfer.txt"
@@ -277,6 +278,17 @@ class CBarman(prototype.CPrototype):
 
             print(f"Barman answers: {answer[:16]}")
         return answer
+
+    def serve_client(self, puser_name: str, pcommand: str):
+        """Обслуживает клиентов."""
+        for item in ASSORTIMENT:
+
+            if item[COMMAND_KEY] == pcommand:
+
+                pass
+                # *** Ок, формируем ответ
+                # f"Softice {source} {can} пива \"{beer}\" {transfer} {puser_name} {BEER_EMODJI}"
+
 
     def bring_beer(self, puser_name: str) -> str:
         """Пользователь запросил пиво."""
@@ -543,7 +555,7 @@ class CBarman(prototype.CPrototype):
         #  CANS_KEY: "beer_cans.txt",
         #  MARKS_KEY: "beer_marks.txt",
         #  KEYS_KEY: BEER_KEYS}
-        print("****************", pitem[KEY_KEY])
+        # print("****************", pitem[KEY_KEY])
         for key in pitem[KEYS_KEY]:
 
             storage[key] = func.load_from_file(self.data_path + pitem[key])
