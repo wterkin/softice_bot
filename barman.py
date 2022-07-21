@@ -43,7 +43,7 @@ VODKA_EMODJI: str = "🍸"
 VODKA_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[VODKA_ID],
                           CANS_KEY: "vodka_cans.txt",
                           MARKS_KEY: "vodka_marks.txt",
-                          FILLS_KEY: "vodka_fills"}
+                          FILLS_KEY: "vodka_fills.txt"}
 VODKA_KEYS: tuple = (CANS_KEY, MARKS_KEY, FILLS_KEY)
 
 COGNAC_ID: int = 2
@@ -109,10 +109,11 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        COMMAND_KEY: COMMANDS[BEER_ID],
                        CANS_KEY: "beer_cans.txt",
                        MARKS_KEY: "beer_marks.txt",
+                       FILLS_KEY: "vodka_fills.txt",
                        KEYS_KEY: VODKA_KEYS},
                       {ID_KEY: COGNAC_ID,
                        KEY_KEY: COGNAC_KEY,
-                       EMODJI_KEY:COGNAC_EMODJI,
+                       EMODJI_KEY: COGNAC_EMODJI,
                        COMMAND_KEY: COMMANDS[COGNAC_ID],
                        CANS_KEY: "cognac_cans.txt",
                        MARKS_KEY: "cognac_marks.txt",
@@ -136,7 +137,7 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        EMODJI_KEY: COFFEE_EMODJI,
                        COMMAND_KEY: COMMANDS[COFFEE_ID],
                        MARKS_KEY: "coffee_marks.txt",
-                       FILLS_KEY: "coffee_fills.txt"
+                       FILLS_KEY: "coffee_fills.txt",
                        KEYS_KEY: COFFEE_KEYS},
                       {ID_KEY: COOKIE_ID,
                        KEY_KEY: COOKIE_KEY,
@@ -157,7 +158,6 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
 
 # *** Команда перегрузки текстов
 BAR_RELOAD: list = ["barreload", "barl"]
-
 BARMAN_FOLDER: str = "barman/"
 
 BEER_CANS_PATH: str = "beer_cans.txt"  # X
@@ -239,6 +239,7 @@ class CBarman(prototype.CPrototype):
         self.tea: dict = {}
         self.drinks: dict = {}
         self.reload()
+        self.load_assortiment()
 
     def barman(self, pchat_title: str, pmessage_text: str, puser_title: str) -> str:
         """Процедура разбора запроса пользователя."""
@@ -526,16 +527,28 @@ class CBarman(prototype.CPrototype):
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def load_assortiment(self):
+        """Загружает ассортимент бара."""
+        for item in ASSORTIMENT:
 
+            self.load_item(item)
+        # print(self.bar)
 
-    def load_item(self, pmainkey: str, pkeys: tuple, pproperties: dict):
+    def load_item(self, pitem: dict):  # pmainkey: str, pkeys: tuple, pproperties: dict):
         """Загружает одно наименование ассортимента бара."""
         storage: dict = {}
-        for key in pkeys:
+        # {ID_KEY: BEER_ID,
+        #  KEY_KEY: BEER_KEY,
+        #  EMODJI_KEY: BEER_EMODJI,
+        #  COMMAND_KEY: COMMANDS[BEER_ID],
+        #  CANS_KEY: "beer_cans.txt",
+        #  MARKS_KEY: "beer_marks.txt",
+        #  KEYS_KEY: BEER_KEYS}
+        print("****************", pitem[KEY_KEY])
+        for key in pitem[KEYS_KEY]:
 
-            storage[key] = func.load_from_file(self.data_path + pproperties[key])
+            storage[key] = func.load_from_file(self.data_path + pitem[key])
 
-        self.bar[pmainkey] = storage
+        self.bar[pitem[KEYS_KEY]] = storage
 
     def load_beer(self):
         """Загружает данные пива."""
