@@ -37,7 +37,7 @@ BOT_STATUS: int = CONTINUE_RUNNING
 # ToDo: реализовать отработку команды reload по всем модулям
 # ToDo: и чтоб в каждом модуле шла проверка на то,
 #       что команда отдана хозяином.
-# babbler, barman, librarian,
+#  barman, librarian,
 
 
 class CQuitByDemand(Exception):

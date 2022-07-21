@@ -7,24 +7,7 @@ import random
 import functions as func
 import prototype
 
-# *** Идентификаторы, они же индексы, напитков
-BEER_ID: int = 0
-BEER_KEY: str = "beer"
-VODKA_ID: int = 1
-VODKA_KEY: str = "vodka"
-COGNAC_ID: int = 2
-COGNAC_KEY: str = "cognac"
-COCKTAIL_ID: int = 3
-COCKTAIL_KEY: str = "cocktail"
-TEA_ID: int = 4
-TEA_KEY: str = "tea"
-COFFEE_ID: int = 5
-COFFEE_KEY: str = "coffee"
-COOKIES_ID: int = 6
-COOKIES_KEY: str = "cookies"
-CHOCOLATE_ID: int = 7
-CHOCOLATE_KEY: str = "choco"
-
+# *** Список списков доступных команд
 COMMANDS: list = [["пиво", "beer", "пв", "br"],
                   ["водка", "vodka", "вк", "vk"],
                   ["коньяк", "cognac", "кн", "cn"],
@@ -34,43 +17,90 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],
                   ["печеньки", "cookies", "пч", "ck"],
                   ["шоколад", "chocolate", "шк", "ch"]]
 
-BEER_EMODJI: str = "🍺"
-COFFEE_EMODJI: str = "☕️"
-COGNAC_EMODJI: str = "🥃"
-COCKTAIL_EMODJI: str = "🍹"
-COOKIE_EMODJI: str = "🍪"
-CHOCOLATE_EMODJI: str = "🍫"
-BARMAN_FOLDER: str = "barman/"
-# *** Команда перегрузки текстов
-BAR_RELOAD: list = ["barreload", "brl"]
-
-# 1. Источник - source - все, кроме чая и кофе +
-# 2. Марка - marks - все +
-# 3. Ёмкость - can -  пиво, коньяк и водка +
-# 4. Разлив - fill - кофе и чай +
-# 5. Доставка - transfer - все +
-#
-#
-
+# *** Идентификаторы, они же индексы, напитков, их ключи и эмодзи
+COMMAND_KEY: str = "command"
 SOURCES_KEY: str = "sources"
 MARKS_KEY: str = "marks"
 CANS_KEY: str = "cans"
 FILLS_KEY: str = "fills"
 TRANSFER_KEY: str = "transfer"
 
-BEER_PROPERTIES: dict = {CANS_KEY: "beer_cans.txt",
+BEER_ID: int = 0
+BEER_KEY: str = "beer"
+BEER_EMODJI: str = "🍺"
+BEER_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[BEER_ID],
+                         CANS_KEY: "beer_cans.txt",
                          MARKS_KEY: "beer_marks.txt"}
 BEER_KEYS: tuple = (CANS_KEY, MARKS_KEY)
+
+VODKA_ID: int = 1
+VODKA_KEY: str = "vodka"
+VODKA_EMODJI: str = "🍸"
+VODKA_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[VODKA_ID],
+                          CANS_KEY: "vodka_cans.txt",
+                          MARKS_KEY: "vodka_marks.txt",
+                          FILLS_KEY: "vodka_fills"}
+VODKA_KEYS: tuple = (CANS_KEY, MARKS_KEY, FILLS_KEY)
+
+COGNAC_ID: int = 2
+COGNAC_KEY: str = "cognac"
+COGNAC_EMODJI: str = "🥃"
+COGNAC_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COGNAC_ID],
+                           CANS_KEY: "cognac_cans.txt",
+                           MARKS_KEY: "cognac_marks.txt",
+                           FILLS_KEY: "cognac_fills.txt"}
+COGNAC_KEYS: tuple = (CANS_KEY, MARKS_KEY, FILLS_KEY)
+
+COCKTAIL_ID: int = 3
+COCKTAIL_KEY: str = "cocktail"
+COCKTAIL_EMODJI: str = "🍹"
+COCKTAIL_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COCKTAIL_ID],
+                             MARKS_KEY: "cocktail_marks.txt"}
+COCKTAIL_KEYS: tuple = (MARKS_KEY, )
+
+TEA_ID: int = 4
+TEA_KEY: str = "tea"
+TEA_EMODJI: str = "🫖"
+TEA_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[TEA_ID],
+                        MARKS_KEY: "tea_marks.txt",
+                        FILLS_KEY: "tea_fills.txt"}
+TEA_KEYS: tuple = (MARKS_KEY, FILLS_KEY)
+
+COFFEE_ID: int = 5
+COFFEE_KEY: str = "coffee"
+COFFEE_EMODJI: str = "☕️"
+COFFEE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COFFEE_ID],
+                           MARKS_KEY: "coffee_marks.txt",
+                           FILLS_KEY: "coffee_fills.txt"}
+COFFEE_KEYS: tuple = (MARKS_KEY, FILLS_KEY)
+
+COOKIE_ID: int = 6
+COOKIE_KEY: str = "cookies"
+COOKIE_EMODJI: str = "🍪"
+COOKIE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COOKIE_ID],
+                           SOURCES_KEY: "cookies_sources.txt",
+                           MARKS_KEY: "cookies_marks.txt",
+                           TRANSFER_KEY: "cookies_transfer.txt"}
+COOKIE_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
+
+CHOCOLATE_ID: int = 7
+CHOCOLATE_KEY: str = "choco"
+CHOCOLATE_EMODJI: str = "🍫"
+CHOCOLATE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[CHOCOLATE_ID],
+                              SOURCES_KEY: "chocolate_sources.txt",
+                              MARKS_KEY: "chocolate_marks.txt",
+                              TRANSFER_KEY: "chocolate_transfer.txt"}
+CHOCOLATE_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
+
+# *** Команда перегрузки текстов
+BAR_RELOAD: list = ["barreload", "barl"]
+
+BARMAN_FOLDER: str = "barman/"
 
 BEER_CANS_PATH: str = "beer_cans.txt"  # X
 BEER_MARKS_PATH: str = "beer_marks.txt"  # X
 BEER_CANS_KEY: str = "bcans"  # X
 BEER_MARKS_KEY: str = "bmarks"  # X
-
-CHOCOLATE_PROPERTIES: dict = {SOURCES_KEY: "chocolate_sources.txt",
-                              MARKS_KEY: "chocolate_marks.txt",
-                              TRANSFER_KEY: "chocolate_transfer.txt"}
-CHOCOLATE_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
 
 CHOCOLATE_MARKS_PATH: str = "chocolate_marks.txt"   # X
 CHOCOLATE_MARKS_KEY: str = "chkmarks"  # X
@@ -79,24 +109,15 @@ CHOCOLATE_SOURCES_KEY: str = "chksrc"  # X
 CHOCOLATE_TRANSFER_PATH: str = "chocolate_transfer.txt"  # X
 CHOCOLATE_TRANSFER_KEY: str = "chktrf"  # X
 
-COCKTAIL_PROPERTIES: dict = {MARKS_KEY: "chocolate_marks.txt"}
-COCKTAIL_KEYS: tuple = (MARKS_KEY, )
 
 COCKTAIL_MARKS_PATH: str = "cocktail_marks.txt"  # X
 
-COFFEE_PROPERTIES: dict = {MARKS_KEY: "coffee_marks.txt",
-                           FILLS_KEY: "coffee_fills.txt"}
-COFFEE_KEYS: tuple = (MARKS_KEY, FILLS_KEY)
 
 COFFEE_MARKS_PATH: str = "coffee_marks.txt"   # X
 COFFEE_MARKS_KEY: str = "cfmarks"  # X
 COFFEE_FILLS_PATH: str = "coffee_fills.txt"  # X
 COFFEE_FILLS_KEY: str = "cffills"  # X
 
-COGNAC_PROPERTIES: dict = {CANS_KEY: "cognac_cans.txt",
-                           MARKS_KEY: "cognac_marks.txt",
-                           FILLS_KEY: "cognac_fills.txt"}
-COGNAC_KEYS: tuple = (CANS_KEY, MARKS_KEY, FILLS_KEY)
 
 COGNAC_CANS_PATH: str = "cognac_cans.txt"   # X
 COGNAC_CANS_KEY: str = "cgcans"  # X
@@ -104,11 +125,6 @@ COGNAC_MARKS_PATH: str = "cognac_marks.txt"  # X
 COGNAC_MARKS_KEY: str = "cgmarks"  # X
 COGNAC_FILLS_PATH: str = "cognac_fills.txt"  # X
 COGNAC_FILLS_KEY: str = "cgfills"  # X
-
-COOKIES_PROPERTIES: dict = {SOURCES_KEY: "cookies_sources.txt",
-                            MARKS_KEY: "cookies_marks.txt",
-                            TRANSFER_KEY: "cookies_transfer.txt"}
-COOKIES_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
 
 COOKIES_SOURCES_PATH: str = "cookies_sources.txt"   # X
 COOKIES_SOURCES_KEY: str = "cksrc"  # X
@@ -147,7 +163,8 @@ class CBarman(prototype.CPrototype):
         super().__init__()
         self.config = pconfig
         self.data_path = pdata_path+BARMAN_FOLDER
-        print(self.data_path)
+        # print(self.data_path)
+        self.bar: dict = {}
         self.beer: dict = {}
         self._beer: dict = {}
         self.chocolate: dict = {}
@@ -370,7 +387,7 @@ class CBarman(prototype.CPrototype):
         if pcommand == COGNAC_ID:
 
             message = self.bring_cognac(pname_to)
-        if pcommand == COOKIES_ID:
+        if pcommand == COOKIE_ID:
 
             message = self.bring_cookies(pname_to)
         if pcommand == TEA_ID:
@@ -445,7 +462,7 @@ class CBarman(prototype.CPrototype):
 
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def load_assortiment(self):
+    def load_assortiment(self, pmainkey: str, pkeys: tuple, pproperties: dict):
         """Загружает ассортимент бара"""
 
     def load_beer(self):
