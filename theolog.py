@@ -137,9 +137,13 @@ class CTheolog(prototype.CPrototype):
             if pbook_name.lower() in book:
 
                 message = self.find_in_book(book_idx, pchapter, pbook_name, pline_count)
-                if len(message) > 0:
+                if message:
 
                     break
+        if not message:
+
+            message = "Нет такой главы и/или стиха в этой книге."
+
         return message
 
     def find_in_book(self, pbook_idx: int, pline_id: str, pbook: str,
@@ -238,7 +242,8 @@ class CTheolog(prototype.CPrototype):
                 for line in book_file:
 
                     lower_line = line.lower()
-                    if pphrase in lower_line:
+                    list_of_strings = lower_line.split(" ")
+                    if pphrase in list_of_strings:
 
                         parsed_line = re.split(r'\:', line, maxsplit=2)
                         result_list.append(f"{book_title} глава {parsed_line[0]}"
@@ -300,7 +305,10 @@ class CTheolog(prototype.CPrototype):
                             line_count = int(word_list[2])
                             line_count = 5 if line_count > 5 else line_count
                     message = self.execute_quote(chapter, book_name, line_count)
-        if len(message) > 0:
+            if len(message) > 0:
 
-            print(f"Theolog answers: {message[:16]}...")
+                print(f"Theolog answers: {message[:16]}...")
+            else:
+
+                message = "Ничего не нашёл."
         return message

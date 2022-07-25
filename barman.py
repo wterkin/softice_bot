@@ -19,7 +19,7 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],
 
 # *** Идентификаторы, они же индексы, напитков, их ключи и эмодзи
 ID_KEY: str = "id"
-KEY_KEY: str = "key"
+# KEY_KEY: str = "key"
 KEYS_KEY: str = "keys"
 EMODJI_KEY: str = "emodji"
 COMMAND_KEY: str = "command"
@@ -98,7 +98,7 @@ CHOCOLATE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[CHOCOLATE_ID],
 CHOCOLATE_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
 
 ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
-                       KEY_KEY: BEER_KEY,
+                       # KEY_KEY: BEER_KEY,
                        EMODJI_KEY: BEER_EMODJI,
                        COMMAND_KEY: COMMANDS[BEER_ID],
                        CANS_KEY: "beer_cans.txt",
@@ -108,7 +108,7 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        KEYS_KEY: BEER_KEYS},
                       # TEMPLATE_KEY: "Softice {source} {can} пива \"{beer}\" {transfer} {puser_name} {BEER_EMODJI}"},
                       {ID_KEY: VODKA_ID,
-                       KEY_KEY: VODKA_KEY,
+                       # KEY_KEY: VODKA_KEY,
                        EMODJI_KEY: VODKA_EMODJI,
                        COMMAND_KEY: COMMANDS[BEER_ID],
                        CANS_KEY: "beer_cans.txt",
@@ -117,7 +117,7 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        FILLS_KEY: "vodka_fills.txt",
                        KEYS_KEY: VODKA_KEYS},
                       {ID_KEY: COGNAC_ID,
-                       KEY_KEY: COGNAC_KEY,
+                       # KEY_KEY: COGNAC_KEY,
                        EMODJI_KEY: COGNAC_EMODJI,
                        COMMAND_KEY: COMMANDS[COGNAC_ID],
                        CANS_KEY: "cognac_cans.txt",
@@ -126,14 +126,14 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        FILLS_KEY: "cognac_fills.txt",
                        KEYS_KEY: COGNAC_KEYS},
                       {ID_KEY: COCKTAIL_ID,
-                       KEY_KEY: COCKTAIL_KEY,
+                       # KEY_KEY: COCKTAIL_KEY,
                        EMODJI_KEY: COCKTAIL_EMODJI,
                        COMMAND_KEY: COMMANDS[COCKTAIL_ID],
                        SOURCES_KEY: "drink_sources.txt",
                        MARKS_KEY: "cocktail_marks.txt",
                        KEYS_KEY: COCKTAIL_KEYS},
                       {ID_KEY: TEA_ID,
-                       KEY_KEY: TEA_KEY,
+                       # KEY_KEY: TEA_KEY,
                        EMODJI_KEY: TEA_EMODJI,
                        COMMAND_KEY: COMMANDS[TEA_ID],
                        TRANSFER_KEY: "drink_transfer.txt",
@@ -141,7 +141,7 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        FILLS_KEY: "tea_fills.txt",
                        KEYS_KEY: TEA_KEYS},
                       {ID_KEY: COFFEE_ID,
-                       KEY_KEY: COFFEE_KEY,
+                       # KEY_KEY: COFFEE_KEY,
                        EMODJI_KEY: COFFEE_EMODJI,
                        COMMAND_KEY: COMMANDS[COFFEE_ID],
                        TRANSFER_KEY: "drink_transfer.txt",
@@ -149,7 +149,7 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        FILLS_KEY: "coffee_fills.txt",
                        KEYS_KEY: COFFEE_KEYS},
                       {ID_KEY: COOKIE_ID,
-                       KEY_KEY: COOKIE_KEY,
+                       # KEY_KEY: COOKIE_KEY,
                        EMODJI_KEY: COOKIE_EMODJI,
                        COMMAND_KEY: COMMANDS[COOKIE_ID],
                        SOURCES_KEY: "cookies_sources.txt",
@@ -157,7 +157,7 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        TRANSFER_KEY: "cookies_transfer.txt",
                        KEYS_KEY: COOKIE_KEYS},
                       {ID_KEY: CHOCOLATE_ID,
-                       KEY_KEY: CHOCOLATE_KEY,
+                       # KEY_KEY: CHOCOLATE_KEY,
                        EMODJI_KEY: CHOCOLATE_EMODJI,
                        COMMAND_KEY: COMMANDS[CHOCOLATE_ID],
                        SOURCES_KEY: "chocolate_sources.txt",
@@ -521,7 +521,9 @@ class CBarman(prototype.CPrototype):
 
     def load_assortiment(self):
         """Загружает ассортимент бара."""
+        # print(ASSORTIMENT[0])
         for item in ASSORTIMENT:
+
             self.load_item(item)
         # print(self.bar)
 
@@ -537,9 +539,10 @@ class CBarman(prototype.CPrototype):
         #  KEYS_KEY: BEER_KEYS}
         # print("****************", pitem[KEY_KEY])
         for key in pitem[KEYS_KEY]:
+
             storage[key] = func.load_from_file(self.data_path + pitem[key])
 
-        self.bar[pitem[KEYS_KEY]] = storage
+        self.bar[pitem[ID_KEY]] = storage
 
     def load_beer(self):
         """Загружает данные пива."""
