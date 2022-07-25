@@ -4,7 +4,7 @@
 
 import re
 import random
-
+import string
 import functions as func
 import prototype
 
@@ -242,8 +242,14 @@ class CTheolog(prototype.CPrototype):
                 for line in book_file:
 
                     lower_line = line.lower()
-                    list_of_strings = lower_line.split(" ")
-                    if pphrase in list_of_strings:
+                    # lower_line = line.strip(string.punctuation).lower()
+                    # list_of_strings = lower_line.split(" ")
+                    # clean_list = []
+                    # for word in list_of_strings:
+                    #
+                    #     clean_list.append(word.strip(string.punctuation))
+                    # print(clean_li
+                    if pphrase in lower_line:
 
                         parsed_line = re.split(r'\:', line, maxsplit=2)
                         result_list.append(f"{book_title} глава {parsed_line[0]}"
