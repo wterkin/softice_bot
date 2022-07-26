@@ -8,7 +8,7 @@ import functions as func
 import prototype
 
 # *** Список списков доступных команд
-COMMANDS: list = [["пиво", "beer", "пв", "br"],
+COMMANDS: list = [["пиво", "beer", "пв", "br"],   # ***
                   ["водка", "vodka", "вк", "vk"],
                   ["коньяк", "cognac", "кн", "cn"],
                   ["коктейль", "cocktail", "кт", "ct"],
@@ -20,17 +20,17 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],
 # *** Идентификаторы, они же индексы, напитков, их ключи и эмодзи
 ID_KEY: str = "id"
 # KEY_KEY: str = "key"
-PROPERTIES_KEY: str = "keys"
-EMODJI_KEY: str = "emodji"
-COMMAND_KEY: str = "command"
-SOURCES_KEY: str = "sources"
-MARKS_KEY: str = "marks"
-CANS_KEY: str = "cans"
-FILLS_KEY: str = "fills"
-TRANSFER_KEY: str = "transfer"
-TEMPLATE_KEY: str = "template"
+PROPERTIES_KEY: str = "keys"  # ***
+EMODJI_KEY: str = "emodji"  # ***
+COMMAND_KEY: str = "command"  # ***
+SOURCES_KEY: str = "sources"   # ***
+MARKS_KEY: str = "marks"  # ***
+CANS_KEY: str = "cans"  # ***
+FILLS_KEY: str = "fills"  # ***
+TRANSFER_KEY: str = "transfer"  # ***
+TEMPLATE_KEY: str = "template"  # ***
 
-BEER_ID: int = 0
+BEER_ID: int = 0  # ***
 BEER_KEY: str = "beer"
 BEER_EMODJI: str = "🍺"
 BEER_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[BEER_ID],
@@ -40,7 +40,7 @@ BEER_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[BEER_ID],
                          TRANSFER_KEY: "drink_transfer.txt"}
 BEER_KEYS: tuple = (SOURCES_KEY, CANS_KEY, MARKS_KEY, TRANSFER_KEY)
 
-VODKA_ID: int = 1
+VODKA_ID: int = 1  # ***
 VODKA_KEY: str = "vodka"
 VODKA_EMODJI: str = "🍸"
 VODKA_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[VODKA_ID],
@@ -49,7 +49,7 @@ VODKA_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[VODKA_ID],
                           FILLS_KEY: "vodka_fills.txt"}
 VODKA_KEYS: tuple = (CANS_KEY, SOURCES_KEY, MARKS_KEY, FILLS_KEY)
 
-COGNAC_ID: int = 2
+COGNAC_ID: int = 2  # ***
 COGNAC_KEY: str = "cognac"
 COGNAC_EMODJI: str = "🥃"
 COGNAC_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COGNAC_ID],
@@ -58,14 +58,14 @@ COGNAC_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COGNAC_ID],
                            FILLS_KEY: "cognac_fills.txt"}
 COGNAC_KEYS: tuple = (CANS_KEY, SOURCES_KEY, MARKS_KEY, FILLS_KEY)
 
-COCKTAIL_ID: int = 3
+COCKTAIL_ID: int = 3  # ***
 COCKTAIL_KEY: str = "cocktail"
 COCKTAIL_EMODJI: str = "🍹"
 COCKTAIL_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COCKTAIL_ID],
                              MARKS_KEY: "cocktail_marks.txt"}
 COCKTAIL_KEYS: tuple = (SOURCES_KEY, MARKS_KEY)
 
-TEA_ID: int = 4
+TEA_ID: int = 4  # ***
 TEA_KEY: str = "tea"
 TEA_EMODJI: str = "🫖"
 TEA_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[TEA_ID],
@@ -73,7 +73,7 @@ TEA_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[TEA_ID],
                         FILLS_KEY: "tea_fills.txt"}
 TEA_KEYS: tuple = (MARKS_KEY, FILLS_KEY, TRANSFER_KEY)
 
-COFFEE_ID: int = 5
+COFFEE_ID: int = 5  # ***
 COFFEE_KEY: str = "coffee"
 COFFEE_EMODJI: str = "☕️"
 COFFEE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COFFEE_ID],
@@ -81,7 +81,7 @@ COFFEE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COFFEE_ID],
                            FILLS_KEY: "coffee_fills.txt"}
 COFFEE_KEYS: tuple = (MARKS_KEY, FILLS_KEY, TRANSFER_KEY)
 
-COOKIE_ID: int = 6
+COOKIE_ID: int = 6  # ***
 COOKIE_KEY: str = "cookies"
 COOKIE_EMODJI: str = "🍪"
 COOKIE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COOKIE_ID],
@@ -90,7 +90,7 @@ COOKIE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[COOKIE_ID],
                            TRANSFER_KEY: "cookies_transfer.txt"}
 COOKIE_KEYS: tuple = (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY)
 
-CHOCOLATE_ID: int = 7
+CHOCOLATE_ID: int = 7  # ***
 CHOCOLATE_KEY: str = "choco"
 CHOCOLATE_EMODJI: str = "🍫"
 CHOCOLATE_PROPERTIES: dict = {COMMAND_KEY: COMMANDS[CHOCOLATE_ID],
@@ -120,35 +120,33 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        PROPERTIES_KEY: (SOURCES_KEY, CANS_KEY, MARKS_KEY, FILLS_KEY),
                        TEMPLATE_KEY: "Softice {0} {1} {2} и {3} {4} {5}"},
                       {ID_KEY: COGNAC_ID,
-                       EMODJI_KEY: COGNAC_EMODJI,
+                       EMODJI_KEY: "🥃",
                        COMMAND_KEY: COMMANDS[COGNAC_ID],
                        SOURCES_KEY: "drink_sources.txt",
                        CANS_KEY: "cognac_cans.txt",
                        MARKS_KEY: "cognac_marks.txt",
                        FILLS_KEY: "cognac_fills.txt",
-                       PROPERTIES_KEY: (SOURCES_KEY, CANS_KEY, MARKS_KEY, FILLS_KEY)
-                       TEMPLATE_KEY: "Softice {0} {1} {2} и {3} {4} {5}"
-                       },
+                       PROPERTIES_KEY: (SOURCES_KEY, CANS_KEY, MARKS_KEY, FILLS_KEY),
+                       TEMPLATE_KEY: "Softice {0} {1} {2} и {3} {4} {5}"},
                       {ID_KEY: COCKTAIL_ID,
-                       EMODJI_KEY: COCKTAIL_EMODJI,
+                       EMODJI_KEY: "🍹",
                        COMMAND_KEY: COMMANDS[COCKTAIL_ID],
                        SOURCES_KEY: "drink_sources.txt",
                        MARKS_KEY: "cocktail_marks.txt",
                        FILLS_KEY: "cocktail_fills.txt",
-                       PROPERTIES_KEY: COCKTAIL_KEYS
-                       #"Softice {source} {cocktail} и {transfer} {puser_name} {COCKTAIL_EMODJI}"
-                       },
+                       PROPERTIES_KEY: (SOURCES_KEY, MARKS_KEY, FILLS_KEY),
+                       TEMPLATE_KEY: "Softice {0} {1} и {2} {3} {4}"},
                       {ID_KEY: TEA_ID,
-                       # KEY_KEY: TEA_KEY,
-                       EMODJI_KEY: TEA_EMODJI,
+                       EMODJI_KEY: "🫖",
                        COMMAND_KEY: COMMANDS[TEA_ID],
-                       TRANSFER_KEY: "drink_transfer.txt",
-                       MARKS_KEY: "tea_marks.txt",
                        FILLS_KEY: "tea_fills.txt",
-                       PROPERTIES_KEY: TEA_KEYS},
+                       MARKS_KEY: "tea_marks.txt",
+                       TRANSFER_KEY: "drink_transfer.txt",
+                       PROPERTIES_KEY: (FILLS_KEY, MARKS_KEY, TRANSFER_KEY),
+                       TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"},
                       {ID_KEY: COFFEE_ID,
                        # KEY_KEY: COFFEE_KEY,
-                       EMODJI_KEY: COFFEE_EMODJI,
+                       EMODJI_KEY: "☕️",
                        COMMAND_KEY: COMMANDS[COFFEE_ID],
                        TRANSFER_KEY: "drink_transfer.txt",
                        MARKS_KEY: "coffee_marks.txt",
