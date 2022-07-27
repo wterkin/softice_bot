@@ -19,24 +19,24 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],  # ***
 
 # *** Идентификаторы, они же индексы, напитков, их ключи и эмодзи
 ID_KEY: str = "id"
-PROPERTIES_KEY: str = "keys"  # ***
-EMODJI_KEY: str = "emodji"  # ***
-COMMAND_KEY: str = "command"  # ***
-SOURCES_KEY: str = "sources"  # ***
-MARKS_KEY: str = "marks"  # ***
-CANS_KEY: str = "cans"  # ***
-FILLS_KEY: str = "fills"  # ***
-TRANSFER_KEY: str = "transfer"  # ***
-TEMPLATE_KEY: str = "template"  # ***
+PROPERTIES_KEY: str = "keys"
+EMODJI_KEY: str = "emodji"
+COMMAND_KEY: str = "command"
+SOURCES_KEY: str = "sources"
+MARKS_KEY: str = "marks"
+CANS_KEY: str = "cans"
+FILLS_KEY: str = "fills"
+TRANSFER_KEY: str = "transfer"
+TEMPLATE_KEY: str = "template"
 
-BEER_ID: int = 0  # ***
-VODKA_ID: int = 1  # ***
-COGNAC_ID: int = 2  # ***
-COCKTAIL_ID: int = 3  # ***
-TEA_ID: int = 4  # ***
-COFFEE_ID: int = 5  # ***
-COOKIE_ID: int = 6  # ***
-CHOCOLATE_ID: int = 7  # ***
+BEER_ID: int = 0
+VODKA_ID: int = 1
+COGNAC_ID: int = 2
+COCKTAIL_ID: int = 3
+TEA_ID: int = 4
+COFFEE_ID: int = 5
+COOKIE_ID: int = 6
+CHOCOLATE_ID: int = 7
 
 ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        EMODJI_KEY: "🍺",
@@ -47,8 +47,6 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        TRANSFER_KEY: "drink_transfer.txt",
                        PROPERTIES_KEY: (SOURCES_KEY, CANS_KEY, MARKS_KEY, TRANSFER_KEY),
                        TEMPLATE_KEY: "Softice {0} {1} пива \"{2}\" {3} {4} {5}"},
-                      # TEMPLATE_KEY: "Softice {source} {can} пива \"{mark}\"
-                      # {transfer} {puser_name} {BEER_EMODJI}"},
                       {ID_KEY: VODKA_ID,
                        EMODJI_KEY: "🍸",
                        COMMAND_KEY: COMMANDS[VODKA_ID],
@@ -109,11 +107,11 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"})
 
 # *** Команда перегрузки текстов
+BAR_HINT: list = ["бар", "bar"]
 BAR_RELOAD: list = ["barreload", "barl"]
 BARMAN_FOLDER: str = "barman/"
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "barman_chats"
-BAR_HINT: list = ["бар", "bar"]
 
 
 class CBarman(prototype.CPrototype):
@@ -153,20 +151,24 @@ class CBarman(prototype.CPrototype):
 
                 answer = self.serve_client(puser_title, word_list[0])
         if answer:
+
             print(f"Barman answers: {answer[:16]}")
+        else:
+
+            print("Fail")
         return answer
 
     def serve_client(self, puser_name: str, pcommand: str):
         """Обслуживает клиентов."""
+        assert puser_name is not None, \
+            "Assert: [barman.serve_client] No <puser_name> parameter specified!"
+        assert pcommand is not None, \
+            "Assert: [barman.serve_client] No <pcommand> parameter specified!"
         answer: str = ""
         for item in ASSORTIMENT:
 
-            # print(item[COMMAND_KEY], pcommand)
-            if pcommand in item[COMMAND_KEY]:
+            if pcommand.strip() in item[COMMAND_KEY]:
 
-                # *** Замечательно, мы нашли, что попросил клиент.
-                # *** Нужно сформировать список параметров для
-                #     функции format
                 arguments: list = []
                 for prop in item[PROPERTIES_KEY]:
 
@@ -175,9 +177,8 @@ class CBarman(prototype.CPrototype):
                 arguments.append(puser_name)
                 # *** Последний аргумент - это эмоджи
                 arguments.append(item[EMODJI_KEY])
-
                 # *** Ок, формируем ответ
-                answer: str = item[TEMPLATE_KEY].format(*arguments)
+                answer = item[TEMPLATE_KEY].format(*arguments)
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -196,25 +197,30 @@ class CBarman(prototype.CPrototype):
 
                 found = word_list[0] in command
                 if found:
+
                     break
             if not found:
 
                 found = word_list[0] in BAR_HINT
                 if not found:
+
                     found = word_list[0] in BAR_RELOAD
         return found
 
     def get_help(self, pchat_title: str) -> str:  # noqa
         """Пользователь запросил список команд."""
+        assert pchat_title is not None, \
+            "Assert: [barman.get_help] " \
+            "No <pchat_title> parameter specified!"
         command_list: str = ""
         if self.is_enabled(pchat_title):
 
             for command in COMMANDS:
 
                 for kind in command:
+
                     command_list += kind + ", "
-                command_list = command_list[:-2]
-                command_list += "\n"
+                command_list = command_list[:-2] + "\n"
         return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
@@ -223,6 +229,7 @@ class CBarman(prototype.CPrototype):
             "Assert: [barman.get_hint] " \
             "No <pchat_title> parameter specified!"
         if self.is_enabled(pchat_title):
+
             return ", ".join(BAR_HINT)
         return ""
 
@@ -241,7 +248,6 @@ class CBarman(prototype.CPrototype):
 
     def load_assortiment(self):
         """Загружает ассортимент бара."""
-        # print(ASSORTIMENT[0])
         for item in ASSORTIMENT:
 
             self.load_item(item)
@@ -249,6 +255,9 @@ class CBarman(prototype.CPrototype):
 
     def load_item(self, pitem: dict):  # pmainkey: str, pkeys: tuple, pproperties: dict):
         """Загружает одно наименование ассортимента бара."""
+        assert pitem is not None, \
+            "Assert: [barman.load_item] " \
+            "No <pitem> parameter specified!"
         storage: dict = {}
         for key in pitem[PROPERTIES_KEY]:
 
@@ -258,3 +267,4 @@ class CBarman(prototype.CPrototype):
 
     def reload(self):
         """Перегружает все содержимое бара."""
+        self.load_assortiment()
