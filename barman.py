@@ -8,7 +8,7 @@ import functions as func
 import prototype
 
 # *** Список списков доступных команд
-COMMANDS: list = [["пиво", "beer", "пв", "br"],   # ***
+COMMANDS: list = [["пиво", "beer", "пв", "br"],  # ***
                   ["водка", "vodka", "вк", "vk"],
                   ["коньяк", "cognac", "кн", "cn"],
                   ["коктейль", "cocktail", "кт", "ct"],
@@ -23,7 +23,7 @@ ID_KEY: str = "id"
 PROPERTIES_KEY: str = "keys"  # ***
 EMODJI_KEY: str = "emodji"  # ***
 COMMAND_KEY: str = "command"  # ***
-SOURCES_KEY: str = "sources"   # ***
+SOURCES_KEY: str = "sources"  # ***
 MARKS_KEY: str = "marks"  # ***
 CANS_KEY: str = "cans"  # ***
 FILLS_KEY: str = "fills"  # ***
@@ -145,29 +145,29 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        PROPERTIES_KEY: (FILLS_KEY, MARKS_KEY, TRANSFER_KEY),
                        TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"},
                       {ID_KEY: COFFEE_ID,
-                       # KEY_KEY: COFFEE_KEY,
                        EMODJI_KEY: "☕️",
                        COMMAND_KEY: COMMANDS[COFFEE_ID],
                        TRANSFER_KEY: "drink_transfer.txt",
                        MARKS_KEY: "coffee_marks.txt",
                        FILLS_KEY: "coffee_fills.txt",
-                       PROPERTIES_KEY: COFFEE_KEYS},
+                       PROPERTIES_KEY: (FILLS_KEY, MARKS_KEY, TRANSFER_KEY),
+                       TEMPLATE_KEY: "Softice {0} кофе \"{1}\" {2} {3} {4}"},
                       {ID_KEY: COOKIE_ID,
-                       # KEY_KEY: COOKIE_KEY,
-                       EMODJI_KEY: COOKIE_EMODJI,
+                       EMODJI_KEY: "🍪",
                        COMMAND_KEY: COMMANDS[COOKIE_ID],
                        SOURCES_KEY: "cookies_sources.txt",
                        MARKS_KEY: "cookies_marks.txt",
                        TRANSFER_KEY: "cookies_transfer.txt",
-                       PROPERTIES_KEY: COOKIE_KEYS},
+                       PROPERTIES_KEY: (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY),
+                       TEMPLATE_KEY: "Softice {0} печенье \"{1}\" {2} {3} {4}"},
                       {ID_KEY: CHOCOLATE_ID,
-                       # KEY_KEY: CHOCOLATE_KEY,
-                       EMODJI_KEY: CHOCOLATE_EMODJI,
+                       EMODJI_KEY: "🍫",
                        COMMAND_KEY: COMMANDS[CHOCOLATE_ID],
                        SOURCES_KEY: "chocolate_sources.txt",
                        MARKS_KEY: "chocolate_marks.txt",
                        TRANSFER_KEY: "chocolate_transfer.txt",
-                       PROPERTIES_KEY: CHOCOLATE_KEYS})
+                       PROPERTIES_KEY: (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY),
+                       TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"})
 
 # *** Команда перегрузки текстов
 BAR_RELOAD: list = ["barreload", "barl"]
@@ -277,6 +277,8 @@ class CBarman(prototype.CPrototype):
                 answer = "Содержимое бара обновлено"
             else:
 
+                answer = self.serve_client(puser_title, word_list[0])
+                """
                 # *** Нет, видимо, напиток.
                 command = self.get_command(word_list[0])
                 name_to = puser_title
@@ -284,21 +286,36 @@ class CBarman(prototype.CPrototype):
                     name_to = word_list[1]
                 # *** В зависимости от команды выполняем действия
                 answer = self.execute_command(command, name_to)
+                """
         if answer:
             print(f"Barman answers: {answer[:16]}")
         return answer
 
     def serve_client(self, puser_name: str, pcommand: str):
         """Обслуживает клиентов."""
+        answer: str = ""
         for item in ASSORTIMENT:
 
-            if item[COMMAND_KEY] == pcommand:
-                pass
-                # *** Ок, формируем ответ
-                # TEMPLATE_KEY: "Softice {1} {2} пива \"{3}\" {4} {5} {6}"},
+            # print(item[COMMAND_KEY], pcommand)
+            if pcommand in item[COMMAND_KEY]:
 
-                # TEMPLATE_KEY: "Softice {source} {can} пива \"{mark}\" {transfer} {puser_name} {BEER_EMODJI}"},
-                # BEER_KEYS: tuple = (SOURCES_KEY, CANS_KEY, MARKS_KEY, TRANSFER_KEY)
+                # *** Замечательно, мы нашли, что попросил клиент.
+                # *** Нужно сформировать список параметров для
+                #     функции format
+                # arg_count: int = len(item[PROPERTIES_KEY])
+                arguments: list = []
+                print("** Item", item[ID_KEY])
+                for prop in item[PROPERTIES_KEY]:
+
+                    arguments.append(random.choice(self.bar[item[ID_KEY]][prop]))
+                # *** Предпоследний аргумент - имя пользователя
+                arguments.append(puser_name)
+                # *** Последний аргумент - это эмоджи
+                arguments.append(item[EMODJI_KEY])
+
+                # *** Ок, формируем ответ
+                answer: str = item[TEMPLATE_KEY].format(*arguments)
+        return answer
 
     def bring_beer(self, puser_name: str) -> str:
         """Пользователь запросил пиво."""
