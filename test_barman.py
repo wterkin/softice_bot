@@ -48,3 +48,8 @@ class CTestBarman(TestCase):
         self.assertNotEqual(self.barman.get_hint('superchat'), "")
         self.assertNotEqual(self.barman.get_hint('megachat'), "")
         self.assertEqual(self.barman.get_hint('левочат'), "")
+
+    def test_is_enabled(self):
+        self.assertEqual(self.barman.is_enabled('superchat'), True)
+        self.assertEqual(self.barman.is_enabled('megachat'), True)
+        self.assertEqual(self.barman.is_enabled('левочат'), False)

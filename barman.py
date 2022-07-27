@@ -235,12 +235,7 @@ class CBarman(prototype.CPrototype):
         return ""
 
     def is_enabled(self, pchat_title: str) -> bool:
-        """Возвращает True, если бармен разрешен на этом канале.
-        >>> self.is_enabled({'barman_chats':'Ботовка'}, 'Ботовка')
-        True
-        >>> self.is_enabled({'barman_chats':'Хокку'}, 'Ботовка')
-        False
-        """
+        """Возвращает True, если бармен разрешен на этом канале."""
         assert pchat_title is not None, \
             "Assert: [barman.is_enabled] " \
             "No <pchat_title> parameter specified!"
