@@ -19,11 +19,11 @@ class CTestBabbler(TestCase):
 
     def test_can_process(self):
         self.assertEqual(self.babbler.can_process('superchat', ''), True)
-        self.assertNotEqual(self.babbler.babbler('gigachat', ''), True)
+        self.assertNotEqual(self.babbler.can_process('gigachat', ''), True)
 
     def test_is_enabled(self):
-        self.assertEqual(self.babbler.can_process('superchat', ''), True)
-        self.assertNotEqual(self.babbler.babbler('gigachat', ''), True)
+        self.assertEqual(self.babbler.is_enabled('superchat'), True)
+        self.assertNotEqual(self.babbler.is_enabled('gigachat'), True)
 
     def test_reload(self):
         self.assertEqual(self.babbler.reload(), True)

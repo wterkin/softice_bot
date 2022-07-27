@@ -155,8 +155,8 @@ class CBarman(prototype.CPrototype):
             print(f"Barman answers: {answer[:16]}")
         else:
 
-            print("Fail")
-        return answer
+            print("Fail...")
+        return answer.strip()
 
     def serve_client(self, puser_name: str, pcommand: str):
         """Обслуживает клиентов."""
@@ -217,10 +217,11 @@ class CBarman(prototype.CPrototype):
 
             for command in COMMANDS:
 
-                for kind in command:
-
-                    command_list += kind + ", "
-                command_list = command_list[:-2] + "\n"
+                command_list += ", ".join(command) + "\n"
+                # for kind in command:
+                #
+                #     command_list += kind + ", "
+                # command_list = command_list[:-2] + "\n"
         return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
