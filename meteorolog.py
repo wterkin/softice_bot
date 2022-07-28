@@ -172,8 +172,7 @@ class CMeteorolog(prototype.CPrototype):
                             message = "Поздно уже, какая тебе погода??!"
                     else:
 
-                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ?
-                                      не знаю такого города!"""
+                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? не знаю такого города!"""
                 else:
 
                     message = "А в каком городе погода нужна?"

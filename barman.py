@@ -15,11 +15,13 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],  # ***
                   ["чай", "tea", "чй", "te"],
                   ["кофе", "coffee", "кф", "cf"],
                   ["печеньки", "cookies", "пч", "ck"],
-                  ["шоколад", "chocolate", "шк", "ch"]]
+                  ["шоколад", "chocolate", "шк", "ch"],
+                  ["мороженое", "icecream", "мр", "ic"]
+                  ]
 
 # *** Идентификаторы, они же индексы, напитков, их ключи и эмодзи
 ID_KEY: str = "id"
-PROPERTIES_KEY: str = "keys"
+PROPERTIES_KEY: str = "properties"
 EMODJI_KEY: str = "emodji"
 COMMAND_KEY: str = "command"
 SOURCES_KEY: str = "sources"
@@ -37,6 +39,7 @@ TEA_ID: int = 4
 COFFEE_ID: int = 5
 COOKIE_ID: int = 6
 CHOCOLATE_ID: int = 7
+ICECREAM_ID: int = 8
 
 ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        EMODJI_KEY: "🍺",
@@ -104,7 +107,16 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        MARKS_KEY: "chocolate_marks.txt",
                        TRANSFER_KEY: "chocolate_transfer.txt",
                        PROPERTIES_KEY: (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY),
-                       TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"})
+                       TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"},
+                      {ID_KEY: ICECREAM_ID,
+                       EMODJI_KEY: "🍦",
+                       COMMAND_KEY: COMMANDS[ICECREAM_ID],
+                       SOURCES_KEY: "icecream_sources.txt",
+                       MARKS_KEY: "icecream_marks.txt",
+                       TRANSFER_KEY: "icecream_transfer.txt",
+                       PROPERTIES_KEY: (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY),
+                       TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"}
+                      )
 
 # *** Команда перегрузки текстов
 BAR_HINT: list = ["бар", "bar"]
@@ -144,7 +156,7 @@ class CBarman(prototype.CPrototype):
                          self.get_help(pchat_title)
             elif word_list[0] in BAR_RELOAD:
 
-                self.load_assortiment()
+                self.reload()
                 print("Barman successfully reload bar assortiment.")
                 answer = "Содержимое бара обновлено"
             else:
@@ -153,9 +165,6 @@ class CBarman(prototype.CPrototype):
         if answer:
 
             print(f"Barman answers: {answer[:16]}")
-        else:
-
-            print("Fail...")
         return answer.strip()
 
     def serve_client(self, puser_name: str, pcommand: str):
@@ -218,10 +227,6 @@ class CBarman(prototype.CPrototype):
             for command in COMMANDS:
 
                 command_list += ", ".join(command) + "\n"
-                # for kind in command:
-                #
-                #     command_list += kind + ", "
-                # command_list = command_list[:-2] + "\n"
         return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
@@ -261,6 +266,7 @@ class CBarman(prototype.CPrototype):
 
         self.bar_content[pitem[ID_KEY]] = storage
 
-    def reload(self):
+    def reload(self):  # , pchat_id: int, puser_name: str, puser_title):
         """Перегружает все содержимое бара."""
+
         self.load_assortiment()
