@@ -7,6 +7,7 @@ from sys import platform
 import json
 import telebot
 from telebot import apihelper
+from datetime import datetime
 
 import database
 import babbler
@@ -110,39 +111,43 @@ class CSoftIceBot:
             # *** Проверим, легитимный ли этот чат
             if self.is_this_chat_enabled(chat_title):
 
-                # *** Да, вполне легитимный. Боту дали команду?
-                if self.message_text[0:1] in COMMAND_SIGNS:
+                message_date = pmessage.date
+                # *** Да, вполне легитимный. Сообщение не протухло?
+                if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
-                    if not self.process_command(command, chat_id, chat_title,
-                                                {"name": user_name, "title": user_title}):
+                    # ***  Боту дали команду?
+                    if self.message_text[0:1] in COMMAND_SIGNS:
 
-                        # *** Нет. Ну и пусть работники разбираются....
-                        answer = self.process_modules(chat_id, chat_title, user_name,
-                                                      user_title)
-                        if answer:
+                        if not self.process_command(command, chat_id, chat_title,
+                                                    {"name": user_name, "title": user_title}):
 
-                            self.last_chat_id = chat_id
-                            # self.robot.send_message(chat_id, answer)
+                            # *** Нет. Ну и пусть работники разбираются....
+                            answer = self.process_modules(chat_id, chat_title, user_name,
+                                                          user_title)
+                            if answer:
+
+                                self.last_chat_id = chat_id
+                                # self.robot.send_message(chat_id, answer)
+                    else:
+
+                        # *** Нет, не команда.. Проапдейтим базу статистика,
+                        #     если в этом чате статистик разрешен
+                        if self.statistic.is_enabled(chat_title):
+
+                            self.statistic.save_message(pmessage)
+                        # *** Болтуну есть что ответить?
+                        answer = self.babbler.talk(chat_title, self.message_text)
+                    if answer:
+
+                        self.last_chat_id = chat_id
+                        self.robot.send_message(chat_id, answer)
                 else:
 
-                    # *** Нет, не команда.. Проапдейтим базу статистика,
-                    #     если в этом чате статистик разрешен
-                    if self.statistic.is_enabled(chat_title):
-
-                        self.statistic.save_message(pmessage)
-                    # *** Болтуну есть что ответить?
-                    answer = self.babbler.talk(chat_title, self.message_text)
-                if answer:
-
-                    self.last_chat_id = chat_id
-                    self.robot.send_message(chat_id, answer)
-            else:
-
-                # *** Бота привели на чужой канал. Выходим.
-                answer = "Вашего чата нет в списке разрешённых. Чао!"
-                self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                self.robot.leave_chat(chat_id)
-                print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                    # *** Бота привели на чужой канал. Выходим.
+                    answer = "Вашего чата нет в списке разрешённых. Чао!"
+                    self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                    self.robot.leave_chat(chat_id)
+                    print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""
