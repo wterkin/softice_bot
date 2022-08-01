@@ -20,12 +20,6 @@ class CTestLibrarian(TestCase):
     def test_execute_quotes_commands(self):
         self.fail()
 
-    def test_find_in_book(self):
-        self.fail()
-
-    def test_get_command(self):
-        self.fail()
-
     def test_get_help(self):
         self.fail()
 
@@ -38,14 +32,9 @@ class CTestLibrarian(TestCase):
     def test_librarian(self):
         self.fail()
 
-    def test_load_book_from_file(self):
-        self.fail()
-
     def test_quote(self):
         self.fail()
 
     def test_reload(self):
         self.fail()
 
-    def test_save_book(self):
-        self.fail()

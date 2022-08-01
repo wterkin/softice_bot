@@ -2,22 +2,13 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Погодный модуль для бота."""
 
-# from sys import path
 import datetime as pdate
 import requests
 
 import functions as func
 import prototype
 
-# pylint: disable=wrong-import-position
-# path.insert(0, "./")
-# path.insert(0, "d:/Work/projects/")
-
-# import owm
-# os.system()
-
 WEATHER_COMMANDS = ["погода", "пг", "weather", "wt", "прогноз", "пр", "forecast", "fr"]
-CHANNEL_LIST_KEY = "meteorolog_chats"  # X
 ENABLED_IN_CHATS_KEY = "meteorolog_chats"
 HINT = ["метео", "meteo"]
 FIND_CITY_URL = 'http://api.openweathermap.org/data/2.5/find'
@@ -43,6 +34,23 @@ ICON_CONVERT: dict = {"01d": "Ясно. ☀️",
 RUSSIAN_DATE_FORMAT = "%d.%m.%Y"
 
 
+def get_wind_direction(pdegree):
+    """Возвращает направление ветра."""
+    directions: list = ['сев. ', 'св', ' вост.', 'юв', 'юг ', 'юз', ' зап.', 'сз']
+    result: str = ""
+    for i in range(0, 8):
+
+        step = 45.
+        min_degree = i * step - 45 / 2.
+        max_degree = i * step + 45 / 2.
+        if i == 0 and pdegree > 360 - 45 / 2.:
+            pdegree = pdegree - 360
+        if min_degree <= pdegree <= max_degree:
+            result = directions[i]
+            break
+    return result
+
+
 class CMeteorolog(prototype.CPrototype):
     """Класс метеоролога."""
 
@@ -54,6 +62,7 @@ class CMeteorolog(prototype.CPrototype):
         """Возвращает True, если метеоролог может обработать эту команду"""
 
         if self.is_enabled(pchat_title):
+
             word_list: list = func.parse_input(pmessage_text)
             return word_list[0] in WEATHER_COMMANDS or word_list[0] in HINT
         return False
@@ -69,9 +78,6 @@ class CMeteorolog(prototype.CPrototype):
                                        'units': 'metric', 'lang': plang,
                                        'APPID': self.config["api_key"]})
             data = res.json()
-            # print(data)
-            # cities = ["{} ({})".format(d['name'], d['sys']['country'])
-            #           for d in data['list']]
             if len(data['list']) > 0:
 
                 city_id = data['list'][0]['id']
@@ -96,24 +102,9 @@ class CMeteorolog(prototype.CPrototype):
             "No <pchat_title> parameter specified!"
 
         if self.is_enabled(pchat_title):
+
             return ", ".join(HINT)
         return ""
-
-    def get_wind_direction(self, pdegree):  # noqa
-        """Возвращает направление ветра."""
-        directions: list = ['сев. ', 'св', ' вост.', 'юв', 'юг ', 'юз', ' зап.', 'сз']
-        result: str = ""
-        for i in range(0, 8):
-
-            step = 45.
-            min_degree = i * step - 45 / 2.
-            max_degree = i * step + 45 / 2.
-            if i == 0 and pdegree > 360 - 45 / 2.:
-                pdegree = pdegree - 360
-            if min_degree <= pdegree <= max_degree:
-                result = directions[i]
-                break
-        return result
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если метеоролог разрешен на этом канале."""
@@ -172,7 +163,8 @@ class CMeteorolog(prototype.CPrototype):
                             message = "Поздно уже, какая тебе погода??!"
                     else:
 
-                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? не знаю такого города!"""
+                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? \
+                                      не знаю такого города!"""
                 else:
 
                     message = "А в каком городе погода нужна?"
@@ -265,8 +257,8 @@ class CMeteorolog(prototype.CPrototype):
                       f"мм.рт.ст., " \
                       f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, " \
                       f" ветер: {round(min_wind_speed)} " \
-                      f"м/с {self.get_wind_direction(min_wind_angle)} " \
-                      f"- {round(max_wind_speed)} м/c {self.get_wind_direction(max_wind_angle)}, " \
+                      f"м/с {get_wind_direction(min_wind_angle)} " \
+                      f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, " \
                       f" {weather_line}"
 
         except Exception as ex:

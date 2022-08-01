@@ -141,13 +141,13 @@ class CSoftIceBot:
 
                         self.last_chat_id = chat_id
                         self.robot.send_message(chat_id, answer)
-                else:
+            else:
 
-                    # *** Бота привели на чужой канал. Выходим.
-                    answer = "Вашего чата нет в списке разрешённых. Чао!"
-                    self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                    self.robot.leave_chat(chat_id)
-                    print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                # *** Бота привели на чужой канал. Выходим.
+                answer = "Вашего чата нет в списке разрешённых. Чао!"
+                self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                self.robot.leave_chat(chat_id)
+                print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""
