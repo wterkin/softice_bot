@@ -16,7 +16,8 @@ COMMANDS: list = [["пиво", "beer", "пв", "br"],  # ***
                   ["кофе", "coffee", "кф", "cf"],
                   ["печеньки", "cookies", "пч", "ck"],
                   ["шоколад", "chocolate", "шк", "ch"],
-                  ["мороженое", "icecream", "мр", "ic"]
+                  ["мороженое", "icecream", "мр", "ic"],
+                  ["булочка", "bun", "бл", "bn"]
                   ]
 
 # *** Идентификаторы, они же индексы, напитков, их ключи и эмодзи
@@ -40,6 +41,7 @@ COFFEE_ID: int = 5
 COOKIE_ID: int = 6
 CHOCOLATE_ID: int = 7
 ICECREAM_ID: int = 8
+BUN_ID: int = 9
 
 ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        EMODJI_KEY: "🍺",
@@ -114,6 +116,14 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
                        SOURCES_KEY: "icecream_sources.txt",
                        MARKS_KEY: "icecream_marks.txt",
                        TRANSFER_KEY: "icecream_transfer.txt",
+                       PROPERTIES_KEY: (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY),
+                       TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"},
+                      {ID_KEY: BUN_ID,
+                       EMODJI_KEY: "🥯",
+                       COMMAND_KEY: COMMANDS[BUN_ID],
+                       SOURCES_KEY: "bun_sources.txt",
+                       MARKS_KEY: "bun_marks.txt",
+                       TRANSFER_KEY: "bun_transfer.txt",
                        PROPERTIES_KEY: (SOURCES_KEY, MARKS_KEY, TRANSFER_KEY),
                        TEMPLATE_KEY: "Softice {0} {1} {2} {3} {4}"}
                       )
