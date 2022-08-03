@@ -161,7 +161,12 @@ class CBarman(prototype.CPrototype):
                 answer = "Содержимое бара обновлено"
             else:
 
-                answer = self.serve_client(puser_title, word_list[0])
+                if len(word_list) > 1:
+
+                    answer = self.serve_client(" ".join(word_list[1:]), word_list[0])
+                else:
+
+                    answer = self.serve_client(puser_title, word_list[0])
         if answer:
 
             print(f"Barman answers: {answer[:16]}")

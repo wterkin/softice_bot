@@ -12,10 +12,11 @@ from datetime import datetime
 import database
 import babbler
 import barman
-import statistic
-import theolog
 import librarian
 import meteorolog
+import moderator
+import statistic
+import theolog
 
 LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
 WINDOWS_DATA_FOLDER_KEY: str = "windows_data_folder"
@@ -40,7 +41,7 @@ BOT_STATUS: int = CONTINUE_RUNNING
 #       что команда отдана хозяином.
 #  barman, librarian,
 
-
+#
 class CQuitByDemand(Exception):
     """Исключение выхода."""
 
@@ -97,6 +98,7 @@ class CSoftIceBot:
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
+        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
 
@@ -227,7 +229,9 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, "Всем пока!")
             self.exiting = True
             raise CQuitByDemand()
-        self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
+        else:
+
+            self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
@@ -283,6 +287,9 @@ class CSoftIceBot:
         if not answer:
 
             answer = self.babbler.babbler(pchat_title, self.message_text).strip()
+        # if not answer:
+        #
+        #     answer = self.moderator.moderator(pchat_id, pchat_title, puser_id, )
         if not answer:
 
             # *** Незнакомая команда.
@@ -300,13 +307,16 @@ class CSoftIceBot:
 if __name__ == "__main__":
 
     SofticeBot: CSoftIceBot = CSoftIceBot()
-    try:
+    while not SofticeBot.exiting:
 
         SofticeBot.poll()
-    finally:
 
-        if not SofticeBot.exiting:
-
-            if SofticeBot.last_chat_id >= 0:
-                SofticeBot.robot.send_message(SofticeBot.last_chat_id,
-                                              "Ой, матушки, падаю!")
+    # try:
+    #
+    # finally:
+    #
+    #     if not SofticeBot.exiting:
+    #
+    #         if SofticeBot.last_chat_id >= 0:
+    #             SofticeBot.robot.send_message(SofticeBot.last_chat_id,
+    #                                           "Ой, матушки, падаю!")

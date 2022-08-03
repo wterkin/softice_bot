@@ -143,8 +143,7 @@ class CStatistic(prototype.CPrototype):
         tg_user_title: str = pmessage.from_user.first_name
         if message_text[0] != "!":
 
-            if tg_user_name is not None and \
-                    tg_user_name != "TrueMafiaBot" and \
+            if tg_user_name != "TrueMafiaBot" and \
                     tg_user_name != "MafiaWarBot":
 
                 # *** Если кто-то уже залочил базу, подождём
