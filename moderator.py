@@ -6,7 +6,9 @@ from time import time
 import functions as func
 import prototype
 
-ENABLED_IN_CHATS_KEY: str = "policeman_chats"
+import m_names
+import m_users
+ENABLED_IN_CHATS_KEY: str = "moderator_chats"
 READ_ONLY_PERIOD: int = 600
 READ_ONLY_MESSAGE: str = f"Помолчите {READ_ONLY_PERIOD / 60} минут"
 
@@ -16,16 +18,29 @@ MUTE_COMMANDS: list = ["mute", "mt"]
 class CModerator(prototype.CPrototype):
     """Класс бармена."""
 
-    def __init__(self, pbot, pconfig):
+    def __init__(self, pbot, pconfig, pdatabase):
 
         super().__init__()
         self.config = pconfig
         self.bot = pbot
+        self.database = pdatabase
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         word_list: list = func.parse_input(pmessage_text)
         return self.is_enabled(pchat_title) and word_list[0] in MUTE_COMMANDS
+
+    def find_user_id(self, puser_title: str):
+        """Ищет в базе ID пользователя по его нику."""
+        session = self.database.get_session()
+        query = session.query(m_names.CName, m_users.CUser)
+        query = query.filter_by(fusername=puser_title)
+        query = query.join(m_users.CUser, m_users.CUser.id == m_names.CName.fuserid)
+        data = query.first()
+        # inner_user_id = data.fuserid
+        # query =
+        # print("%%%%%%% ", data.ftguserid)
+        return data[1].ftguserid
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
@@ -40,7 +55,7 @@ class CModerator(prototype.CPrototype):
         """Возвращает True, если на этом канале этот модуль разрешен."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def moderator(self, pchat_id: int, pchat_title: str, puser_id: int,
+    def moderator(self, pchat_id: int, pchat_title: str,
                   puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
         answer: str = ""
@@ -56,9 +71,10 @@ class CModerator(prototype.CPrototype):
 
                     mute_time = int(word_list[2])
                     # ToDo: Вот тут получить ID указанного юзера по нику.
-                self.bot.restrict_chat_member(pchat_id, puser_id, until_date=time() + mute_time)
+                user_id = self.find_user_id(puser_title)
+                self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + mute_time)
                 answer = f"{puser_title}, помолчите пока..."
-                # self.bot.send_message(pchat_id, )
+                # elf.bot.send_message(pchat_id, )
         return answer
         # bot.restrict_chat_member(chat_id, user_id,
         # can_send_messages=False, can_send_media_messages=False,

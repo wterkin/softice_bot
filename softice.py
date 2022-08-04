@@ -27,7 +27,7 @@ CONFIG_FILE_NAME: str = "config.json"
 CONFIG_COMMANDS: list = ["конфиг", "config"]  # !
 EXIT_COMMANDS: list = ["прощай", "bye", "!!"]  # !
 HELP_COMMANDS: list = ["помощь", "help"]  # !
-HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие команды: \n"
+HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие группы команд: \n"
 NON_STOP: bool = True
 POLL_INTERVAL: int = 0
 CONTINUE_RUNNING: int = 0
@@ -98,7 +98,7 @@ class CSoftIceBot:
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
-        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config)
+        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config, self.database)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
 
@@ -226,7 +226,7 @@ class CSoftIceBot:
             "No <puser_title> parameter specified!"
         if self.is_master(puser_name):
 
-            self.robot.send_message(pchat_id, "Всем пока!")
+            self.robot.send_message(pchat_id, "Ухожу, ухожу...")
             self.exiting = True
             raise CQuitByDemand()
         else:
@@ -287,9 +287,9 @@ class CSoftIceBot:
         if not answer:
 
             answer = self.babbler.babbler(pchat_title, self.message_text).strip()
-        # if not answer:
-        #
-        #     answer = self.moderator.moderator(pchat_id, pchat_title, puser_id, )
+        if not answer:
+            # ToDo: Не надо туда передавать имя пользователя, который ввёл команду!
+            answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
         if not answer:
 
             # *** Незнакомая команда.
