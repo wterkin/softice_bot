@@ -9,10 +9,29 @@ import prototype
 import m_names
 import m_users
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
-READ_ONLY_PERIOD: int = 600
+READ_ONLY_PERIOD: int = 900
 READ_ONLY_MESSAGE: str = f"Помолчите {READ_ONLY_PERIOD / 60} минут"
 
-MUTE_COMMANDS: list = ["mute", "mt"]
+MUTE_COMMANDS: list = ["mute", "mt",
+                       "mutehour", "mth",
+                       "muteday", "mtd",
+                       "muteweek", "mtw"]
+MINUTE: int = 60
+QUART_OF_HOUR: int = MINUTE * 15
+HOUR: int = MINUTE * 60
+DAY: int = HOUR * 24
+WEEK: int = DAY * 7
+# MONTH: int = WEEK * 4
+# YEAR: int = MONTH * 12
+
+MUTE_PERIODS: list = [QUART_OF_HOUR, QUART_OF_HOUR,
+                      HOUR, HOUR,
+                      DAY, DAY,
+                      WEEK, WEEK]
+MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
+                             "1 час", "1 час",
+                             "1 день", "1 день",
+                             "1 неделю", "1 неделю"]
 
 
 class CModerator(prototype.CPrototype):
@@ -56,7 +75,7 @@ class CModerator(prototype.CPrototype):
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def moderator(self, pchat_id: int, pchat_title: str,
-                  puser_title: str, pmessage_text: str) -> str:
+                  pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
         answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
@@ -66,19 +85,26 @@ class CModerator(prototype.CPrototype):
             if word_list[0] in MUTE_COMMANDS:
 
                 # *** Молчанка
-                # user_name: str = word_list[1]
-                if len(word_list) > 2:
-
-                    mute_time = int(word_list[2])
-                    # ToDo: Вот тут получить ID указанного юзера по нику.
-                user_id = self.find_user_id(puser_title)
+                period_index: int = MUTE_COMMANDS.index(word_list[0])
+                user_title: str = " ".join(word_list[1:])
+                mute_time = MUTE_PERIODS[period_index]
+                # ToDo: Вот тут получить ID указанного юзера по нику.
+                user_id = self.find_user_id(user_title)
                 self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + mute_time)
-                answer = f"{puser_title}, помолчите пока..."
+                answer = f"{user_title}, помолчите {MUTE_PERIODS_TITLES[period_index]}, подумайте..."
                 # elf.bot.send_message(pchat_id, )
         return answer
         # bot.restrict_chat_member(chat_id, user_id,
         # can_send_messages=False, can_send_media_messages=False,
         #                          can_send_other_messages=False)
+    #
+    # or entity in message.entities:  # Пройдёмся по всем entities в поисках ссылок
+    # # url - обычная ссылка, text_link - ссылка, скрытая под текстом
+    # if entity.type in ["url", "text_link"]:
+    #     # Мы можем не проверять chat.id, он проверяется ещё в хэндлере
+    #     bot.delete_message(message.chat.id, message.message_id)
+    # else:
+    #     return
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""

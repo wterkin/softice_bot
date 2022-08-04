@@ -118,7 +118,7 @@ def quote(pbook: list, pword_list: list) -> str:
         number: int = abs(int(pword_list[1]) - 1)
         if len(pbook) > number:
 
-            answer = f"[{number}] {pbook[number]}"
+            answer = f"[{number+1}] {pbook[number]}"
         else:
 
             answer = "Нет такой."
