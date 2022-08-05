@@ -78,7 +78,7 @@ def get_command(pword: str) -> int:
 
         for command_idx, command in enumerate(QUOTES_COMMANDS):
 
-            print(pword, command)
+            # print(pword, command)
             if pword in command:
 
                 result = command_idx + 10
@@ -111,17 +111,23 @@ def quote(pbook: list, pword_list: list) -> str:
     assert pword_list is not None, \
         "Assert: [librarian.quote] " \
         "No <pword_list> parameter specified!"
-    answer: str
+    answer: str = ""
     if len(pword_list) > 1:
 
         # *** ... с заданным номером.
-        number: int = abs(int(pword_list[1]) - 1)
-        if len(pbook) > number:
+        number: int = abs(int(pword_list[1]))
+        if number > 0:
 
-            answer = f"[{number+1}] {pbook[number]}"
+            if len(pbook) >= number:
+
+                answer = f"[{number}] {pbook[number-1]}"
+            else:
+
+                answer = "Нет такой."
         else:
 
             answer = "Нет такой."
+
     else:
 
         # *** случайную.

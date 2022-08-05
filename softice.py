@@ -6,6 +6,7 @@
 from sys import platform
 import json
 import telebot
+from requests import ReadTimeout
 from telebot import apihelper
 from datetime import datetime
 
@@ -309,14 +310,12 @@ if __name__ == "__main__":
     SofticeBot: CSoftIceBot = CSoftIceBot()
     while not SofticeBot.exiting:
 
-        SofticeBot.poll()
+        try:
 
-    # try:
-    #
-    # finally:
-    #
-    #     if not SofticeBot.exiting:
-    #
-    #         if SofticeBot.last_chat_id >= 0:
-    #             SofticeBot.robot.send_message(SofticeBot.last_chat_id,
-    #                                           "Ой, матушки, падаю!")
+            SofticeBot.poll()
+        except ConnectionError as ex:
+
+            print(f"Exception occured: {ex}, reconnecting...")
+        except ReadTimeout as ex:
+
+            print(f"Exception occured: {ex}, reconnecting...")

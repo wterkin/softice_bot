@@ -15,9 +15,10 @@ READ_ONLY_MESSAGE: str = f"Помолчите {READ_ONLY_PERIOD / 60} минут
 MUTE_COMMANDS: list = ["mute", "mt",
                        "mutehour", "mth",
                        "muteday", "mtd",
-                       "muteweek", "mtw"]
+                       "muteweek", "mtw",
+                       "unmute", "unm"]
 MINUTE: int = 60
-QUART_OF_HOUR: int = MINUTE * 15
+QUART_OF_HOUR: int = MINUTE * 3 #15
 HOUR: int = MINUTE * 60
 DAY: int = HOUR * 24
 WEEK: int = DAY * 7
@@ -27,7 +28,8 @@ WEEK: int = DAY * 7
 MUTE_PERIODS: list = [QUART_OF_HOUR, QUART_OF_HOUR,
                       HOUR, HOUR,
                       DAY, DAY,
-                      WEEK, WEEK]
+                      WEEK, WEEK,
+                      0, 0]
 MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
                              "1 час", "1 час",
                              "1 день", "1 день",
@@ -59,7 +61,12 @@ class CModerator(prototype.CPrototype):
         # inner_user_id = data.fuserid
         # query =
         # print("%%%%%%% ", data.ftguserid)
-        return data[1].ftguserid
+        if data is not None:
+
+            return data[1].ftguserid
+        else:
+
+            return None
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
@@ -81,17 +88,28 @@ class CModerator(prototype.CPrototype):
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
-            mute_time: int = READ_ONLY_PERIOD
+            # admin_list: list = self.bot.getChatAdministrators(pchat_id)
+
+            # mute_time: int = READ_ONLY_PERIOD
             if word_list[0] in MUTE_COMMANDS:
 
                 # *** Молчанка
                 period_index: int = MUTE_COMMANDS.index(word_list[0])
                 user_title: str = " ".join(word_list[1:])
                 mute_time = MUTE_PERIODS[period_index]
-                # ToDo: Вот тут получить ID указанного юзера по нику.
                 user_id = self.find_user_id(user_title)
-                self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + mute_time)
-                answer = f"{user_title}, помолчите {MUTE_PERIODS_TITLES[period_index]}, подумайте..."
+                if user_id is not None:
+
+                    self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + mute_time)
+                    if mute_time == 0:
+
+                        answer = f"{user_title}, можете разговаривать."
+                    else:
+
+                        answer = f"{user_title}, помолчите {MUTE_PERIODS_TITLES[period_index]}, подумайте..."
+                else:
+
+                    answer = f"Кто такой {user_title}? Не знаю его..."
                 # elf.bot.send_message(pchat_id, )
         return answer
         # bot.restrict_chat_member(chat_id, user_id,
