@@ -5,20 +5,22 @@ from time import time
 
 import functions as func
 import prototype
+import telebot
 
 import m_names
 import m_users
+
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
 READ_ONLY_PERIOD: int = 900
 READ_ONLY_MESSAGE: str = f"Помолчите {READ_ONLY_PERIOD / 60} минут"
-
+UNMUTE_PERIOD = 60
 MUTE_COMMANDS: list = ["mute", "mt",
                        "mutehour", "mth",
                        "muteday", "mtd",
                        "muteweek", "mtw",
                        "unmute", "unm"]
 MINUTE: int = 60
-QUART_OF_HOUR: int = MINUTE * 3 #15
+QUART_OF_HOUR: int = MINUTE * 3  #15
 HOUR: int = MINUTE * 60
 DAY: int = HOUR * 24
 WEEK: int = DAY * 7
@@ -29,7 +31,7 @@ MUTE_PERIODS: list = [QUART_OF_HOUR, QUART_OF_HOUR,
                       HOUR, HOUR,
                       DAY, DAY,
                       WEEK, WEEK,
-                      0, 0]
+                      UNMUTE_PERIOD, UNMUTE_PERIOD]
 MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
                              "1 час", "1 час",
                              "1 день", "1 день",
@@ -82,7 +84,7 @@ class CModerator(prototype.CPrototype):
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def moderator(self, pchat_id: int, pchat_title: str,
-                  pmessage_text: str) -> str:
+                  puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
         answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
@@ -100,13 +102,12 @@ class CModerator(prototype.CPrototype):
                 user_id = self.find_user_id(user_title)
                 if user_id is not None:
 
-                    self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + mute_time)
-                    if mute_time == 0:
+                    if self.is_admin(pchat_id, puser_title):
 
-                        answer = f"{user_title}, можете разговаривать."
+                        answer = self.mute_user(pchat_id, user_id, user_title, mute_time, period_index)
                     else:
 
-                        answer = f"{user_title}, помолчите {MUTE_PERIODS_TITLES[period_index]}, подумайте..."
+                        answer = f"Извини, {puser_title}, ты тут не админ..."
                 else:
 
                     answer = f"Кто такой {user_title}? Не знаю его..."
@@ -115,6 +116,44 @@ class CModerator(prototype.CPrototype):
         # bot.restrict_chat_member(chat_id, user_id,
         # can_send_messages=False, can_send_media_messages=False,
         #                          can_send_other_messages=False)
+
+    def mute_user(self, pchat_id: int, pmuted_user_id: int, pmuted_user_title: str,
+                  pmute_time: int, pperiod_index: int):
+        self.bot.restrict_chat_member(pchat_id, pmuted_user_id, until_date=time() + pmute_time)
+        if pmute_time == UNMUTE_PERIOD:
+
+            answer = f"{pmuted_user_title}, через {UNMUTE_PERIOD} секунд можете разговаривать."
+        else:
+
+            answer = f"{pmuted_user_title}, помолчите {MUTE_PERIODS_TITLES[pperiod_index]}, подумайте..."
+        return answer
+
+    def is_admin(self, pchat_id: int, puser_title: str):
+        """Возвращает True, если пользователь является админом данного чата, иначе False."""
+        found = False
+        data = self.bot.get_chat_administrators(pchat_id)
+        # if isinstance(user_status, ChatMemberMember):
+        # item = data[0]
+        # print("******************************")
+        # print(item)
+        # print("******************************")
+        # print(item.user)
+        # print("******************************")
+
+        for item in data:
+
+            user = item.user
+            # print(user)
+            user_name = user.first_name
+            if user.last_name is not None:
+
+                user_name += " " + user.last_name
+            if user_name == puser_title:
+
+                found = True
+                print("Админ!!!")
+                break
+        return  found
     #
     # or entity in message.entities:  # Пройдёмся по всем entities в поисках ссылок
     # # url - обычная ссылка, text_link - ссылка, скрытая под текстом

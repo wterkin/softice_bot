@@ -144,6 +144,9 @@ class CSoftIceBot:
 
                         self.last_chat_id = chat_id
                         self.robot.send_message(chat_id, answer)
+                # if self.moderator.is_admin(chat_id, user_title):
+                #
+                #     print("Уррряяяяя!!!")
             else:
 
                 # *** Бота привели на чужой канал. Выходим.
@@ -290,7 +293,7 @@ class CSoftIceBot:
             answer = self.babbler.babbler(pchat_title, self.message_text).strip()
         if not answer:
             # ToDo: Не надо туда передавать имя пользователя, который ввёл команду!
-            answer = self.moderator.moderator(pchat_id, pchat_title, self.message_text)
+            answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
         if not answer:
 
             # *** Незнакомая команда.
