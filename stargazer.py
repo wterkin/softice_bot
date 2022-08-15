@@ -28,7 +28,7 @@ def calculate_easter(pyear):
 
         # *** Апрель
         month = 4
-        day = (first_value + second_value) - 9
+        day = (first_value + second_value) - 9 + NEW_STYLE_OFFSET
         if day > 30:
 
             month += 1
@@ -78,10 +78,7 @@ class CStarGazer:
         command_list: str = ""
         if self.is_enabled(pchat_title):
 
-            for command in COMMANDS:
-
-                command_list += ", ".join(command) + "\n"
-        return command_list
+            return ", ".join(COMMANDS)
 
     def get_hint(self, pchat_title: str) -> str:
         """Возвращает команду верхнего уровня, в ответ на которую
@@ -105,23 +102,22 @@ class CStarGazer:
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
 
-    def stargazer(self, pchat_title: str, pmessage_text: str, puser_title: str) -> str:
+    def stargazer(self, pchat_title: str, pmessage_text: str) -> str:
         """Обработчик команд звездочёта."""
         assert pchat_title is not None, \
-            "Assert: [barman.barman] No <pchat_title> parameter specified!"
-        assert puser_title is not None, \
-            "Assert: [barman.barman] No <puser_title> parameter specified!"
+            "Assert: [stargazer.stargazer] No <pchat_title> parameter specified!"
         assert pmessage_text is not None, \
-            "Assert: [barman.barman] No <pmessage_text> parameter specified!"
+            "Assert: [stargazer.stargazer] No <pmessage_text> parameter specified!"
         answer: str = ""
         word_list: list = functions.parse_input(pmessage_text)
+        print(word_list)
         if self.can_process(pchat_title, pmessage_text):
 
             # *** Возможно, запросили меню.
+            print(word_list[0])
             if word_list[0] in HINTS:
 
-                answer = "Сегодня в баре имеется следующий ассортимент: \n" + \
-                         self.get_help(pchat_title)
+                answer = self.get_help(pchat_title)
             else:
 
                 if len(word_list) > 1:

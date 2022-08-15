@@ -279,7 +279,12 @@ class CSoftIceBot:
             answer = self.statistic.statistic(pchat_id, pchat_title,
                                               puser_title, self.message_text).strip()
         if not answer:
+
             answer = self.babbler.babbler(pchat_title, self.message_text).strip()
+
+        if not answer:
+            answer = self.stargazer.stargazer(pchat_title, self.message_text).strip()
+
         if not answer:
             # ToDo: Не надо туда передавать имя пользователя, который ввёл команду!
             answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
