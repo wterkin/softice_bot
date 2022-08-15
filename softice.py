@@ -17,6 +17,7 @@ import librarian
 import meteorolog
 import moderator
 import statistic
+import stargazer
 import theolog
 
 LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
@@ -99,6 +100,7 @@ class CSoftIceBot:
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config, self.database)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
+        self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
 
         # *** Обработчик сообщений
