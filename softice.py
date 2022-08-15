@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
-
+import sys
 from sys import platform
 import json
 import telebot
@@ -54,11 +54,11 @@ class CQuitByDemand(Exception):
 def decode_message(pmessage):
     """Возвращает куски сообщения, $#^^^!!!! """
     return pmessage.text, \
-        pmessage.text[1:].lower(), \
-        pmessage.chat.id, \
-        pmessage.chat.title, \
-        pmessage.from_user.username, \
-        pmessage.from_user.first_name
+           pmessage.text[1:].lower(), \
+           pmessage.chat.id, \
+           pmessage.chat.title, \
+           pmessage.from_user.username, \
+           pmessage.from_user.first_name
 
 
 # pylint: disable=too-many-instance-attributes
@@ -73,7 +73,6 @@ class CSoftIceBot:
         self.load_config()
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
-
             apihelper.proxy = {'https': self.config["proxy"]}
         # *** Создаём собственно бота.
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
@@ -91,7 +90,6 @@ class CSoftIceBot:
         # *** Открываем БД
         self.database: database.CDataBase = database.CDataBase(self.config, self.data_path)
         if not self.database.exists():
-
             # *** А нету ещё БД, создавать треба.
             self.database.create()
         # *** Поехали создавать работников =)
@@ -128,7 +126,6 @@ class CSoftIceBot:
                             answer = self.process_modules(chat_id, chat_title, user_name,
                                                           user_title)
                             if answer:
-
                                 self.last_chat_id = chat_id
                                 # self.robot.send_message(chat_id, answer)
                     else:
@@ -136,12 +133,10 @@ class CSoftIceBot:
                         # *** Нет, не команда.. Проапдейтим базу статистика,
                         #     если в этом чате статистик разрешен
                         if self.statistic.is_enabled(chat_title):
-
                             self.statistic.save_message(pmessage)
                         # *** Болтуну есть что ответить?
                         answer = self.babbler.talk(chat_title, self.message_text)
                     if answer:
-
                         self.last_chat_id = chat_id
                         self.robot.send_message(chat_id, answer)
                 # if self.moderator.is_admin(chat_id, user_title):
@@ -171,7 +166,6 @@ class CSoftIceBot:
         try:
 
             while self.bot_status == CONTINUE_RUNNING:
-
                 self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
                 print(f"Bot status = {BOT_STATUS}")
 
@@ -216,7 +210,6 @@ class CSoftIceBot:
                           \n{self.theolog.get_hint(pchat_title)}""".strip()
         # *** Если ответы есть, отвечаем на запрос
         if answer:
-
             return HELP_MESSAGE + answer
         return answer
 
@@ -258,7 +251,6 @@ class CSoftIceBot:
     def load_config(self):
         """Загружает конфигурацию из JSON."""
         with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
-
             self.config = json.load(json_file)
 
     def process_modules(self, pchat_id: int, pchat_title: str,
@@ -271,31 +263,25 @@ class CSoftIceBot:
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         answer: str = self.barman.barman(pchat_title, self.message_text, puser_title).strip()
         if not answer:
-
             # *** ... или у теолога...
             answer = self.theolog.theolog(pchat_title, self.message_text).strip()
         if not answer:
-
             # *** ... или у библиотекаря...
             answer = self.librarian.librarian(pchat_title, puser_name,
                                               puser_title, self.message_text).strip()
         if not answer:
-
             # *** ... или у метеоролога...
             answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
         if not answer:
-
             # *** ... или у статистика...
             answer = self.statistic.statistic(pchat_id, pchat_title,
                                               puser_title, self.message_text).strip()
         if not answer:
-
             answer = self.babbler.babbler(pchat_title, self.message_text).strip()
         if not answer:
             # ToDo: Не надо туда передавать имя пользователя, который ввёл команду!
             answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
         if not answer:
-
             # *** Незнакомая команда.
             print(" .. fail.")
         return answer
@@ -318,7 +304,10 @@ if __name__ == "__main__":
             SofticeBot.poll()
         except ConnectionError as ex:
 
-            print(f"Exception occured: {ex}, reconnecting...")
+            print("*" * 40)
+            print(f"**** Exception occured: {ex}, reconnecting...")
         except ReadTimeout as ex:
 
-            print(f"Exception occured: {ex}, reconnecting...")
+            print("*" * 40)
+            print(f"**** Exception occured: {ex}, reconnecting...")
+    sys.exit(0)

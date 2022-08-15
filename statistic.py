@@ -140,7 +140,15 @@ class CStatistic(prototype.CPrototype):
         tg_chat_title: str = pmessage.chat.title
         tg_user_id: int = pmessage.from_user.id
         tg_user_name: str = pmessage.from_user.username
-        tg_user_title: str = pmessage.from_user.first_name
+        # print(pmessage)
+        if pmessage.from_user.first_name is not None:
+
+            tg_user_title: str = pmessage.from_user.first_name
+        if pmessage.from_user.last_name is not None:
+
+            tg_user_title += " " + pmessage.from_user.last_name
+        # tg_user_title: str = first_name + last_name
+        print("> ", tg_user_title)
         if message_text[0] != "!":
 
             if tg_user_name != "TrueMafiaBot" and \

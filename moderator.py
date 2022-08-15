@@ -5,37 +5,34 @@ from time import time
 
 import functions as func
 import prototype
-import telebot
-
 import m_names
 import m_users
 
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
-READ_ONLY_PERIOD: int = 900
-READ_ONLY_MESSAGE: str = f"Помолчите {READ_ONLY_PERIOD / 60} минут"
-UNMUTE_PERIOD = 60
 MUTE_COMMANDS: list = ["mute", "mt",
                        "mutehour", "mth",
                        "muteday", "mtd",
                        "muteweek", "mtw",
                        "unmute", "unm"]
 MINUTE: int = 60
-QUART_OF_HOUR: int = MINUTE * 3  #15
+QUART_OF_HOUR: int = MINUTE * 15
 HOUR: int = MINUTE * 60
 DAY: int = HOUR * 24
 WEEK: int = DAY * 7
-# MONTH: int = WEEK * 4
-# YEAR: int = MONTH * 12
+UNMUTE_PERIOD = 60
 
 MUTE_PERIODS: list = [QUART_OF_HOUR, QUART_OF_HOUR,
                       HOUR, HOUR,
                       DAY, DAY,
                       WEEK, WEEK,
                       UNMUTE_PERIOD, UNMUTE_PERIOD]
+
 MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
                              "1 час", "1 час",
                              "1 день", "1 день",
                              "1 неделю", "1 неделю"]
+
+ADMINISTRATION_CMD: list = ["admin", "adm"]
 
 
 class CModerator(prototype.CPrototype):
@@ -60,15 +57,10 @@ class CModerator(prototype.CPrototype):
         query = query.filter_by(fusername=puser_title)
         query = query.join(m_users.CUser, m_users.CUser.id == m_names.CName.fuserid)
         data = query.first()
-        # inner_user_id = data.fuserid
-        # query =
-        # print("%%%%%%% ", data.ftguserid)
         if data is not None:
 
             return data[1].ftguserid
-        else:
-
-            return None
+        return None
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
@@ -90,9 +82,6 @@ class CModerator(prototype.CPrototype):
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
-            # admin_list: list = self.bot.getChatAdministrators(pchat_id)
-
-            # mute_time: int = READ_ONLY_PERIOD
             if word_list[0] in MUTE_COMMANDS:
 
                 # *** Молчанка
@@ -104,46 +93,47 @@ class CModerator(prototype.CPrototype):
 
                     if self.is_admin(pchat_id, puser_title):
 
-                        answer = self.mute_user(pchat_id, user_id, user_title, mute_time, period_index)
+                        answer = self.mute_user(pchat_id, user_id, user_title,
+                                                mute_time, period_index)
                     else:
 
                         answer = f"Извини, {puser_title}, ты тут не админ..."
                 else:
 
                     answer = f"Кто такой {user_title}? Не знаю его..."
-                # elf.bot.send_message(pchat_id, )
+            else:
+
+                if word_list[0] in ADMINISTRATION_CMD:
+
+                    if self.is_admin(pchat_id, puser_title):
+
+                        self.administration()
+                    else:
+
+                        answer = f"Извини, {puser_title}, ты тут не админ..."
         return answer
-        # bot.restrict_chat_member(chat_id, user_id,
-        # can_send_messages=False, can_send_media_messages=False,
-        #                          can_send_other_messages=False)
 
     def mute_user(self, pchat_id: int, pmuted_user_id: int, pmuted_user_title: str,
                   pmute_time: int, pperiod_index: int):
+        """Отобрать голос у пользователя."""
         self.bot.restrict_chat_member(pchat_id, pmuted_user_id, until_date=time() + pmute_time)
         if pmute_time == UNMUTE_PERIOD:
 
             answer = f"{pmuted_user_title}, через {UNMUTE_PERIOD} секунд можете разговаривать."
         else:
 
-            answer = f"{pmuted_user_title}, помолчите {MUTE_PERIODS_TITLES[pperiod_index]}, подумайте..."
+            answer = f"{pmuted_user_title}, помолчите {MUTE_PERIODS_TITLES[pperiod_index]}, " \
+                     "подумайте..."
         return answer
 
     def is_admin(self, pchat_id: int, puser_title: str):
         """Возвращает True, если пользователь является админом данного чата, иначе False."""
         found = False
         data = self.bot.get_chat_administrators(pchat_id)
-        # if isinstance(user_status, ChatMemberMember):
-        # item = data[0]
-        # print("******************************")
-        # print(item)
-        # print("******************************")
-        # print(item.user)
-        # print("******************************")
 
         for item in data:
 
             user = item.user
-            # print(user)
             user_name = user.first_name
             if user.last_name is not None:
 
@@ -151,9 +141,8 @@ class CModerator(prototype.CPrototype):
             if user_name == puser_title:
 
                 found = True
-                print("Админ!!!")
                 break
-        return  found
+        return found
     #
     # or entity in message.entities:  # Пройдёмся по всем entities в поисках ссылок
     # # url - обычная ссылка, text_link - ссылка, скрытая под текстом
@@ -165,3 +154,8 @@ class CModerator(prototype.CPrototype):
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
+
+    def administration(self):
+        """Выводит список пользователей для модерирования."""
+
+
