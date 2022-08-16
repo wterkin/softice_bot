@@ -3,7 +3,7 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль прототипа классов модулей бота."""
 
-from abc import ABCMeta
+import prototype
 
 from datetime import date
 
@@ -18,6 +18,8 @@ HINTS: tuple = ("календарь", "кл", "calendar", "cl")
 ENABLED_IN_CHATS_KEY: str = "stargazer_chats"
 RUSSIAN_DATE_FORMAT = "%d.%m.%Y"
 STARGAZER_FOLDER: str = "stargazer/"
+LOW_MARGIN: int = 1899
+HIGH_MARGIN: int = 2100
 
 
 def calculate_easter(pyear):
@@ -34,7 +36,6 @@ def calculate_easter(pyear):
         month = 4
         day = (first_value + second_value) - 9 + NEW_STYLE_OFFSET
         if day > 30:
-
             month += 1
             day = day - 30
     else:
@@ -43,17 +44,17 @@ def calculate_easter(pyear):
         month = 3
         day = first_value + second_value + 22 + NEW_STYLE_OFFSET
         if day > 31:
-
             month += 1
             day = day - 31
     return date(pyear, month, day)
 
 
-class CStarGazer:
+class CStarGazer(prototype.CPrototype):
     """Прототип классов модулей бота."""
-    __metaclass__ = ABCMeta
+    # __metaclass__ = ABCMeta
 
     def __init__(self, pconfig, pdata_path):
+        super().__init__()
         self.config = pconfig
         self.data_path = pdata_path + STARGAZER_FOLDER
 
@@ -75,6 +76,9 @@ class CStarGazer:
                 if not found:
 
                     found = word_list[0] in HINTS
+                else:
+
+                    break
         return found
 
     def get_help(self, pchat_title: str) -> str:
@@ -96,7 +100,6 @@ class CStarGazer:
             "Assert: [stargazer.get_hint] " \
             "No <pchat_title> parameter specified!"
         if self.is_enabled(pchat_title):
-
             return ", ".join(HINTS)
         return ""
 
@@ -132,22 +135,27 @@ class CStarGazer:
                     if word_list[1].isdigit():
 
                         year = int(word_list[1])
-                        answer = calculate_easter(year).strftime(RUSSIAN_DATE_FORMAT)
+                    else:
+
+                        year = 0
                 else:
 
                     year: int = date.today().year
+                if HIGH_MARGIN > year > LOW_MARGIN:
+
                     answer = calculate_easter(year).strftime(RUSSIAN_DATE_FORMAT)
+                else:
+
+                    answer = "Невозможно рассчитать Пасху на заданную дату."
             elif word_list[0] in COMMANDS[DATE_CMD_INDEX]:
 
                 day: int = date.today().day
                 day_str = str(day)
                 if day < 10:
-
                     day_str = "0" + day_str
                 month: int = date.today().month
                 month_str = str(month)
                 if month < 10:
-
                     month_str = "0" + month_str
 
                 today: str = day_str + "/" + month_str
@@ -155,13 +163,11 @@ class CStarGazer:
                 for item in dates_list:
 
                     if item[:5] == today:
-
                         answer += item[7:] + "\n"
                 answer = answer[:-1:]
+                if not answer:
+                    answer = "В этот день ничего не происходило."
+
         if answer:
-
             print(f"Stargazer answers: {answer[:16]}")
-        else:
-
-            answer = "В этот день ничего не происходило."
         return answer.strip()
