@@ -10,10 +10,14 @@ from datetime import date
 import functions
 
 NEW_STYLE_OFFSET: int = 13
-COMMANDS: tuple = ("пасха", "easter")
+EASTER_CMD_INDEX: int = 0
+DATE_CMD_INDEX: int = 1
+COMMANDS: tuple = (("пасха", "easter"),
+                   ("дата", "date"))
 HINTS: tuple = ("календарь", "кл", "calendar", "cl")
 ENABLED_IN_CHATS_KEY: str = "stargazer_chats"
 RUSSIAN_DATE_FORMAT = "%d.%m.%Y"
+STARGAZER_FOLDER: str = "stargazer/"
 
 
 def calculate_easter(pyear):
@@ -49,42 +53,47 @@ class CStarGazer:
     """Прототип классов модулей бота."""
     __metaclass__ = ABCMeta
 
-    def __init__(self, pconfig):
+    def __init__(self, pconfig, pdata_path):
         self.config = pconfig
+        self.data_path = pdata_path + STARGAZER_FOLDER
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         assert pchat_title is not None, \
-            "Assert: [barman.can_process] " \
+            "Assert: [stargazer.can_process] " \
             "No <pchat_title> parameter specified!"
         assert pmessage_text is not None, \
-            "Assert: [barman.can_process] " \
+            "Assert: [stargazer.can_process] " \
             "No <pmessage_text> parameter specified!"
         found: bool = False
         if self.is_enabled(pchat_title):
 
             word_list: list = functions.parse_input(pmessage_text)
-            found = word_list[0] in COMMANDS
-            if not found:
+            for command in COMMANDS:
 
-                found = word_list[0] in HINTS
+                found = word_list[0] in command
+                if not found:
+
+                    found = word_list[0] in HINTS
         return found
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
         assert pchat_title is not None, \
-            "Assert: [barman.get_help] " \
+            "Assert: [stargazer.get_help] " \
             "No <pchat_title> parameter specified!"
         command_list: str = ""
         if self.is_enabled(pchat_title):
 
-            return ", ".join(COMMANDS)
+            for command in COMMANDS:
+                command_list += ", ".join(command) + "\n"
+        return command_list
 
     def get_hint(self, pchat_title: str) -> str:
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
         assert pchat_title is not None, \
-            "Assert: [barman.get_hint] " \
+            "Assert: [stargazer.get_hint] " \
             "No <pchat_title> parameter specified!"
         if self.is_enabled(pchat_title):
 
@@ -94,7 +103,7 @@ class CStarGazer:
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
         assert pchat_title is not None, \
-            "Assert: [barman.is_enabled] " \
+            "Assert: [stargazer.is_enabled] " \
             "No <pchat_title> parameter specified!"
 
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
@@ -110,15 +119,13 @@ class CStarGazer:
             "Assert: [stargazer.stargazer] No <pmessage_text> parameter specified!"
         answer: str = ""
         word_list: list = functions.parse_input(pmessage_text)
-        print(word_list)
         if self.can_process(pchat_title, pmessage_text):
 
             # *** Возможно, запросили меню.
-            print(word_list[0])
             if word_list[0] in HINTS:
 
                 answer = self.get_help(pchat_title)
-            else:
+            elif word_list[0] in COMMANDS[EASTER_CMD_INDEX]:
 
                 if len(word_list) > 1:
 
@@ -130,7 +137,31 @@ class CStarGazer:
 
                     year: int = date.today().year
                     answer = calculate_easter(year).strftime(RUSSIAN_DATE_FORMAT)
+            elif word_list[0] in COMMANDS[DATE_CMD_INDEX]:
+
+                day: int = date.today().day
+                day_str = str(day)
+                if day < 10:
+
+                    day_str = "0" + day_str
+                month: int = date.today().month
+                month_str = str(month)
+                if month < 10:
+
+                    month_str = "0" + month_str
+
+                today: str = day_str + "/" + month_str
+                dates_list: list = functions.load_from_file(self.data_path + "dates.txt")
+                for item in dates_list:
+
+                    if item[:5] == today:
+
+                        answer += item[7:] + "\n"
+                answer = answer[:-1:]
         if answer:
 
-            print(f"Barman answers: {answer[:16]}")
+            print(f"Stargazer answers: {answer[:16]}")
+        else:
+
+            answer = "В этот день ничего не происходило."
         return answer.strip()

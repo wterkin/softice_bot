@@ -100,7 +100,7 @@ class CSoftIceBot:
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config, self.database)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
-        self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config)
+        self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
 
         # *** Обработчик сообщений
@@ -209,6 +209,7 @@ class CSoftIceBot:
                           \n{self.librarian.get_hint(pchat_title)}
                           \n{self.meteorolog.get_hint(pchat_title)}
                           \n{self.statistic.get_hint(pchat_title)}
+                          \n{self.stargazer.get_hint(pchat_title)}
                           \n{self.theolog.get_hint(pchat_title)}""".strip()
         # *** Если ответы есть, отвечаем на запрос
         if answer:
