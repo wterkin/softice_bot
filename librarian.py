@@ -202,8 +202,8 @@ class CLibrarian(prototype.CPrototype):
                             found = word_list[0] in SAVE_LIBRARY
         return found
 
-    def execute_hokku_commands(self, puser_name: str, pword_list: list,
-                               pcommand: int) -> str:
+    def execute_hokku_commands(self, puser_name: str, puser_title: str,
+                               pword_list: list, pcommand: int) -> str:
         """Выполняет команды, касающиеся базы хокку."""
         assert pword_list is not None, \
             "Assert: [librarian.execute_hokku_commands] " \
@@ -220,7 +220,7 @@ class CLibrarian(prototype.CPrototype):
 
             # *** Пользователь хочет добавить хокку в книгу
             self.hokku.append(" ".join(pword_list[1:]))
-            answer = f"Спасибо, {puser_name}, хокку добавлено."
+            answer = f"Спасибо, {puser_title}, хокку добавлено."
         elif pcommand == DEL_HOKKU_CMD:
 
             # *** Пользователь хочет удалить хокку из книги...
@@ -231,7 +231,7 @@ class CLibrarian(prototype.CPrototype):
             else:
 
                 # *** ... но не тут-то было...
-                answer = (f"Извини, {puser_name}, "
+                answer = (f"Извини, {puser_title}, "
                           f"только {self.config['master_name']} может удалять хокку.")
         elif pcommand == FIND_HOKKU_CMD:
 
@@ -239,7 +239,7 @@ class CLibrarian(prototype.CPrototype):
             answer = find_in_book(self.hokku, pword_list)
         return answer
 
-    def execute_quotes_commands(self, puser_name: str,
+    def execute_quotes_commands(self, puser_name: str, puser_title: str,
                                 pword_list: list, pcommand: int) -> str:
         """Выполняет команды, касающиеся базы цитат."""
         assert pword_list is not None, \
@@ -257,7 +257,7 @@ class CLibrarian(prototype.CPrototype):
 
             # *** Пользователь хочет добавить цитату в книгу
             self.quotes.append(" ".join(pword_list[1:]))
-            answer = f"Спасибо, {puser_name}, цитата добавлена."
+            answer = f"Спасибо, {puser_title}, цитата добавлена."
         elif pcommand == DEL_QUOTE_CMD:
 
             # *** Пользователь хочет удалить цитату из книги...
@@ -268,7 +268,7 @@ class CLibrarian(prototype.CPrototype):
             else:
 
                 # *** ... но не тут-то было...
-                answer = (f"Извини, {puser_name}, "
+                answer = (f"Извини, {puser_title}, "
                           f"только {self.config['master_name']} может удалять цитаты.")
         elif pcommand == FIND_QUOTE_CMD:
 
@@ -362,11 +362,11 @@ class CLibrarian(prototype.CPrototype):
                     if command < ASK_QUOTE_CMD:
 
                         # *** Хокку запрашивали?
-                        answer = self.execute_hokku_commands(puser_name, word_list, command)
+                        answer = self.execute_hokku_commands(puser_name, puser_title, word_list, command)
                     else:
 
                         # *** Не, цитату
-                        answer = self.execute_quotes_commands(puser_name, word_list, command)
+                        answer = self.execute_quotes_commands(puser_name, puser_title, word_list, command)
 
             if answer:
 
