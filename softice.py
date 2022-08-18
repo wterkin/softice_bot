@@ -111,46 +111,49 @@ class CSoftIceBot:
             self.message_text, command, chat_id, chat_title, user_name, user_title = \
                 decode_message(pmessage)
             answer: str = ""
-            # *** Проверим, легитимный ли этот чат
-            if self.is_this_chat_enabled(chat_title):
+            # *** Защита от привата
+            if chat_title is not None:
 
-                message_date = pmessage.date
-                # *** Да, вполне легитимный. Сообщение не протухло?
-                if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
+                # *** Проверим, легитимный ли этот чат
+                if self.is_this_chat_enabled(chat_title):
 
-                    # ***  Боту дали команду?
-                    if self.message_text[0:1] in COMMAND_SIGNS:
+                    message_date = pmessage.date
+                    # *** Да, вполне легитимный. Сообщение не протухло?
+                    if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
-                        if not self.process_command(command, chat_id, chat_title,
-                                                    {"name": user_name, "title": user_title}):
+                        # ***  Боту дали команду?
+                        if self.message_text[0:1] in COMMAND_SIGNS:
 
-                            # *** Нет. Ну и пусть работники разбираются....
-                            answer = self.process_modules(chat_id, chat_title, user_name,
-                                                          user_title)
-                            if answer:
-                                self.last_chat_id = chat_id
-                                # self.robot.send_message(chat_id, answer)
-                    else:
+                            if not self.process_command(command, chat_id, chat_title,
+                                                        {"name": user_name, "title": user_title}):
 
-                        # *** Нет, не команда.. Проапдейтим базу статистика,
-                        #     если в этом чате статистик разрешен
-                        if self.statistic.is_enabled(chat_title):
-                            self.statistic.save_message(pmessage)
-                        # *** Болтуну есть что ответить?
-                        answer = self.babbler.talk(chat_title, self.message_text)
-                    if answer:
-                        self.last_chat_id = chat_id
-                        self.robot.send_message(chat_id, answer)
-                # if self.moderator.is_admin(chat_id, user_title):
-                #
-                #     print("Уррряяяяя!!!")
-            else:
+                                # *** Нет. Ну и пусть работники разбираются....
+                                answer = self.process_modules(chat_id, chat_title, user_name,
+                                                              user_title)
+                                if answer:
+                                    self.last_chat_id = chat_id
+                                    # self.robot.send_message(chat_id, answer)
+                        else:
 
-                # *** Бота привели на чужой канал. Выходим.
-                answer = "Вашего чата нет в списке разрешённых. Чао!"
-                self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                self.robot.leave_chat(chat_id)
-                print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                            # *** Нет, не команда.. Проапдейтим базу статистика,
+                            #     если в этом чате статистик разрешен
+                            if self.statistic.is_enabled(chat_title):
+                                self.statistic.save_message(pmessage)
+                            # *** Болтуну есть что ответить?
+                            answer = self.babbler.talk(chat_title, self.message_text)
+                        if answer:
+                            self.last_chat_id = chat_id
+                            self.robot.send_message(chat_id, answer)
+                    # if self.moderator.is_admin(chat_id, user_title):
+                    #
+                    #     print("Уррряяяяя!!!")
+                else:
+
+                    # *** Бота привели на чужой канал. Выходим.
+                    answer = "Вашего чата нет в списке разрешённых. Чао!"
+                    self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                    self.robot.leave_chat(chat_id)
+                    print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""
@@ -158,9 +161,6 @@ class CSoftIceBot:
 
     def is_this_chat_enabled(self, pchat_title: str):
         """Проверяет, находится ли данный чат в списке разрешенных."""
-        assert pchat_title is not None, \
-            "Assert: [softice.check_is_this_chat_enabled] " \
-            "No <pchat_title> parameter specified!"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def poll(self):
