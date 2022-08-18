@@ -189,6 +189,7 @@ class CBarman(prototype.CPrototype):
         assert pcommand is not None, \
             "Assert: [barman.serve_client] No <pcommand> parameter specified!"
         answer: str = ""
+        # print("*** ", pcommand)
         for item in ASSORTIMENT:
 
             if pcommand.strip() in item[COMMAND_KEY]:

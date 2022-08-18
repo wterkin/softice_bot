@@ -12,15 +12,18 @@ import functions
 NEW_STYLE_OFFSET: int = 13
 EASTER_CMD_INDEX: int = 0
 DATE_CMD_INDEX: int = 1
+DAY_CMD_INDEX: int = 2
 COMMANDS: tuple = (("пасха", "easter"),
-                   ("дата", "date"))
+                   ("дата", "date"),
+                   ("день", "day"))
 HINTS: tuple = ("календарь", "кл", "calendar", "cl")
 ENABLED_IN_CHATS_KEY: str = "stargazer_chats"
 RUSSIAN_DATE_FORMAT = "%d.%m.%Y"
 STARGAZER_FOLDER: str = "stargazer/"
 LOW_MARGIN: int = 1899
 HIGH_MARGIN: int = 2100
-
+CHURCH_CALENDAR: str = "calendar.txt"
+CIVILIAN_CALENDAR: str = "dates.txt"
 
 def calculate_easter(pyear):
     """Вычисляет дату пасхи на заданный год."""
@@ -49,8 +52,23 @@ def calculate_easter(pyear):
     return date(pyear, month, day)
 
 
+# def gather_day_and_month():
+#     """Возвращает текущий день и месяц в формате DD/MM"""
+#     now_date: date = date.today()
+#     # day: int = now_date.day
+#     # day_str = str(day)
+#     day: str = f"{now_date.day:02}/{now_date.month:02}"
+#     month: int = date.today().month
+#     month_str = str(month)
+#     if month < 10:
+#         month_str = "0" + month_str
+#     today: str = day_str + "/" + month_str
+#     return today
+#
+
 class CStarGazer(prototype.CPrototype):
     """Прототип классов модулей бота."""
+
     # __metaclass__ = ABCMeta
 
     def __init__(self, pconfig, pdata_path):
@@ -128,6 +146,7 @@ class CStarGazer(prototype.CPrototype):
             if word_list[0] in HINTS:
 
                 answer = self.get_help(pchat_title)
+            # *** Запросили Пасху?
             elif word_list[0] in COMMANDS[EASTER_CMD_INDEX]:
 
                 if len(word_list) > 1:
@@ -147,27 +166,34 @@ class CStarGazer(prototype.CPrototype):
                 else:
 
                     answer = "Невозможно рассчитать Пасху на заданную дату."
+
+            # *** Запросили гражданские праздники
             elif word_list[0] in COMMANDS[DATE_CMD_INDEX]:
 
-                day: int = date.today().day
-                day_str = str(day)
-                if day < 10:
-                    day_str = "0" + day_str
-                month: int = date.today().month
-                month_str = str(month)
-                if month < 10:
-                    month_str = "0" + month_str
+                now_date: date = date.today()
+                today: str = f"{now_date.day:02}/{now_date.month:02}"
+                answer = self.search_in_calendar(CIVILIAN_CALENDAR, today)
+            # *** Запросили церковные праздники
+            elif word_list[0] in COMMANDS[DAY_CMD_INDEX]:
 
-                today: str = day_str + "/" + month_str
-                dates_list: list = functions.load_from_file(self.data_path + "dates.txt")
-                for item in dates_list:
-
-                    if item[:5] == today:
-                        answer += item[7:] + "\n"
-                answer = answer[:-1:]
-                if not answer:
-                    answer = "В этот день ничего не происходило."
+                now_date: date = date.today()
+                today: str = f"{now_date.day:02}/{now_date.month:02}"
+                answer = self.search_in_calendar(CHURCH_CALENDAR, today)
 
         if answer:
             print(f"Stargazer answers: {answer[:16]}")
+        else:
+
+            answer = "Ничего не нашел."
         return answer.strip()
+
+    def search_in_calendar(self, pcalendar: str, ptoday: str):
+        """Ищет заданную дату в заданном календаре."""
+        calendar: list = functions.load_from_file(self.data_path + pcalendar)
+        answer: str = ""
+        for item in calendar:
+
+            if item[:5] == ptoday:
+
+                answer += item[6:] + "\n"
+        return answer[:-1:]
