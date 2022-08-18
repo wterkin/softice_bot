@@ -104,56 +104,73 @@ class CSoftIceBot:
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
 
         # *** Обработчик сообщений
-        @self.robot.message_handler(content_types=['text'])
+
+        # text, audio, document, photo, sticker, video,
+        # video_note, voice, location, contact, new_chat_members,
+        # left_chat_member, new_chat_title, new_chat_photo,
+        # delete_chat_photo, group_chat_created, supergroup_chat_created,
+        # channel_chat_created, migrate_to_chat_id, migrate_from_chat_id,
+        # pinned_message, web_app_data
+        @self.robot.message_handler(content_types=["text", "sticker", "photo", "audio", "video",
+                                                   "video_note", "voice"])
         def process_message(pmessage):
             """Обработчик сообщений."""
+            # print(pmessage)
+            if pmessage.content_type == "text":
 
-            self.message_text, command, chat_id, chat_title, user_name, user_title = \
-                decode_message(pmessage)
-            answer: str = ""
-            # *** Защита от привата
-            if chat_title is not None:
+                self.message_text, command, chat_id, chat_title, user_name, user_title = \
+                    decode_message(pmessage)
+                answer: str = ""
 
-                # *** Проверим, легитимный ли этот чат
-                if self.is_this_chat_enabled(chat_title):
+                # *** Защита от привата
+                if chat_title is not None:
 
-                    message_date = pmessage.date
-                    # *** Да, вполне легитимный. Сообщение не протухло?
-                    if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
+                    # *** Проверим, легитимный ли этот чат
+                    if self.is_this_chat_enabled(chat_title):
 
-                        # ***  Боту дали команду?
-                        if self.message_text[0:1] in COMMAND_SIGNS:
+                        message_date = pmessage.date
+                        # *** Да, вполне легитимный. Сообщение не протухло?
+                        if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
-                            if not self.process_command(command, chat_id, chat_title,
-                                                        {"name": user_name, "title": user_title}):
+                            # ***  Боту дали команду?
+                            if self.message_text[0:1] in COMMAND_SIGNS:
 
-                                # *** Нет. Ну и пусть работники разбираются....
-                                answer = self.process_modules(chat_id, chat_title, user_name,
-                                                              user_title)
-                                if answer:
-                                    self.last_chat_id = chat_id
-                                    # self.robot.send_message(chat_id, answer)
-                        else:
+                                if not self.process_command(command, chat_id, chat_title,
+                                                            {"name": user_name, "title": user_title}):
 
-                            # *** Нет, не команда.. Проапдейтим базу статистика,
-                            #     если в этом чате статистик разрешен
-                            if self.statistic.is_enabled(chat_title):
-                                self.statistic.save_message(pmessage)
-                            # *** Болтуну есть что ответить?
-                            answer = self.babbler.talk(chat_title, self.message_text)
-                        if answer:
-                            self.last_chat_id = chat_id
-                            self.robot.send_message(chat_id, answer)
-                    # if self.moderator.is_admin(chat_id, user_title):
-                    #
-                    #     print("Уррряяяяя!!!")
-                else:
+                                    # *** Нет. Ну и пусть работники разбираются....
+                                    answer = self.process_modules(chat_id, chat_title, user_name,
+                                                                  user_title)
+                                    if answer:
+                                        self.last_chat_id = chat_id
+                                        # self.robot.send_message(chat_id, answer)
+                            else:
 
-                    # *** Бота привели на чужой канал. Выходим.
-                    answer = "Вашего чата нет в списке разрешённых. Чао!"
-                    self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                    self.robot.leave_chat(chat_id)
-                    print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                                # *** Нет, не команда.. Проапдейтим базу статистика,
+                                #     если в этом чате статистик разрешен
+                                if self.statistic.is_enabled(chat_title):
+                                    self.statistic.save_message(pmessage)
+                                # *** Болтуну есть что ответить?
+                                answer = self.babbler.talk(chat_title, self.message_text)
+                            if answer:
+                                self.last_chat_id = chat_id
+                                self.robot.send_message(chat_id, answer)
+                        # if self.moderator.is_admin(chat_id, user_title):
+                        #
+                        #     print("Уррряяяяя!!!")
+                    else:
+
+                        # *** Бота привели на чужой канал. Выходим.
+                        answer = "Вашего чата нет в списке разрешённых. Чао!"
+                        self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                        self.robot.leave_chat(chat_id)
+                        print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+            elif pmessage.content_type == "sticker":
+                pass
+            elif pmessage.content_type == "photo":
+                pass
+            elif pmessage.content_type == "audio":
+                pass
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""

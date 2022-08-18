@@ -17,8 +17,13 @@ class CStat(m_ancestor.CAncestor):
     fletters = Column(Integer, default=0)
     fwords = Column(Integer, default=0)
     fphrases = Column(Integer, default=0)
+    fstickers = Column(Integer, default=0)
+    fpictures = Column(Integer, default=0)
+    faudios = Column(Integer, default=0)
+    fvideos = Column(Integer, default=0)
 
-    def __init__(self, puserid: int, pchatid: int, pletters: int, pwords: int, pphrases: int):
+    def __init__(self, puserid: int, pchatid: int, pletters: int, pwords: int, pphrases: int,
+                 pstickers: int, ppictures: int, paudios: int, pvideos: int):
         """Конструктор"""
         super().__init__()
         self.fuserid = puserid
@@ -26,6 +31,10 @@ class CStat(m_ancestor.CAncestor):
         self.fletters = pletters
         self.fwords = pwords
         self.fphrases = pphrases
+        self.fstickers = pstickers
+        self.fpictures = ppictures
+        self.faudios = paudios
+        self.fvideos = pvideos
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
@@ -33,4 +42,8 @@ class CStat(m_ancestor.CAncestor):
                    User id:{self.fuserid}
                    Letters:{self.fletters},
                    Words: {self.fwords},
-                   Sentences: {self.fphrases}"""
+                   Sentences: {self.fphrases},
+                   Stickers: {self.fstickers},
+                   Pictures: {self.fpictures},
+                   Audios: {self.faudios},
+                   Videos: {self.fvideos}"""
