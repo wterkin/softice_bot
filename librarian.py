@@ -115,19 +115,23 @@ def quote(pbook: list, pword_list: list) -> str:
     if len(pword_list) > 1:
 
         # *** ... с заданным номером.
-        number: int = abs(int(pword_list[1]))
-        if number > 0:
+        if pword_list[1].isdigit():
 
-            if len(pbook) >= number:
+            number: int = abs(int(pword_list[1]))
+            if number > 0:
 
-                answer = f"[{number}] {pbook[number-1]}"
+                if len(pbook) >= number:
+
+                    answer = f"[{number}] {pbook[number-1]}"
+                else:
+
+                    answer = "Нет такой."
             else:
 
                 answer = "Нет такой."
         else:
 
-            answer = "Нет такой."
-
+            answer = "Чего??.."
     else:
 
         # *** случайную.

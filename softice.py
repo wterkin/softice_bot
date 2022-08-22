@@ -55,11 +55,11 @@ class CQuitByDemand(Exception):
 def decode_message(pmessage):
     """Возвращает куски сообщения, $#^^^!!!! """
     return pmessage.text, \
-           pmessage.text[1:].lower(), \
-           pmessage.chat.id, \
-           pmessage.chat.title, \
-           pmessage.from_user.username, \
-           pmessage.from_user.first_name
+        pmessage.text[1:].lower(), \
+        pmessage.chat.id, \
+        pmessage.chat.title, \
+        pmessage.from_user.username, \
+        pmessage.from_user.first_name
 
 
 # pylint: disable=too-many-instance-attributes
@@ -162,7 +162,7 @@ class CSoftIceBot:
 
                         # *** Бота привели на чужой канал. Выходим.
                         answer = "Вашего чата нет в списке разрешённых. Чао!"
-                        self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                        self.robot.send_message(chat_id, answer)
                         self.robot.leave_chat(chat_id)
                         print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
             elif pmessage.content_type == "sticker":
@@ -335,4 +335,6 @@ if __name__ == "__main__":
 
             print("*" * 40)
             print(f"**** Exception occured: {ex}, reconnecting...")
-    sys.exit(0)
+    if SofticeBot.bot_status == QUIT_BY_DEMAND:
+
+        sys.exit(0)

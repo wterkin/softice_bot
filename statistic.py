@@ -146,7 +146,7 @@ class CStatistic(prototype.CPrototype):
                       f" предложений, {item[1].fwords} слов.\n"
         return answer
 
-    def is_chat_exists(self, ptg_chat_id):
+    def get_chat_id(self, ptg_chat_id):
         """Если чат уже есть в базе, возвращает его ID, если нет - None."""
         query = self.session.query(m_chats.CChat)
         query = query.filter_by(fchatid=ptg_chat_id)
@@ -156,7 +156,7 @@ class CStatistic(prototype.CPrototype):
             return data.id
         return None
 
-    def is_user_exists(self, ptg_user_id):
+    def get_user_id(self, ptg_user_id):
         """Если юзер уже есть в базе, возвращает его ID, если нет - None."""
 
         query = self.session.query(m_users.CUser)
@@ -173,6 +173,12 @@ class CStatistic(prototype.CPrototype):
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
+
+    def read_user_stat(self, pchat_id: int, puser_id: int):
+        """Читает из базы информацию о пользователе и возвращает ее."""
+        query = self.session.query(m_stat.CStat)
+        query = query.filter_by(fuserid=puser_id, fchatid=pchat_id)
+        return query.first()
 
     def save_message(self, pmessage):
         """Сохраняет фразу, произнесенную пользователем, в базе."""
@@ -249,9 +255,10 @@ class CStatistic(prototype.CPrototype):
                 data = query.first()
                 if data is None:
 
+                    pass
                     # *** Добавляем информацию в базу
-                    stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
-                    session.add(stat_object)
+                    # stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
+                    # session.add(stat_object)
 
                 else:
 
@@ -284,6 +291,7 @@ class CStatistic(prototype.CPrototype):
             #     db.session.add(me)
             #     db.session.commit()
             #     print(me.id)
+
     def save_non_text_message(self, pmessage):
         """Учитывает стикеры, видео, аудиосообщения."""
         session = self.database.get_session()
@@ -293,9 +301,11 @@ class CStatistic(prototype.CPrototype):
         tg_user_title: str = ""
         tg_user_id: int = pmessage.from_user.id
         tg_user_name: str = pmessage.from_user.username
+        # *** Если есть у юзера первое имя - берем.
         if pmessage.from_user.first_name is not None:
 
             tg_user_title: str = pmessage.from_user.first_name
+        # *** Если есть у юзера второе имя - тож берем.
         if pmessage.from_user.last_name is not None:
 
             tg_user_title += " " + pmessage.from_user.last_name
@@ -304,28 +314,27 @@ class CStatistic(prototype.CPrototype):
 
             # *** Если кто-то уже залочил базу, подождём
             while self.busy:
+
                 pass
 
             # *** Лочим запись в базу и пишем сами
             self.busy = True
-            # проверить, нет ли чата в таблице чатов
-            chat_id = self.is_chat_exists(tg_chat_id)
+
+            # Проверить, нет ли уже этого чата в таблице чатов
+            chat_id = self.get_chat_id(tg_chat_id)
             # query = session.query(m_chats.CChat)
             # query = query.filter_by(fchatid=tg_chat_id)
             # data = query.first()
             if chat_id is None:
 
-                # если нет - добавить, и получить id
+                # Нету еще, новый чат - добавить, и получить id
                 chat_id = self.add_chat_to_base(tg_chat_id, tg_chat_title)
                 # chat = m_chats.CChat(tg_chat_id, tg_chat_title)
                 # session.add(chat)
                 # session.commit()
                 # chat_id = chat.id
-            # else:
-
-                # chat_id = data.id
-            # *** проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
-            user_id = self.is_user_exists(tg_user_id)
+            # *** Проверить, нет ли юзера в таблице тг юзеров
+            user_id = self.get_user_id(tg_user_id)
             # query = session.query(m_users.CUser)
             # query = query.filter_by(ftguserid=tg_user_id)
             # data = query.first()
@@ -344,53 +353,77 @@ class CStatistic(prototype.CPrototype):
             # else:
             #
             #     user_id = data.id
-            video_count: int = 0
-            audio_count: int = 0
-            photo_count: int = 0
-            sticker_count: int = 0
-            if pmessage.content_type in ["video", "video_note"]:
+            user_stat = self.read_user_stat(chat_id, user_id)
+            print(user_stat)
+            if user_stat is not None:
 
-                video_count += 1
-            elif pmessage.content_type in ["audio", "voice"]:
+                # *** Изменяем статистику юзера в зависимости от типа сообщения
+                if pmessage.content_type in ["video", "video_note"]:
 
-                audio_count += 1
-            elif pmessage.content_type == "photo":
+                    if user_stat.fvideos is None:
 
-                photo_count += 1
-            elif pmessage.content_type == "sticker":
+                        user_stat.fvideos = 0
+                    else:
 
-                sticker_count += 1
-            # *** Есть ли запись об этом человеке в таблице статистики?
-            # если есть - получить id
-            query = session.query(m_stat.CStat)
-            query = query.filter_by(fuserid=user_id, fchatid=chat_id)
-            data = query.first()
-            if data is None:
+                        user_stat.fvideos += 1
+                elif pmessage.content_type in ["audio", "voice"]:
 
-                # *** Добавляем информацию в базу
-                stat_object = m_stat.CStat(user_id, chat_id, 0, 0, sticker_count, photo_count,
-                                           audio_count, video_count)
-                session.add(stat_object)
+                    if user_stat.faudios is None:
 
+                        user_stat.faudios = 0
+                    else:
+
+                        user_stat.faudios += 1
+                elif pmessage.content_type == "photo":
+
+                    if user_stat.fphotos is None:
+
+                        user_stat.fphotos = 0
+                    else:
+
+                        user_stat.fphotos += 1
+                elif pmessage.content_type == "sticker":
+
+                    if user_stat.fstickers is None:
+
+                        user_stat.fstickers = 0
+                    else:
+
+                        user_stat.fstickers += 1
             else:
 
-                if data.fstickers is None:
+                self.add_user_stat(tg_user_id, tg_user_title)
+            # *** Есть ли запись об этом человеке в таблице статистики?
+            # если есть - получить id
+            # query = session.query(m_stat.CStat)
+            # query = query.filter_by(fuserid=user_id, fchatid=chat_id)
+            # data = query.first()
+            # if data is None:
+            #
+                # *** Добавляем информацию в базу
+                # stat_object = m_stat.CStat(user_id, chat_id, 0, 0, sticker_count, photo_count,
+                #                            audio_count, video_count)
+                # session.add(stat_object)
 
-                    data.fstickers = 0
-                if data.fpictures is None:
-
-                    data.fpictures = 0
-                if data.faudios is None:
-
-                    data.faudios = 0
-                if data.fvideos is None:
-
-                    data.fvideos = 0
-
+            # else:
+            #
+            #     if data.fstickers is None:
+            #
+            #         data.fstickers = 0
+            #     if data.fpictures is None:
+            #
+            #         data.fpictures = 0
+            #     if data.faudios is None:
+            #
+            #         data.faudios = 0
+            #     if data.fvideos is None:
+            #
+            #         data.fvideos = 0
+            #
                 # *** Изменяем информацию в базе
-                query.update({m_stat.CStat.fletters: data.fletters,
-                              m_stat.CStat.fwords: data.fwords,
-                              m_stat.CStat.fphrases: data.fphrases}, synchronize_session=False)
+            # query.update({m_stat.CStat.fletters: data.fletters,
+            #               m_stat.CStat.fwords: data.fwords,
+            #               m_stat.CStat.fphrases: data.fphrases}, synchronize_session=False)
             session.commit()
             # *** Запись окончена, разлочиваем базу
             self.busy = False
