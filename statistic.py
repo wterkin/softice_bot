@@ -250,7 +250,7 @@ class CStatistic(prototype.CPrototype):
                 if data is None:
 
                     # *** Добавляем информацию в базу
-                    stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
+                    stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1, 0, 0, 0, 0)
                     session.add(stat_object)
 
                 else:
