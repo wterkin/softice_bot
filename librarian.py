@@ -116,6 +116,7 @@ def quote(pbook: list, pword_list: list) -> str:
 
         # *** ... с заданным номером.
         if pword_list[1].isdigit():
+
             number: int = abs(int(pword_list[1]))
             if number > 0:
 
@@ -128,7 +129,9 @@ def quote(pbook: list, pword_list: list) -> str:
             else:
   
                 answer = "Нет такой."
+        else:
 
+            answer = "Чего??.."
     else:
 
         # *** случайную.

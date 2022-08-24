@@ -66,11 +66,11 @@ class CQuitByDemand(Exception):
 def decode_message(pmessage):
     """Возвращает куски сообщения, $#^^^!!!! """
     return pmessage.text, \
-           pmessage.text[1:].lower(), \
-           pmessage.chat.id, \
-           pmessage.chat.title, \
-           pmessage.from_user.username, \
-           pmessage.from_user.first_name
+        pmessage.text[1:].lower(), \
+        pmessage.chat.id, \
+        pmessage.chat.title, \
+        pmessage.from_user.username, \
+        pmessage.from_user.first_name
 
 
 # pylint: disable=too-many-instance-attributes
@@ -125,11 +125,8 @@ class CSoftIceBot:
         @self.robot.message_handler(content_types=["text", "sticker", "photo", "audio", "video", "video_note", "voice"])
         def process_message(pmessage):
             """Обработчик сообщений."""
-            print("@@@@@ ", pmessage.text)
             # *** Если сообщение адресовано другому боту - пропускаем
             if not is_foreign_command(pmessage.text):
-
-                #print("%%%%%%%%", self.message_text, COMMAND_SIGN)
 
                 if pmessage.content_type == "text":
 
@@ -140,12 +137,10 @@ class CSoftIceBot:
                     # *** Защита от привата
                     if chat_title is not None:
 
-                        #print("!!!!!!!!! ", self.message_text, COMMAND_SIGN)
                         # *** Проверим, легитимный ли этот чат
                         if self.is_this_chat_enabled(chat_title):
 
                             message_date = pmessage.date
-                            #print("&&&&& ", self.message_text, COMMAND_SIGN)
                             # *** Да, вполне легитимный. Сообщение не протухло?
                             if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
@@ -170,11 +165,9 @@ class CSoftIceBot:
                                     # *** Болтуну есть что ответить?
                                     answer = self.babbler.talk(chat_title, self.message_text)
                                 if answer:
+
                                     self.last_chat_id = chat_id
                                     self.robot.send_message(chat_id, answer)
-                            # if self.moderator.is_admin(chat_id, user_title):
-                            #
-                            #     print("Уррряяяяя!!!")
                         else:
 
                             # *** Бота привели на чужой канал. Выходим.
@@ -354,4 +347,6 @@ if __name__ == "__main__":
 
             print("*" * 40)
             print(f"**** Exception occured: {ex}, reconnecting...")
-    sys.exit(0)
+    if SofticeBot.bot_status == QUIT_BY_DEMAND:
+
+        sys.exit(0)
