@@ -41,7 +41,8 @@ BOT_STATUS: int = CONTINUE_RUNNING
 def is_foreign_command(pcommand: str)-> bool:
     """Возвращает True, если в команде присутствует имя другого бота."""
     result: bool = False
-    #print(statistic.BOTS)
+    # print("!!! ", statistic.BOTS)
+    # print("@@@ ", pcommand)
     for bot in statistic.BOTS:
 
         result = bot in pcommand
@@ -91,7 +92,7 @@ class CSoftIceBot:
         self.bot_status: int = CONTINUE_RUNNING
         self.exiting: bool = False
         self.message_text: str = ""
-        self.last_chat_id: int = -1
+        #self.last_chat_id: int = -1
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -122,65 +123,75 @@ class CSoftIceBot:
         # delete_chat_photo, group_chat_created, supergroup_chat_created,
         # channel_chat_created, migrate_to_chat_id, migrate_from_chat_id,
         # pinned_message, web_app_data
+        """Обработчик сообщений."""
         @self.robot.message_handler(content_types=["text", "sticker", "photo", "audio", "video", "video_note", "voice"])
         def process_message(pmessage):
-            """Обработчик сообщений."""
-            # *** Если сообщение адресовано другому боту - пропускаем
-            if not is_foreign_command(pmessage.text):
+            # *** Если это текстовое сообщение - обрабатываем в этой ветке.
+            if pmessage.content_type == "text":
 
-                if pmessage.content_type == "text":
+                # *** Вытаскиваем из сообщения нужные поля
+                self.message_text, command, chat_id, chat_title, user_name, user_title = \
+                    decode_message(pmessage)
 
-                    self.message_text, command, chat_id, chat_title, user_name, user_title = \
-                        decode_message(pmessage)
-                    answer: str = ""
+                # *** Защита от привата
+                if chat_title is not None:
 
-                    # *** Защита от привата
-                    if chat_title is not None:
+                    # *** Проверим, легитимный ли этот чат
+                    if self.is_this_chat_enabled(chat_title):
 
-                        # *** Проверим, легитимный ли этот чат
-                        if self.is_this_chat_enabled(chat_title):
+                        # *** Да, вполне легитимный. Сообщение не протухло?
+                        message_date = pmessage.date
+                        if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
-                            message_date = pmessage.date
-                            # *** Да, вполне легитимный. Сообщение не протухло?
-                            if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
+                            # *** Если сообщение адресовано другому боту - пропускаем
+                            if not is_foreign_command(pmessage.text):
 
+                                answer: str = ""
                                 # ***  Боту дали команду?
                                 if self.message_text[0:1] == COMMAND_SIGN:
 
+                                    # *** Это системная команда?
                                     if not self.process_command(command, chat_id, chat_title,
                                                                 {"name": user_name, "title": user_title}):
 
-                                        # *** Нет. Ну и пусть работники разбираются....
-                                        answer = self.process_modules(chat_id, chat_title, user_name,
-                                                                    user_title)
-                                        if answer:
-                                            self.last_chat_id = chat_id
-                                            # self.robot.send_message(chat_id, answer)
+                                        # *** Нет. Ну и пусть модули разбираются....
+                                        answer = self.process_modules(chat_id, chat_title,
+                                                                      user_name,
+                                                                      user_title)
+                                        # *** Разобрались?
+                                        #if answer:
+
+                                            #self.last_chat_id = chat_id
+                                            ## self.robot.send_message(chat_id, answer)
                                 else:
 
-                                    # *** Нет, не команда.. Проапдейтим базу статистика,
-                                    #     если в этом чате статистик разрешен
+                                    # *** Нет. В этом чате статистик разрешен?
                                     if self.statistic.is_enabled(chat_title):
+
+                                        # *** Проапдейтим базу статистика
                                         self.statistic.save_message(pmessage)
+
                                     # *** Болтуну есть что ответить?
                                     answer = self.babbler.talk(chat_title, self.message_text)
+                                # *** Модули сработали?
                                 if answer:
 
+                                    # *** Выводим ответ.
                                     self.last_chat_id = chat_id
                                     self.robot.send_message(chat_id, answer)
-                        else:
+                    else:
 
-                            # *** Бота привели на чужой канал. Выходим.
-                            answer = "Вашего чата нет в списке разрешённых. Чао!"
-                            self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                            self.robot.leave_chat(chat_id)
-                            print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
-                elif pmessage.content_type == "sticker":
-                    pass
-                elif pmessage.content_type == "photo":
-                    pass
-                elif pmessage.content_type == "audio":
-                    pass
+                        # *** Бота привели на чужой канал. Выходим.
+                        answer = "Вашего чата нет в списке разрешённых. Чао!"
+                        self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                        self.robot.leave_chat(chat_id)
+                        print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+            elif pmessage.content_type == "sticker":
+                pass
+            elif pmessage.content_type == "photo":
+                pass
+            elif pmessage.content_type == "audio":
+                pass
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""

@@ -1,5 +1,4 @@
 *.cmd
-*.sh
 *.kdev4
 *.log
 .idea/*
