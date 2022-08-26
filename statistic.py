@@ -34,7 +34,7 @@ def decode_stat(pstat: m_stat.CStat):
 
 
 class CStatistic(prototype.CPrototype):
-    """Класс метеоролога."""
+    """Класс статистика."""
 
     def __init__(self, pconfig: dict, pdatabase: database.CDataBase):
         super().__init__()
@@ -50,12 +50,14 @@ class CStatistic(prototype.CPrototype):
         self.session.commit()
         return chat.id
 
-    def add_user_stat(self, ptg_user_id, ptg_user_title, pletters, pwords,
-                      phrases, pstickers, ppictures, paudios, pvideos):
+    def add_user_stat(self, puser_id: int, pchat_id: int, pletters: int, pwords: int,
+                      pphrases: int, pstickers: int, ppictures: int, paudios: int,
+                      pvideos: int):
         """Добавляет новую запись статистики по человеку."""
-        user_id = self.get_user_id(ptg_user_id)
-        # chat_id = self.get_chat_id()
-        # stat = m_stat.CStat()
+        stat = m_stat.CStat(puser_id, pchat_id, pletters, pwords, pphrases,
+                            pstickers, ppictures, paudios, pvideos)
+        self.session.add(stat)
+        self.session.commit()
 
     def add_user_to_base(self, ptg_user_id: int, ptg_user_title: str):
         """Добавляет нового пользователя в БД и возвращает его ID."""
@@ -304,13 +306,20 @@ class CStatistic(prototype.CPrototype):
 
     def save_all_type_of_messages(self, pmessage):
         """Учитывает стикеры, видео, аудиосообщения."""
-        session = self.database.get_session()
+        # session = self.database.get_session()
         message_text: str = pmessage.text
         tg_chat_id: int = pmessage.chat.id
         tg_chat_title: str = pmessage.chat.title
         tg_user_title: str = ""
         tg_user_id: int = pmessage.from_user.id
         tg_user_name: str = pmessage.from_user.username
+        letters: int = 0
+        words: int = 0
+        phrases: int = 0
+        stickers: int = 0
+        pictures: int = 0
+        audios: int = 0
+        videos: int = 0
         # *** Если есть у юзера первое имя - берем.
         if pmessage.from_user.first_name is not None:
 
@@ -321,7 +330,6 @@ class CStatistic(prototype.CPrototype):
             tg_user_title += " " + pmessage.from_user.last_name
         # *** Это не бот написал? Чужой бот, не наш?
         if tg_user_name not in self.config[FOREIGN_BOTS]:
-            # if tg_user_name not in BOTS:
 
             # *** Если кто-то уже залочил базу, подождём
             while self.busy:
@@ -339,89 +347,43 @@ class CStatistic(prototype.CPrototype):
             user_id = self.get_user_id(tg_user_id)
             if user_id is None:
 
+                # *** Нету, новый пользователь
                 user_id = self.add_user_to_base(tg_user_id, tg_user_title)
             # *** Имеется ли в БД статистика по этому пользователю?
             user_stat = self.get_user_stat(chat_id, user_id)
             print("*** STAT:SATOM:user_data ", user_stat)
-            letters: int = 0
-            words: int = 0
-            phrases: int = 0
-            stickers: int = 0
-            pictures: int = 0
-            audios: int = 0
-            videos: int = 0
             if user_stat is not None:
 
                 letters, words, phrases, stickers, pictures, audios, videos = decode_stat(user_stat)
-                # *** Изменяем статистику юзера в зависимости от типа сообщения
-                if pmessage.content_type in ["video", "video_note"]:
+            # *** Изменяем статистику юзера в зависимости от типа сообщения
+            if pmessage.content_type in ["video", "video_note"]:
 
-                    if user_stat.fvideos is None:
+                videos += 1
+            elif pmessage.content_type in ["audio", "voice"]:
 
-                        videos = 0
-                    else:
+                audios += 1
+            elif pmessage.content_type == "photo":
 
-                        videos += 1
-                elif pmessage.content_type in ["audio", "voice"]:
+                pictures += 1
+            elif pmessage.content_type == "sticker":
 
-                    if user_stat.faudios is None:
+                stickers += 1
+            elif pmessage.content_type == "text":
 
-                        audios = 0
-                    else:
+                if message_text[0] != "!":
 
-                        audios += 1
-                elif pmessage.content_type == "photo":
+                    letters += len(message_text)
+                    words += len(message_text.split(" "))
+                    phrases += 1
 
-                    if user_stat.fpictures is None:
+            if user_stat is None:
 
-                        pictures = 0
-                    else:
-
-                        pictures += 1
-                elif pmessage.content_type == "sticker":
-
-                    if stickers is None:
-
-                        stickers = 0
-                    else:
-
-                        stickers += 1
+                self.add_user_stat(user_id, chat_id, letters, words,
+                                   phrases, stickers, pictures, audios, videos)
             else:
 
-                self.add_user_stat(user_id, letters, words,
-                                   phrases, stickers, pictures, audios, videos)
-            # *** Есть ли запись об этом человеке в таблице статистики?
-            # если есть - получить id
-            # query = session.query(m_stat.CStat)
-            # query = query.filter_by(fuserid=user_id, fchatid=chat_id)
-            # data = query.first()
-            # if data is None:
-            #
-                # *** Добавляем информацию в базу
-                # stat_object = m_stat.CStat(user_id, chat_id, 0, 0, sticker_count, photo_count,
-                #                            audio_count, video_count)
-                # session.add(stat_object)
-
-            # else:
-            #
-            #     if data.fstickers is None:
-            #
-            #         data.fstickers = 0
-            #     if data.fpictures is None:
-            #
-            #         data.fpictures = 0
-            #     if data.faudios is None:
-            #
-            #         data.faudios = 0
-            #     if data.fvideos is None:
-            #
-            #         data.fvideos = 0
-            #
-                # *** Изменяем информацию в базе
-            # query.update({m_stat.CStat.fletters: data.fletters,
-            #               m_stat.CStat.fwords: data.fwords,
-            #               m_stat.CStat.fphrases: data.fphrases}, synchronize_session=False)
-            session.commit()
+                self.update_user_stat(user_id, chat_id, letters, words,
+                                      phrases, stickers, pictures, audios, videos)
             # *** Запись окончена, разлочиваем базу
             self.busy = False
 
@@ -454,3 +416,20 @@ class CStatistic(prototype.CPrototype):
 
                         answer = self.get_personal_information(pchat_id, puser_title)
         return answer
+
+    def update_user_stat(self, puser_id: int, pchat_id: int, pletters: int, pwords: int,
+                         pphrases: int, pstickers: int, ppictures: int, paudios: int,
+                         pvideos: int):
+        """Изменяет запись статистики по человеку."""
+        query = self.session.query(m_stat.CStat)
+        query = query.filter_by(fuser_id=puser_id)
+        query = query.filter_by(fchat_id=pchat_id)
+        query.update({m_stat.CStat.fletters: pletters,
+                      m_stat.CStat.fwords: pwords,
+                      m_stat.CStat.fphrases: pphrases,
+                      m_stat.CStat.fstickers: pstickers,
+                      m_stat.CStat.fpictures: ppictures,
+                      m_stat.CStat.faudios: paudios,
+                      m_stat.CStat.fvideos: pvideos
+                      }, synchronize_session=False)
+        self.session.commit()

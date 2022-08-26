@@ -36,7 +36,7 @@ CONTINUE_RUNNING: int = 0
 QUIT_BY_DEMAND: int = 1
 TOKEN_KEY: str = "token"  # !
 BOT_STATUS: int = CONTINUE_RUNNING
-
+EVENTS: tuple = ("text", "sticker", "photo", "audio", "video", "video_note", "voice")
 
 def is_foreign_command(pcommand: str)-> bool:
     """Возвращает True, если в команде присутствует имя другого бота."""
@@ -169,8 +169,8 @@ class CSoftIceBot:
                                     if self.statistic.is_enabled(chat_title):
 
                                         # *** Проапдейтим базу статистика
-                                        self.statistic.save_message(pmessage)
-
+                                        # self.statistic.save_message(pmessage)
+                                        self.statistic.save_all_type_of_messages(pmessage)
                                     # *** Болтуну есть что ответить?
                                     answer = self.babbler.talk(chat_title, self.message_text)
                                 # *** Модули сработали?
@@ -186,12 +186,10 @@ class CSoftIceBot:
                         self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
                         self.robot.leave_chat(chat_id)
                         print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
-            elif pmessage.content_type == "sticker":
-                pass
-            elif pmessage.content_type == "photo":
-                pass
-            elif pmessage.content_type == "audio":
-                pass
+
+            elif pmessage.content_type in EVENTS:
+
+                self.statistic.save_all_type_of_messages(pmessage)
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""
