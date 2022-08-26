@@ -124,7 +124,7 @@ class CStatistic(prototype.CPrototype):
 
     def get_personal_information(self, ptg_chat_id: int, puser_title: str):
         """Возвращает информацию о пользователе"""
-        message: str = ""
+        answer: str = ""
         session = self.database.get_session()
         query = session.query(m_names.CName)
         query = query.filter_by(fusername=puser_title)
@@ -148,9 +148,14 @@ class CStatistic(prototype.CPrototype):
                 if data is not None:
 
                     # print("*** STAT:GPI:STAT ", data.fphrases)
-                    message = f"{puser_title} наболтал {data.fphrases} фраз, " \
-                              f"{data.fwords} слов, {data.fletters} букв."
-        return message
+                    answer = f"{puser_title} наболтал {data.fphrases} фраз, " \
+                             f"{data.fwords} слов, {data.fletters} букв, запостил " \
+                             f"{0 if data.fstickers is None else data.fstickers} стик., " \
+                             f"{0 if data.fpictures is None else data.fpictures} фоток, " \
+                             f"{0 if data.faudios is None else data.faudios} аудио и " \
+                             f"{0 if data.fvideos is None else data.fvideos} видео,"
+
+        return answer
 
     def get_statistic(self, ptg_chat_id: int, pcount: int):
         """Получает из базы статистику по самым говорливым юзерам."""
@@ -166,7 +171,11 @@ class CStatistic(prototype.CPrototype):
         for number, item in enumerate(data):
 
             answer += f"{number+1} : {item[2].fusername} : {item[1].fphrases}" \
-                      f" предложений, {item[1].fwords} слов.\n"
+                      f" предл., {item[1].fwords} слов, " \
+                      f"{0 if item[1].fstickers is None else item[1].fstickers} стик., " \
+                      f"{0 if item[1].fpictures is None else item[1].fpictures} фоток, " \
+                      f"{0 if item[1].faudios is None else item[1].faudios} звук. и " \
+                      f"{0 if item[1].fvideos is None else item[1].fvideos} вид. \n"
         return answer
 
     def get_user_id(self, ptg_user_id):
@@ -282,28 +291,6 @@ class CStatistic(prototype.CPrototype):
                 # *** Запись окончена, разлочиваем базу
                 self.busy = False
 
-            # if tg_chat_id.count() == 0:
-            #
-            #     #
-            #     chat = m_chats.CChat(chat_id)
-            #     self.database.get_session().add(chat)
-            #     self.database.get_session().commit()
-            #     print(f"{chat_title}:{chat_id}:{chat}")
-            #     # else:
-            #     #     # если есть - получить id
-            #     # query =
-            #     # print(tg_chat_id.all())
-            #
-            # # tg_id_data = self.database.get_session().query(m_users.CUser).filter_by(ftguserid=user_id)
-            # # if tg_id_data.count() == 0:
-            # select seq
-            # from sqlite_sequence where
-            # name = "table_name"
-            # me = User(nickname, email, passw)
-            #     db.session.add(me)
-            #     db.session.commit()
-            #     print(me.id)
-
     def save_all_type_of_messages(self, pmessage):
         """Учитывает стикеры, видео, аудиосообщения."""
         # session = self.database.get_session()
@@ -351,10 +338,16 @@ class CStatistic(prototype.CPrototype):
                 user_id = self.add_user_to_base(tg_user_id, tg_user_title)
             # *** Имеется ли в БД статистика по этому пользователю?
             user_stat = self.get_user_stat(chat_id, user_id)
-            print("*** STAT:SATOM:user_data ", user_stat)
             if user_stat is not None:
 
                 letters, words, phrases, stickers, pictures, audios, videos = decode_stat(user_stat)
+                letters = 0 if letters is None else letters
+                words = 0 if words is None else words
+                phrases = 0 if phrases is None else phrases
+                stickers = 0 if stickers is None else stickers
+                pictures = 0 if pictures is None else pictures
+                audios = 0 if audios is None else audios
+                videos = 0 if videos is None else videos
             # *** Изменяем статистику юзера в зависимости от типа сообщения
             if pmessage.content_type in ["video", "video_note"]:
 
@@ -422,8 +415,8 @@ class CStatistic(prototype.CPrototype):
                          pvideos: int):
         """Изменяет запись статистики по человеку."""
         query = self.session.query(m_stat.CStat)
-        query = query.filter_by(fuser_id=puser_id)
-        query = query.filter_by(fchat_id=pchat_id)
+        query = query.filter_by(fuserid=puser_id)
+        query = query.filter_by(fchatid=pchat_id)
         query.update({m_stat.CStat.fletters: pletters,
                       m_stat.CStat.fwords: pwords,
                       m_stat.CStat.fphrases: pphrases,
