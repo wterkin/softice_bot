@@ -25,6 +25,12 @@ HINT = ["стат", "stat"]
 COMMANDS = ["топ10", "топ25", "топ50", "перс", "top10", "top25", "top50", "pers"]
 ENABLED_IN_CHATS_KEY = "statistic_chats"
 BOTS = ("TrueMafiaBot", "MafiaWarBot", "glagolitic_bot", "combot", "chgk_bot")
+FOREIGN_BOTS = "foreign_bots"
+
+
+def decode_stat(pstat: m_stat.CStat):
+    """Декодирует запись статистики."""
+    return pstat.fletters, pstat.fwords, pstat.fphrases, pstat.fstickers, pstat.fpictures, pstat.faudios, pstat.fvideos
 
 
 class CStatistic(prototype.CPrototype):
@@ -38,15 +44,21 @@ class CStatistic(prototype.CPrototype):
         self.session = self.database.get_session()
 
     def add_chat_to_base(self, ptg_chat_id: int, ptg_chat_title: str):
-        """Добавляет чат в базу."""
-
+        """Добавляет новый чат в БД и возвращает его ID."""
         chat = m_chats.CChat(ptg_chat_id, ptg_chat_title)
         self.session.add(chat)
         self.session.commit()
         return chat.id
 
+    def add_user_stat(self, ptg_user_id, ptg_user_title, pletters, pwords,
+                      phrases, pstickers, ppictures, paudios, pvideos):
+        """Добавляет новую запись статистики по человеку."""
+        user_id = self.get_user_id(ptg_user_id)
+        # chat_id = self.get_chat_id()
+        # stat = m_stat.CStat()
+
     def add_user_to_base(self, ptg_user_id: int, ptg_user_title: str):
-        """Добавляет юзера в базу."""
+        """Добавляет нового пользователя в БД и возвращает его ID."""
 
         user = m_users.CUser(ptg_user_id)
         self.session.add(user)
@@ -58,17 +70,25 @@ class CStatistic(prototype.CPrototype):
         return user.id
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
-        """Возвращает True, если модуль может обработать команду."""
+        """Возвращает True, если модуль может обработать команду, иначе False."""
         if self.is_enabled(pchat_title):
 
             word_list: list = functions.parse_input(pmessage_text)
-            # print(word_list[0])
             return word_list[0] in COMMANDS or word_list[0] in HINT
         return False
 
+    def get_chat_id(self, ptg_chat_id):
+        """Если чат уже есть в базе, возвращает его ID, если нет - None."""
+        query = self.session.query(m_chats.CChat)
+        query = query.filter_by(fchatid=ptg_chat_id)
+        data = query.first()
+        if data is not None:
+
+            return data.id
+        return None
+
     def get_command(self, pword: str) -> int:  # noqa
-        """Распознает команду и возвращает её код, в случае неудачи - None.
-        """
+        """Распознает команду и возвращает её код, в случае неудачи - None."""
         assert pword is not None, \
             "Assert: [librarian.get_command] " \
             "No <pword> parameter specified!"
@@ -78,8 +98,8 @@ class CStatistic(prototype.CPrototype):
             if pword in command:
                 result = command_idx
 
-        if result > 3:
-            result = result - 4
+        if result > (len(COMMANDS) // 2) - 1:
+            result = result - len(COMMANDS) // 2
 
         return result
 
@@ -96,6 +116,7 @@ class CStatistic(prototype.CPrototype):
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
         if self.is_enabled(pchat_title):
+
             return ", ".join(HINT)
         return ""
 
@@ -146,19 +167,8 @@ class CStatistic(prototype.CPrototype):
                       f" предложений, {item[1].fwords} слов.\n"
         return answer
 
-    def get_chat_id(self, ptg_chat_id):
-        """Если чат уже есть в базе, возвращает его ID, если нет - None."""
-        query = self.session.query(m_chats.CChat)
-        query = query.filter_by(fchatid=ptg_chat_id)
-        data = query.first()
-        if data is not None:
-
-            return data.id
-        return None
-
     def get_user_id(self, ptg_user_id):
-        """Если юзер уже есть в базе, возвращает его ID, если нет - None."""
-
+        """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
         query = self.session.query(m_users.CUser)
         query = query.filter_by(ftguserid=ptg_user_id)
         data = query.first()
@@ -167,18 +177,18 @@ class CStatistic(prototype.CPrototype):
             return data.id
         return None
 
+    def get_user_stat(self, pchat_id: int, puser_id: int):
+        """Получает из базы статистику пользователя и возвращает её."""
+        query = self.session.query(m_stat.CStat)
+        query = query.filter_by(fuserid=puser_id, fchatid=pchat_id)
+        return query.first()
+
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
-
-    def read_user_stat(self, pchat_id: int, puser_id: int):
-        """Читает из базы информацию о пользователе и возвращает ее."""
-        query = self.session.query(m_stat.CStat)
-        query = query.filter_by(fuserid=puser_id, fchatid=pchat_id)
-        return query.first()
 
     def save_message(self, pmessage):
         """Сохраняет фразу, произнесенную пользователем, в базе."""
@@ -292,7 +302,7 @@ class CStatistic(prototype.CPrototype):
             #     db.session.commit()
             #     print(me.id)
 
-    def save_non_text_message(self, pmessage):
+    def save_all_type_of_messages(self, pmessage):
         """Учитывает стикеры, видео, аудиосообщения."""
         session = self.database.get_session()
         message_text: str = pmessage.text
@@ -309,90 +319,77 @@ class CStatistic(prototype.CPrototype):
         if pmessage.from_user.last_name is not None:
 
             tg_user_title += " " + pmessage.from_user.last_name
-        # *** Сообщение не от бота?
-        if tg_user_name not in BOTS:
+        # *** Это не бот написал? Чужой бот, не наш?
+        if tg_user_name not in self.config[FOREIGN_BOTS]:
+            # if tg_user_name not in BOTS:
 
             # *** Если кто-то уже залочил базу, подождём
             while self.busy:
 
                 pass
-
             # *** Лочим запись в базу и пишем сами
             self.busy = True
-
             # Проверить, нет ли уже этого чата в таблице чатов
             chat_id = self.get_chat_id(tg_chat_id)
-            # query = session.query(m_chats.CChat)
-            # query = query.filter_by(fchatid=tg_chat_id)
-            # data = query.first()
             if chat_id is None:
 
                 # Нету еще, новый чат - добавить, и получить id
                 chat_id = self.add_chat_to_base(tg_chat_id, tg_chat_title)
-                # chat = m_chats.CChat(tg_chat_id, tg_chat_title)
-                # session.add(chat)
-                # session.commit()
-                # chat_id = chat.id
             # *** Проверить, нет ли юзера в таблице тг юзеров
             user_id = self.get_user_id(tg_user_id)
-            # query = session.query(m_users.CUser)
-            # query = query.filter_by(ftguserid=tg_user_id)
-            # data = query.first()
             if user_id is None:
 
-                # *** если нет - добавить, и получить id
-                # user = m_users.CUser(tg_user_id)
-                # session.add(user)
-                # session.commit()
-                # user_id = user.id
-                # # *** заодно сохраним имя пользователя
-                # user_name = m_names.CName(user_id, tg_user_title)
-                # session.add(user_name)
-                # session.commit()
                 user_id = self.add_user_to_base(tg_user_id, tg_user_title)
-            # else:
-            #
-            #     user_id = data.id
-            user_stat = self.read_user_stat(chat_id, user_id)
-            print(user_stat)
+            # *** Имеется ли в БД статистика по этому пользователю?
+            user_stat = self.get_user_stat(chat_id, user_id)
+            print("*** STAT:SATOM:user_data ", user_stat)
+            letters: int = 0
+            words: int = 0
+            phrases: int = 0
+            stickers: int = 0
+            pictures: int = 0
+            audios: int = 0
+            videos: int = 0
             if user_stat is not None:
 
+                letters, words, phrases, stickers, pictures, audios, videos = decode_stat(user_stat)
                 # *** Изменяем статистику юзера в зависимости от типа сообщения
                 if pmessage.content_type in ["video", "video_note"]:
 
                     if user_stat.fvideos is None:
 
-                        user_stat.fvideos = 0
+                        videos = 0
                     else:
 
-                        user_stat.fvideos += 1
+                        videos += 1
                 elif pmessage.content_type in ["audio", "voice"]:
 
                     if user_stat.faudios is None:
 
-                        user_stat.faudios = 0
+                        audios = 0
                     else:
 
-                        user_stat.faudios += 1
+                        audios += 1
                 elif pmessage.content_type == "photo":
 
-                    if user_stat.fphotos is None:
+                    if user_stat.fpictures is None:
 
-                        user_stat.fphotos = 0
+                        pictures = 0
                     else:
 
-                        user_stat.fphotos += 1
+                        pictures += 1
                 elif pmessage.content_type == "sticker":
 
-                    if user_stat.fstickers is None:
+                    if stickers is None:
 
-                        user_stat.fstickers = 0
+                        stickers = 0
                     else:
 
-                        user_stat.fstickers += 1
+                        stickers += 1
             else:
 
-                self.add_user_stat(tg_user_id, tg_user_title)
+                self.add_user_stat(user_id, letters, words,
+                                   phrases, stickers, pictures, audios, videos)
             # *** Есть ли запись об этом человеке в таблице статистики?
             # если есть - получить id
             # query = session.query(m_stat.CStat)

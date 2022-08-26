@@ -3,6 +3,8 @@
 *.log
 .idea/*
 __pycache__/*
+alembic/__pycache__/*
+alembic/versions/__pycache__/*
 GPL-3
 trash/*
 config.json
