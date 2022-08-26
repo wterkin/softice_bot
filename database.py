@@ -4,7 +4,6 @@
 # import sys
 
 from pathlib import Path
-from sys import platform
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

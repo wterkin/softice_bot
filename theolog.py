@@ -265,7 +265,6 @@ class CTheolog(prototype.CPrototype):
     def search_in_book(self, pbook_file: str, pbook_title: str, pphrase: str):
         """Ищет заданную строку в заданном файле."""
         result_list: list = []
-        # print(pbook_file, pbook_title, pphrase)
         with open(pbook_file, "r", encoding="utf-8") as book_file:
 
             for line in book_file:
@@ -278,7 +277,8 @@ class CTheolog(prototype.CPrototype):
                     parsed_line = re.split(r':', line, maxsplit=2)
                     # print(parsed_line, pbook_title)
                     result_line: str = " ".join(parsed_line[2:])
-                    result_list.append(f"{pbook_title} глава {parsed_line[0]} стих {parsed_line[1]}: {result_line}")
+                    result_list.append(f"{pbook_title} глава {parsed_line[0]} стих "
+                                       f"{parsed_line[1]}: {result_line}")
         return "\n".join(result_list)
 
     def theolog(self, pchat_title: str, pmessage_text: str) -> str:
@@ -324,7 +324,8 @@ class CTheolog(prototype.CPrototype):
                     if book_index >= 0:
 
                         book_file = f"{self.data_path}/{book_index+1}.txt"
-                        answer = self.search_in_book(book_file, BIBLE_BOOKS[book_index][2], " ".join(word_list[2:]))
+                        answer = self.search_in_book(book_file, BIBLE_BOOKS[book_index][2],
+                                                     " ".join(word_list[2:]))
                 else:
                     # *** Книгу и главу
                     book_name = word_list[0]

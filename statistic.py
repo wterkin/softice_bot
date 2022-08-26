@@ -30,7 +30,25 @@ FOREIGN_BOTS = "foreign_bots"
 
 def decode_stat(pstat: m_stat.CStat):
     """Декодирует запись статистики."""
-    return pstat.fletters, pstat.fwords, pstat.fphrases, pstat.fstickers, pstat.fpictures, pstat.faudios, pstat.fvideos
+    return pstat.fletters, pstat.fwords, pstat.fphrases, pstat.fstickers, \
+        pstat.fpictures, pstat.faudios, pstat.fvideos
+
+
+def get_command(pword: str) -> int:  # noqa
+    """Распознает команду и возвращает её код, в случае неудачи - None."""
+    assert pword is not None, \
+        "Assert: [librarian.get_command] " \
+        "No <pword> parameter specified!"
+    result: int = -1
+    for command_idx, command in enumerate(COMMANDS):
+
+        if pword in command:
+            result = command_idx
+
+    if result > (len(COMMANDS) // 2) - 1:
+        result = result - len(COMMANDS) // 2
+
+    return result
 
 
 class CStatistic(prototype.CPrototype):
@@ -74,7 +92,6 @@ class CStatistic(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду, иначе False."""
         if self.is_enabled(pchat_title):
-
             word_list: list = functions.parse_input(pmessage_text)
             return word_list[0] in COMMANDS or word_list[0] in HINT
         return False
@@ -85,30 +102,12 @@ class CStatistic(prototype.CPrototype):
         query = query.filter_by(fchatid=ptg_chat_id)
         data = query.first()
         if data is not None:
-
             return data.id
         return None
-
-    def get_command(self, pword: str) -> int:  # noqa
-        """Распознает команду и возвращает её код, в случае неудачи - None."""
-        assert pword is not None, \
-            "Assert: [librarian.get_command] " \
-            "No <pword> parameter specified!"
-        result: int = -1
-        for command_idx, command in enumerate(COMMANDS):
-
-            if pword in command:
-                result = command_idx
-
-        if result > (len(COMMANDS) // 2) - 1:
-            result = result - len(COMMANDS) // 2
-
-        return result
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
         if self.is_enabled(pchat_title):
-
             command_list: str = ", ".join(COMMANDS)
             command_list += "\n"
             return command_list
@@ -118,7 +117,6 @@ class CStatistic(prototype.CPrototype):
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
         if self.is_enabled(pchat_title):
-
             return ", ".join(HINT)
         return ""
 
@@ -146,7 +144,6 @@ class CStatistic(prototype.CPrototype):
                 query = query.filter_by(fchatid=chat_id)
                 data = query.first()
                 if data is not None:
-
                     # print("*** STAT:GPI:STAT ", data.fphrases)
                     answer = f"{puser_title} наболтал {data.fphrases} фраз, " \
                              f"{data.fwords} слов, {data.fletters} букв, запостил " \
@@ -169,8 +166,7 @@ class CStatistic(prototype.CPrototype):
         data = query.limit(pcount).all()
         answer = "Самые говорливые:\n"
         for number, item in enumerate(data):
-
-            answer += f"{number+1} : {item[2].fusername} : {item[1].fphrases}" \
+            answer += f"{number + 1} : {item[2].fusername} : {item[1].fphrases}" \
                       f" предл., {item[1].fwords} слов, " \
                       f"{0 if item[1].fstickers is None else item[1].fstickers} стик., " \
                       f"{0 if item[1].fpictures is None else item[1].fpictures} фоток, " \
@@ -184,7 +180,6 @@ class CStatistic(prototype.CPrototype):
         query = query.filter_by(ftguserid=ptg_user_id)
         data = query.first()
         if data is not None:
-
             return data.id
         return None
 
@@ -201,95 +196,95 @@ class CStatistic(prototype.CPrototype):
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
 
-    def save_message(self, pmessage):
-        """Сохраняет фразу, произнесенную пользователем, в базе."""
-        session = self.database.get_session()
-        message_text: str = pmessage.text
-        tg_chat_id: int = pmessage.chat.id
-        tg_chat_title: str = pmessage.chat.title
-        tg_user_title: str = ""
-        tg_user_id: int = pmessage.from_user.id
-        tg_user_name: str = pmessage.from_user.username
-        if pmessage.from_user.first_name is not None:
-
-            tg_user_title: str = pmessage.from_user.first_name
-        if pmessage.from_user.last_name is not None:
-
-            tg_user_title += " " + pmessage.from_user.last_name
-        # tg_user_title: str = first_name + last_name
-        # print("> ", tg_user_title)
-        if message_text[0] != "!":
-
-            if tg_user_name != "TrueMafiaBot" and \
-                    tg_user_name != "MafiaWarBot":
-
-                # *** Если кто-то уже залочил базу, подождём
-                while self.busy:
-                    pass
-
-                # *** Лочим запись в базу и пишем сами
-                self.busy = True
-                # проверить, нет ли чата в таблице чатов
-                # chat_id: int = -1
-                query = session.query(m_chats.CChat)
-                query = query.filter_by(fchatid=tg_chat_id)
-                data = query.first()
-                if data is None:
-
-                    # если нет - добавить, и получить id
-                    chat = m_chats.CChat(tg_chat_id, tg_chat_title)
-                    session.add(chat)
-                    session.commit()
-                    chat_id = chat.id
-                else:
-
-                    chat_id = data.id
-                # print("STT:SM:CHAT ID: ", chat_id)
-                # *** проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
-                query = session.query(m_users.CUser)
-                query = query.filter_by(ftguserid=tg_user_id)
-                data = query.first()
-                if data is None:
-
-                    # *** если нет - добавить, и получить id
-                    user = m_users.CUser(tg_user_id)
-                    session.add(user)
-                    session.commit()
-                    user_id = user.id
-                    # *** заодно сохраним имя пользователя
-                    user_name = m_names.CName(user_id, tg_user_title)
-                    session.add(user_name)
-                    session.commit()
-                    # print(f"STT:SM:USR NAME: {user_name.id}")
-                else:
-
-                    user_id = data.id
-                # print("STT:SM:USER NAME: ", tg_user_name)
-                # print("STT:SM:USER ID: ", user_id)
-                # *** Проанализируем фразу
-                letters = len(message_text)
-                words = len(message_text.split(" "))
-                # *** Есть ли запись об этом человеке в таблице статистики?
-                # если есть - получить id
-                query = session.query(m_stat.CStat)
-                query = query.filter_by(fuserid=user_id, fchatid=chat_id)
-                data = query.first()
-                if data is None:
-
-                    pass
-                    # *** Добавляем информацию в базу
-                    # stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
-                    # session.add(stat_object)
-
-                else:
-
-                    # *** Изменяем информацию в базе
-                    query.update({m_stat.CStat.fletters: data.fletters + letters,
-                                  m_stat.CStat.fwords: data.fwords + words,
-                                  m_stat.CStat.fphrases: data.fphrases + 1}, synchronize_session=False)
-                session.commit()
-                # *** Запись окончена, разлочиваем базу
-                self.busy = False
+    # def save_message(self, pmessage):
+    #     """Сохраняет фразу, произнесенную пользователем, в базе."""
+    #     session = self.database.get_session()
+    #     message_text: str = pmessage.text
+    #     tg_chat_id: int = pmessage.chat.id
+    #     tg_chat_title: str = pmessage.chat.title
+    #     tg_user_title: str = ""
+    #     tg_user_id: int = pmessage.from_user.id
+    #     tg_user_name: str = pmessage.from_user.username
+    #     if pmessage.from_user.first_name is not None:
+    #
+    #         tg_user_title: str = pmessage.from_user.first_name
+    #     if pmessage.from_user.last_name is not None:
+    #
+    #         tg_user_title += " " + pmessage.from_user.last_name
+    #     # tg_user_title: str = first_name + last_name
+    #     # print("> ", tg_user_title)
+    #     if message_text[0] != "!":
+    #
+    #         if tg_user_name != "TrueMafiaBot" and \
+    #                 tg_user_name != "MafiaWarBot":
+    #
+    #             # *** Если кто-то уже залочил базу, подождём
+    #             while self.busy:
+    #                 pass
+    #
+    #             # *** Лочим запись в базу и пишем сами
+    #             self.busy = True
+    #             # проверить, нет ли чата в таблице чатов
+    #             # chat_id: int = -1
+    #             query = session.query(m_chats.CChat)
+    #             query = query.filter_by(fchatid=tg_chat_id)
+    #             data = query.first()
+    #             if data is None:
+    #
+    #                 # если нет - добавить, и получить id
+    #                 chat = m_chats.CChat(tg_chat_id, tg_chat_title)
+    #                 session.add(chat)
+    #                 session.commit()
+    #                 chat_id = chat.id
+    #             else:
+    #
+    #                 chat_id = data.id
+    #             # print("STT:SM:CHAT ID: ", chat_id)
+    #             # *** проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
+    #             query = session.query(m_users.CUser)
+    #             query = query.filter_by(ftguserid=tg_user_id)
+    #             data = query.first()
+    #             if data is None:
+    #
+    #                 # *** если нет - добавить, и получить id
+    #                 user = m_users.CUser(tg_user_id)
+    #                 session.add(user)
+    #                 session.commit()
+    #                 user_id = user.id
+    #                 # *** заодно сохраним имя пользователя
+    #                 user_name = m_names.CName(user_id, tg_user_title)
+    #                 session.add(user_name)
+    #                 session.commit()
+    #                 # print(f"STT:SM:USR NAME: {user_name.id}")
+    #             else:
+    #
+    #                 user_id = data.id
+    #             # print("STT:SM:USER NAME: ", tg_user_name)
+    #             # print("STT:SM:USER ID: ", user_id)
+    #             # *** Проанализируем фразу
+    #             letters = len(message_text)
+    #             words = len(message_text.split(" "))
+    #             # *** Есть ли запись об этом человеке в таблице статистики?
+    #             # если есть - получить id
+    #             query = session.query(m_stat.CStat)
+    #             query = query.filter_by(fuserid=user_id, fchatid=chat_id)
+    #             data = query.first()
+    #             if data is None:
+    #
+    #                 pass
+    #                 # *** Добавляем информацию в базу
+    #                 # stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
+    #                 # session.add(stat_object)
+    #
+    #             else:
+    #
+    #                 # *** Изменяем информацию в базе
+    #                 query.update({m_stat.CStat.fletters: data.fletters + letters,
+    #                               m_stat.CStat.fwords: data.fwords + words,
+    #                               m_stat.CStat.fphrases: data.fphrases + 1}, synchronize_session=False)
+    #             session.commit()
+    #             # *** Запись окончена, разлочиваем базу
+    #             self.busy = False
 
     def save_all_type_of_messages(self, pmessage):
         """Учитывает стикеры, видео, аудиосообщения."""
@@ -309,37 +304,31 @@ class CStatistic(prototype.CPrototype):
         videos: int = 0
         # *** Если есть у юзера первое имя - берем.
         if pmessage.from_user.first_name is not None:
-
             tg_user_title: str = pmessage.from_user.first_name
         # *** Если есть у юзера второе имя - тож берем.
         if pmessage.from_user.last_name is not None:
-
             tg_user_title += " " + pmessage.from_user.last_name
         # *** Это не бот написал? Чужой бот, не наш?
         if tg_user_name not in self.config[FOREIGN_BOTS]:
 
             # *** Если кто-то уже залочил базу, подождём
             while self.busy:
-
                 pass
             # *** Лочим запись в базу и пишем сами
             self.busy = True
             # Проверить, нет ли уже этого чата в таблице чатов
             chat_id = self.get_chat_id(tg_chat_id)
             if chat_id is None:
-
                 # Нету еще, новый чат - добавить, и получить id
                 chat_id = self.add_chat_to_base(tg_chat_id, tg_chat_title)
             # *** Проверить, нет ли юзера в таблице тг юзеров
             user_id = self.get_user_id(tg_user_id)
             if user_id is None:
-
                 # *** Нету, новый пользователь
                 user_id = self.add_user_to_base(tg_user_id, tg_user_title)
             # *** Имеется ли в БД статистика по этому пользователю?
             user_stat = self.get_user_stat(chat_id, user_id)
             if user_stat is not None:
-
                 letters, words, phrases, stickers, pictures, audios, videos = decode_stat(user_stat)
                 letters = 0 if letters is None else letters
                 words = 0 if words is None else words
@@ -364,7 +353,6 @@ class CStatistic(prototype.CPrototype):
             elif pmessage.content_type == "text":
 
                 if message_text[0] != "!":
-
                     letters += len(message_text)
                     words += len(message_text.split(" "))
                     phrases += 1
@@ -392,7 +380,7 @@ class CStatistic(prototype.CPrototype):
                 answer = self.get_help(pchat_title)
             else:
                 # *** Получим код команды
-                command = self.get_command(word_list[0])
+                command = get_command(word_list[0])
                 # print(word_list[0], command)
                 if command >= 0:
 

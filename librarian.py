@@ -127,7 +127,7 @@ def quote(pbook: list, pword_list: list) -> str:
 
                     answer = "Нет такой."
             else:
-  
+
                 answer = "Нет такой."
         else:
 
@@ -366,11 +366,13 @@ class CLibrarian(prototype.CPrototype):
                     if command < ASK_QUOTE_CMD:
 
                         # *** Хокку запрашивали?
-                        answer = self.execute_hokku_commands(puser_name, puser_title, word_list, command)
+                        answer = self.execute_hokku_commands(puser_name, puser_title,
+                                                             word_list, command)
                     else:
 
                         # *** Не, цитату
-                        answer = self.execute_quotes_commands(puser_name, puser_title, word_list, command)
+                        answer = self.execute_quotes_commands(puser_name, puser_title,
+                                                              word_list, command)
 
             if answer:
 
