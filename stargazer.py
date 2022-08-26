@@ -181,6 +181,7 @@ class CStarGazer(prototype.CPrototype):
                 answer = self.search_in_calendar(CHURCH_CALENDAR, today)
 
         if answer:
+
             print(f"Stargazer answers: {answer[:16]}")
         else:
 

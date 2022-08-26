@@ -127,7 +127,7 @@ def quote(pbook: list, pword_list: list) -> str:
 
                     answer = "Нет такой."
             else:
-
+  
                 answer = "Нет такой."
         else:
 
