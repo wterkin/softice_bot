@@ -1,6 +1,0 @@
-SoftIce:
-	"конфиг", "config"
-	"прощай", "bye", "!!"
-	"помощь", "help"
-Babbler:
-	"babreload", "bblr"
