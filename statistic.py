@@ -26,6 +26,7 @@ COMMANDS = ["топ10", "топ25", "топ50", "перс", "top10", "top25", "t
 ENABLED_IN_CHATS_KEY = "statistic_chats"
 BOTS = ("TrueMafiaBot", "MafiaWarBot", "glagolitic_bot", "combot", "chgk_bot")
 FOREIGN_BOTS = "foreign_bots"
+SORTED_BY: tuple = ("предложений", "слов", "стикеров", "картинок", "звуковых сообщений", "видео сообщений")
 
 
 def decode_stat(pstat: m_stat.CStat):
@@ -154,7 +155,7 @@ class CStatistic(prototype.CPrototype):
 
         return answer
 
-    def get_statistic(self, ptg_chat_id: int, pcount: int):
+    def get_statistic(self, ptg_chat_id: int, pcount: int, porder_by: int):
         """Получает из базы статистику по самым говорливым юзерам."""
         session = self.database.session
         query = session.query(m_chats.CChat, m_stat.CStat, m_names.CName)
@@ -162,7 +163,28 @@ class CStatistic(prototype.CPrototype):
         query = query.join(m_stat.CStat, m_stat.CStat.fchatid == m_chats.CChat.id)
         query = query.join(m_users.CUser, m_users.CUser.id == m_stat.CStat.fuserid)
         query = query.join(m_names.CName, m_names.CName.fuserid == m_users.CUser.id)
-        query = query.order_by(m_stat.CStat.fphrases.desc())
+        if porder_by == 1:
+
+            query = query.order_by(m_stat.CStat.fphrases.desc())
+        elif porder_by == 2:
+
+            query = query.order_by(m_stat.CStat.fwords.desc())
+        elif porder_by == 3:
+
+            query = query.order_by(m_stat.CStat.fstickers.desc())
+        elif porder_by == 4:
+
+            query = query.order_by(m_stat.CStat.fpictures.desc())
+        elif porder_by == 5:
+
+            query = query.order_by(m_stat.CStat.faudios.desc())
+        elif porder_by == 6:
+
+            query = query.order_by(m_stat.CStat.fvideos.desc())
+        else:
+
+            query = query.order_by(m_stat.CStat.fphrases.desc())
+            print("Предл")
         data = query.limit(pcount).all()
         answer = "Самые говорливые:\n"
         for number, item in enumerate(data):
@@ -172,7 +194,9 @@ class CStatistic(prototype.CPrototype):
                       f"{0 if item[1].fpictures is None else item[1].fpictures} фоток, " \
                       f"{0 if item[1].faudios is None else item[1].faudios} звук. и " \
                       f"{0 if item[1].fvideos is None else item[1].fvideos} вид. \n"
+        answer += f"Отсортировано по количеству {SORTED_BY[porder_by-1]}. \n"
         return answer
+
 
     def get_user_id(self, ptg_user_id):
         """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
@@ -302,6 +326,7 @@ class CStatistic(prototype.CPrototype):
         pictures: int = 0
         audios: int = 0
         videos: int = 0
+
         # *** Если есть у юзера первое имя - берем.
         if pmessage.from_user.first_name is not None:
             tg_user_title: str = pmessage.from_user.first_name
@@ -372,6 +397,7 @@ class CStatistic(prototype.CPrototype):
         """Обработчик команд."""
         command: int
         answer: str = ""
+        order_by: int = 0
         word_list: list = functions.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
@@ -384,15 +410,21 @@ class CStatistic(prototype.CPrototype):
                 # print(word_list[0], command)
                 if command >= 0:
 
+                    if len(word_list) > 1 and word_list[1].isdigit():
+
+                        order_by = int(word_list[1])
+                        if order_by < 1 or order_by > 6:
+
+                            order_by = 1
                     if command == TOP_10_COMMAND:
 
-                        answer = self.get_statistic(pchat_id, 10)
+                        answer = self.get_statistic(pchat_id, 10, order_by)
                     elif command == TOP_25_COMMAND:
 
-                        answer = self.get_statistic(pchat_id, 25)
+                        answer = self.get_statistic(pchat_id, 25, order_by)
                     elif command == TOP_50_COMMAND:
 
-                        answer = self.get_statistic(pchat_id, 50)
+                        answer = self.get_statistic(pchat_id, 50, order_by)
                     elif command == PERS_COMMAND:
 
                         answer = self.get_personal_information(pchat_id, puser_title)
