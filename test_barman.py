@@ -12,22 +12,27 @@ class CTestBarman(TestCase):
         self.barman.reload()
 
     def test_barman(self):
-        self.assertNotEqual(self.barman.barman('superchat', '!пиво', 'Юзер'), '')
-        self.assertNotEqual(self.barman.barman('megachat', '!beer', 'Юзер'), '')
-        self.assertEqual(self.barman.barman('gigachat', '!beer', 'Юзер'), '')
+        # def barman(self, pchat_title: str, puser_name: str, puser_title: str,
+        #            pmessage_text: str) -> str:
+        self.assertNotEqual(self.barman.barman('superchat', 'user', 'Юзер', '!пиво'), '')
+        self.assertNotEqual(self.barman.barman('megachat', 'user', 'Юзер', '!beer'), '')
+        self.assertEqual(self.barman.barman('gigachat', 'user', 'Юзер', '!beer'), '')
 
-        self.assertNotEqual(self.barman.barman('superchat', '!бар', 'Юзер'), '')
-        self.assertNotEqual(self.barman.barman('megachat', '!bar', 'Юзер'), '')
-        self.assertEqual(self.barman.barman('gigachat', '!bar', 'Юзер'), '')
+        self.assertNotEqual(self.barman.barman('superchat', 'user', 'Юзер', '!бар'), '')
+        self.assertNotEqual(self.barman.barman('megachat', 'user', 'Юзер', '!bar'), '')
+        self.assertEqual(self.barman.barman('gigachat', 'user', 'Юзер', '!bar'), '')
 
-        self.assertEqual(self.barman.barman('superchat', '!barreload', 'Юзер'), "Содержимое бара обновлено")
-        self.assertEqual(self.barman.barman('megachat', '!barreload', 'Юзер'), "Содержимое бара обновлено")
-        self.assertNotEqual(self.barman.barman('gigachat', '!barl', 'Юзер'), "Содержимое бара обновлено")
+        self.assertEqual(self.barman.barman('superchat', 'username', 'usertitle', '!brreload'),
+                         "Ассортимент бара обновлён.")
+        self.assertEqual(self.barman.barman('megachat', 'username', 'usertitle', '!brreload'),
+                         "Ассортимент бара обновлён.")
+        self.assertNotEqual(self.barman.barman('gigachat', 'username', 'usertitle', '!brrl'),
+                            "Ассортимент бара обновлён.")
 
-        self.assertEqual(self.barman.barman('gigachat', '!кукабарра', 'Юзер'), "")
-        self.assertEqual(self.barman.barman('megachat', '!кузинатра', 'Юзер'), "")
-        self.assertEqual(self.barman.barman('мяучат', '!пиво', 'Юзер'), "")
-        self.assertEqual(self.barman.barman('кукучат', '!beer', 'Юзер'), "")
+        self.assertEqual(self.barman.barman('gigachat', 'user', 'Юзер', '!кукабарра'), "")
+        self.assertEqual(self.barman.barman('megachat', 'user', 'Юзер', '!кузинатра'), "")
+        self.assertEqual(self.barman.barman('мяучат', 'user', 'Юзер', '!пиво'), "")
+        self.assertEqual(self.barman.barman('кукучат', 'user', 'Юзер', '!beer'), "")
 
     def test_serve_client(self):
         self.assertNotEqual(self.barman.serve_client('Юзер', 'пиво'), "")

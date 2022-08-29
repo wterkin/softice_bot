@@ -147,7 +147,8 @@ class CBarman(prototype.CPrototype):
         self.bar_content: dict = {}
         self.load_assortiment()
 
-    def barman(self, pchat_title: str, puser_name: str, puser_title: str, pmessage_text: str) -> str:
+    def barman(self, pchat_title: str, puser_name: str, puser_title: str,
+               pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
         assert pchat_title is not None, \
             "Assert: [barman.barman] No <pchat_title> parameter specified!"
