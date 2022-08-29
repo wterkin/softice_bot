@@ -53,11 +53,14 @@ def find_in_book(pbook: list, pword_list: list) -> str:
         for line in pbook:
 
             if search_line in line:
+
                 found_list.append(line)
         if len(found_list) > 0:
+
             answer = random.choice(found_list)
     if not answer:
-        answer = "Извините, ничего не нашёл!"
+
+        answer = "Ничего не нашёл!"
     return answer
 
 
@@ -78,7 +81,6 @@ def get_command(pword: str) -> int:
 
         for command_idx, command in enumerate(QUOTES_COMMANDS):
 
-            # print(pword, command)
             if pword in command:
 
                 result = command_idx + 10
@@ -111,7 +113,6 @@ def quote(pbook: list, pword_list: list) -> str:
     assert pword_list is not None, \
         "Assert: [librarian.quote] " \
         "No <pword_list> parameter specified!"
-    answer: str = ""
     if len(pword_list) > 1:
 
         # *** ... с заданным номером.
@@ -372,7 +373,6 @@ class CLibrarian(prototype.CPrototype):
                         # *** Не, цитату
                         answer = self.execute_quotes_commands(puser_name, puser_title,
                                                               word_list, command)
-
             if answer:
 
                 print("Librarian answers: ", answer[:16])
