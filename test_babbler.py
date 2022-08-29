@@ -13,9 +13,11 @@ class CTestBabbler(TestCase):
         self.babbler = babbler.CBabbler(self.config, self.config["windows_data_folder"])
 
     def test_babbler(self):
-        self.assertEqual(self.babbler.babbler('superchat', '!bblr'), 'База болтуна обновлена')
-        self.assertNotEqual(self.babbler.babbler('gigachat', '!bblr'), 'База болтуна обновлена')
-        self.assertNotEqual(self.babbler.babbler('megachat', '!reload'), 'База болтуна обновлена')
+        self.assertEqual(self.babbler.babbler('superchat', 'username', 'usertitle', '!bllr'), 'База болтуна обновлена')
+        self.assertNotEqual(self.babbler.babbler('gigachat', 'username', 'usertitle', '!bllr'),
+                            'База болтуна обновлена')
+        self.assertNotEqual(self.babbler.babbler('megachat', 'username', 'usertitle', '!reload'),
+                            'База болтуна обновлена')
 
     def test_can_process(self):
         self.assertEqual(self.babbler.can_process('superchat', ''), True)
@@ -30,7 +32,7 @@ class CTestBabbler(TestCase):
 
     def test_talk(self):
         sleep(int(self.babbler.config["babbler_period"]))
-        self.assertNotEqual(self.babbler.talk('superchat', 'Трям'), "")
+        self.assertEqual(self.babbler.talk('superchat', 'трям'), "Здорово!")
 
     def test_think(self):
         self.assertNotEqual(self.babbler.think('Трям'), "")

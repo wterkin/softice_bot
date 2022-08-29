@@ -34,7 +34,8 @@ class CBabbler(prototype.CPrototype):
         self.last_phrase_time: datetime = datetime.now()
         self.reload()
 
-    def babbler(self, pchat_title: str, puser_name: str, puser_title: str, pmessage_text: str) -> str:
+    def babbler(self, pchat_title: str, puser_name: str, puser_title: str,
+                pmessage_text: str) -> str:
         """Улучшенная версия болтуна."""
         assert pchat_title is not None, \
             "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
@@ -113,7 +114,7 @@ class CBabbler(prototype.CPrototype):
             "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
-        answer: str = ""
+        answer: str = "111"
         # *** Заданный период времени с последней фразы прошел?
         if self.is_enabled(pchat_title):
 

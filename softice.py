@@ -39,18 +39,6 @@ BOT_STATUS: int = CONTINUE_RUNNING
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
 
 
-# ToDo: реализовать отработку команды reload по всем модулям
-# ToDo: и чтоб в каждом модуле шла проверка на то,
-#       что команда отдана хозяином.
-"""
-+ babbler 
-+ barman
-librarian
-stargazer
-theolog
-"""
-
-
 class CQuitByDemand(Exception):
     """Исключение выхода."""
 
@@ -253,9 +241,8 @@ class CSoftIceBot:
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         print("**** ", self.message_text)
-        answer: str = self.barman.barman(pchat_title, puser_name, puser_title, self.message_text).strip()
-
-        # def barman(self, pchat_title: str, pmessage_text: str, puser_name: str, puser_title: str) -> str:
+        answer: str = self.barman.barman(pchat_title, puser_name, puser_title,
+                                         self.message_text).strip()
 
         if not answer:
 
@@ -277,7 +264,8 @@ class CSoftIceBot:
                                               puser_title, self.message_text).strip()
         if not answer:
 
-            answer = self.babbler.babbler(pchat_title, puser_name, puser_title, self.message_text).strip()
+            answer = self.babbler.babbler(pchat_title, puser_name, puser_title,
+                                          self.message_text).strip()
 
         if not answer:
 
@@ -339,10 +327,8 @@ class CSoftIceBot:
             self.load_config()
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
             return True
-        else:
-
-            self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
-            return False
+        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
+        return False
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)

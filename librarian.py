@@ -19,8 +19,8 @@ ADD_QUOTE_CMD: int = 11
 DEL_QUOTE_CMD: int = 12
 FIND_QUOTE_CMD: int = 13
 
-RELOAD_LIBRARY: list = ["libreload", "lrl"]
-SAVE_LIBRARY: list = ["libresave", "lsv"]
+RELOAD_LIBRARY: list = ["lbreload", "lbrl"]
+SAVE_LIBRARY: list = ["lbsave", "lbsv"]
 LIBRARIAN_FOLDER: str = "librarian/"
 HOKKU_FILE_NAME: str = "hokku.txt"
 QUOTES_FILE_NAME: str = "quotes.txt"
@@ -321,8 +321,7 @@ class CLibrarian(prototype.CPrototype):
 
             return True, ""
         # *** Низзя
-        return False, (f"Извини, {puser_title}, "
-                       f"это может делать только {self.config['master_name']}")
+        return False, f"У вас нет на это прав, {puser_title}."
 
     def librarian(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
