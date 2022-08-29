@@ -130,7 +130,7 @@ ASSORTIMENT: tuple = ({ID_KEY: BEER_ID,
 
 # *** Команда перегрузки текстов
 BAR_HINT: list = ["бар", "bar"]
-BAR_RELOAD: list = ["barreload", "barl"]
+BAR_RELOAD: list = ["brreload", "brrl"]
 BARMAN_FOLDER: str = "barman/"
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "barman_chats"
@@ -147,7 +147,7 @@ class CBarman(prototype.CPrototype):
         self.bar_content: dict = {}
         self.load_assortiment()
 
-    def barman(self, pchat_title: str, pmessage_text: str, puser_title: str) -> str:
+    def barman(self, pchat_title: str, puser_name: str, puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
         assert pchat_title is not None, \
             "Assert: [barman.barman] No <pchat_title> parameter specified!"
@@ -166,9 +166,13 @@ class CBarman(prototype.CPrototype):
                          self.get_help(pchat_title)
             elif word_list[0] in BAR_RELOAD:
 
-                self.reload()
-                print("Barman successfully reload bar assortiment.")
-                answer = "Содержимое бара обновлено"
+                if puser_name == self.config["master"]:
+
+                    self.reload()
+                    answer = "Ассортимент бара обновлён."
+                    print("Barman successfully reload bar assortiment.")
+                else:
+                    answer = f"У вас нет на это прав, {puser_title}."
             else:
 
                 if len(word_list) > 1:
@@ -189,7 +193,6 @@ class CBarman(prototype.CPrototype):
         assert pcommand is not None, \
             "Assert: [barman.serve_client] No <pcommand> parameter specified!"
         answer: str = ""
-        # print("*** ", pcommand)
         for item in ASSORTIMENT:
 
             if pcommand.strip() in item[COMMAND_KEY]:
@@ -284,5 +287,4 @@ class CBarman(prototype.CPrototype):
 
     def reload(self):  # , pchat_id: int, puser_name: str, puser_title):
         """Перегружает все содержимое бара."""
-
         self.load_assortiment()

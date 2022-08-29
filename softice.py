@@ -42,7 +42,13 @@ EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voi
 # ToDo: реализовать отработку команды reload по всем модулям
 # ToDo: и чтоб в каждом модуле шла проверка на то,
 #       что команда отдана хозяином.
-#  barman, librarian,
+"""
++ babbler 
++ barman
+librarian
+stargazer
+theolog
+"""
 
 
 class CQuitByDemand(Exception):
@@ -196,6 +202,12 @@ class CSoftIceBot:
         """Проверяет, находится ли данный чат в списке разрешенных."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
+    def load_config(self):
+        """Загружает конфигурацию из JSON."""
+        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
+
+            self.config = json.load(json_file)
+
     def poll(self):
         """Функция опроса ботом телеграмма."""
         try:
@@ -232,6 +244,54 @@ class CSoftIceBot:
             result = True
         return result
 
+    def process_modules(self, pchat_id: int, pchat_title: str,
+                        puser_name: str, puser_title: str):
+        """Пытается обработать команду различными модулями."""
+        assert pchat_title is not None, \
+            "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [softice.process_modules] No <puser_title> parameter specified!"
+        # *** Проверим, не запросил ли пользователь что-то у бармена...
+        print("**** ", self.message_text)
+        answer: str = self.barman.barman(pchat_title, puser_name, puser_title, self.message_text).strip()
+
+        # def barman(self, pchat_title: str, pmessage_text: str, puser_name: str, puser_title: str) -> str:
+
+        if not answer:
+
+            # *** ... или у теолога...
+            answer = self.theolog.theolog(pchat_title, self.message_text).strip()
+        if not answer:
+
+            # *** ... или у библиотекаря...
+            answer = self.librarian.librarian(pchat_title, puser_name,
+                                              puser_title, self.message_text).strip()
+        if not answer:
+
+            # *** ... или у метеоролога...
+            answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
+        if not answer:
+
+            # *** ... или у статистика...
+            answer = self.statistic.statistic(pchat_id, pchat_title,
+                                              puser_title, self.message_text).strip()
+        if not answer:
+
+            answer = self.babbler.babbler(pchat_title, puser_name, puser_title, self.message_text).strip()
+
+        if not answer:
+
+            answer = self.stargazer.stargazer(pchat_title, self.message_text).strip()
+
+        if not answer:
+
+            answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
+        if not answer:
+
+            # *** Незнакомая команда.
+            print(" .. fail.")
+        return answer
+
     def send_help(self, pchat_title: str):
         """Проверяет, не была ли запрошена подсказка."""
         assert pchat_title is not None, \
@@ -262,7 +322,7 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, "Ухожу, ухожу...")
             self.exiting = True
             raise CQuitByDemand()
-        self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
+        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
@@ -281,58 +341,8 @@ class CSoftIceBot:
             return True
         else:
 
-            self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
+            self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
             return False
-
-    def load_config(self):
-        """Загружает конфигурацию из JSON."""
-        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
-            self.config = json.load(json_file)
-
-    def process_modules(self, pchat_id: int, pchat_title: str,
-                        puser_name: str, puser_title: str):
-        """Пытается обработать команду различными модулями."""
-        assert pchat_title is not None, \
-            "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
-        assert puser_title is not None, \
-            "Assert: [softice.process_modules] No <puser_title> parameter specified!"
-        # *** Проверим, не запросил ли пользователь что-то у бармена...
-        print("**** ", self.message_text)
-        answer: str = self.barman.barman(pchat_title, self.message_text, puser_title).strip()
-        if not answer:
-
-            # *** ... или у теолога...
-            answer = self.theolog.theolog(pchat_title, self.message_text).strip()
-        if not answer:
-
-            # *** ... или у библиотекаря...
-            answer = self.librarian.librarian(pchat_title, puser_name,
-                                              puser_title, self.message_text).strip()
-        if not answer:
-
-            # *** ... или у метеоролога...
-            answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
-        if not answer:
-
-            # *** ... или у статистика...
-            answer = self.statistic.statistic(pchat_id, pchat_title,
-                                              puser_title, self.message_text).strip()
-        if not answer:
-
-            answer = self.babbler.babbler(pchat_title, self.message_text).strip()
-
-        if not answer:
-
-            answer = self.stargazer.stargazer(pchat_title, self.message_text).strip()
-
-        if not answer:
-
-            answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
-        if not answer:
-
-            # *** Незнакомая команда.
-            print(" .. fail.")
-        return answer
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)

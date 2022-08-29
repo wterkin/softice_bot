@@ -11,7 +11,7 @@ import functions as func
 import prototype
 
 # *** Команда перегрузки текстов
-BABBLER_RELOAD: list = ["babreload", "bblr"]
+BABBLER_RELOAD: list = ["blreload", "bllr"]
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "babbler_chats"
 BABBLER_PATH: str = "babbler/"
@@ -34,7 +34,7 @@ class CBabbler(prototype.CPrototype):
         self.last_phrase_time: datetime = datetime.now()
         self.reload()
 
-    def babbler(self, pchat_title: str, pmessage_text: str) -> str:
+    def babbler(self, pchat_title: str, puser_name: str, puser_title: str, pmessage_text: str) -> str:
         """Улучшенная версия болтуна."""
         assert pchat_title is not None, \
             "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
@@ -45,9 +45,15 @@ class CBabbler(prototype.CPrototype):
         if self.can_process(pchat_title, pmessage_text):
 
             # *** Возможно, запросили перезагрузку базы.
-            if word_list[0] in BABBLER_RELOAD:
-                self.reload()
-                answer = "База болтуна обновлена"
+            if puser_name == self.config["master"]:
+
+                if word_list[0] in BABBLER_RELOAD:
+
+                    self.reload()
+                    answer = "База болтуна обновлена"
+            else:
+
+                answer = f"У вас нет на это прав, {puser_title}."
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
