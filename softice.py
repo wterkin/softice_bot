@@ -4,11 +4,11 @@
 """Бот для Телеграмма"""
 import sys
 from sys import platform
+from datetime import datetime
 import json
 import telebot
 from requests import ReadTimeout
 from telebot import apihelper
-from datetime import datetime
 
 import database
 import babbler
@@ -34,28 +34,17 @@ NON_STOP: bool = True
 POLL_INTERVAL: int = 0
 CONTINUE_RUNNING: int = 0
 QUIT_BY_DEMAND: int = 1
-TOKEN_KEY: str = "token"  # !
+TOKEN_KEY: str = "token"
 BOT_STATUS: int = CONTINUE_RUNNING
-EVENTS: tuple = ("text", "sticker", "photo", "audio", "video", "video_note", "voice")
+EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
 
-def is_foreign_command(pcommand: str)-> bool:
-    """Возвращает True, если в команде присутствует имя другого бота."""
-    result: bool = False
-    # print("!!! ", statistic.BOTS)
-    # print("@@@ ", pcommand)
-    for bot in statistic.BOTS:
-
-        result = bot in pcommand
-        if result:
-
-            result = True
 
 # ToDo: реализовать отработку команды reload по всем модулям
 # ToDo: и чтоб в каждом модуле шла проверка на то,
 #       что команда отдана хозяином.
 #  barman, librarian,
 
-#
+
 class CQuitByDemand(Exception):
     """Исключение выхода."""
 
@@ -74,8 +63,19 @@ def decode_message(pmessage):
         pmessage.from_user.first_name
 
 
-# pylint: disable=too-many-instance-attributes
-# а что еще делать???
+def is_foreign_command(pcommand: str) -> bool:
+    """Возвращает True, если в команде присутствует имя другого бота."""
+    result: bool = False
+    for bot in statistic.BOTS:
+
+        result = bot in pcommand
+        if result:
+
+            break
+    return result
+
+
+# pylint: disable=too-many-instance-attributes # а что еще делать???
 class CSoftIceBot:
     """Универсальный бот для Телеграмма."""
 
@@ -92,7 +92,6 @@ class CSoftIceBot:
         self.bot_status: int = CONTINUE_RUNNING
         self.exiting: bool = False
         self.message_text: str = ""
-        #self.last_chat_id: int = -1
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -103,6 +102,7 @@ class CSoftIceBot:
         # *** Открываем БД
         self.database: database.CDataBase = database.CDataBase(self.config, self.data_path)
         if not self.database.exists():
+
             # *** А нету ещё БД, создавать треба.
             self.database.create()
         # *** Поехали создавать работников =)
@@ -110,82 +110,79 @@ class CSoftIceBot:
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
-        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config, self.database)
+        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
+                                                                    self.database)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
 
         # *** Обработчик сообщений
-
-        # text, audio, document, photo, sticker, video,
-        # video_note, voice, location, contact, new_chat_members,
-        # left_chat_member, new_chat_title, new_chat_photo,
-        # delete_chat_photo, group_chat_created, supergroup_chat_created,
-        # channel_chat_created, migrate_to_chat_id, migrate_from_chat_id,
-        # pinned_message, web_app_data
         """Обработчик сообщений."""
-        @self.robot.message_handler(content_types=["text", "sticker", "photo", "audio", "video", "video_note", "voice"])
+        @self.robot.message_handler(content_types=EVENTS)
         def process_message(pmessage):
+
             # *** Если это текстовое сообщение - обрабатываем в этой ветке.
             if pmessage.content_type == "text":
 
+                # print(pmessage)
                 # *** Вытаскиваем из сообщения нужные поля
                 self.message_text, command, chat_id, chat_title, user_name, user_title = \
                     decode_message(pmessage)
 
                 # *** Защита от привата
-                if chat_title is not None:
+                if chat_title is None:
 
-                    # *** Проверим, легитимный ли этот чат
-                    if self.is_this_chat_enabled(chat_title):
+                    return
 
-                        # *** Да, вполне легитимный. Сообщение не протухло?
-                        message_date = pmessage.date
-                        if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
+                # *** Проверим, легитимный ли этот чат
+                if not self.is_this_chat_enabled(chat_title):
 
-                            # *** Если сообщение адресовано другому боту - пропускаем
-                            if not is_foreign_command(pmessage.text):
+                    # *** Бота привели на чужой канал. Выходим.
+                    self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                    self.robot.leave_chat(chat_id)
+                    print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                    return
 
-                                answer: str = ""
-                                # ***  Боту дали команду?
-                                if self.message_text[0:1] == COMMAND_SIGN:
+                # *** Да, вполне легитимный. Сообщение не протухло?
+                message_date = pmessage.date
+                if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
-                                    # *** Это системная команда?
-                                    if not self.process_command(command, chat_id, chat_title,
-                                                                {"name": user_name, "title": user_title}):
+                    # *** Если сообщение адресовано другому боту - пропускаем
+                    if not is_foreign_command(pmessage.text):
 
-                                        # *** Нет. Ну и пусть модули разбираются....
-                                        answer = self.process_modules(chat_id, chat_title,
-                                                                      user_name,
-                                                                      user_title)
-                                        # *** Разобрались?
-                                        #if answer:
+                        answer: str = ""
+                        # ***  Боту дали команду?
+                        if self.message_text[0:1] == COMMAND_SIGN:
 
-                                            #self.last_chat_id = chat_id
-                                            ## self.robot.send_message(chat_id, answer)
-                                else:
+                            # *** Это системная команда?
+                            if not self.process_command(command, chat_id, chat_title,
+                                                        {"name": user_name, "title": user_title}):
 
-                                    # *** Нет. В этом чате статистик разрешен?
-                                    if self.statistic.is_enabled(chat_title):
+                                # *** Нет. Ну и пусть модули разбираются....
+                                answer = self.process_modules(chat_id, chat_title,
+                                                              user_name,
+                                                              user_title)
+                                # *** Разобрались?
+                        else:
 
-                                        # *** Проапдейтим базу статистика
-                                        # self.statistic.save_message(pmessage)
-                                        self.statistic.save_all_type_of_messages(pmessage)
-                                    # *** Болтуну есть что ответить?
-                                    answer = self.babbler.talk(chat_title, self.message_text)
-                                # *** Модули сработали?
-                                if answer:
+                            # *** Нет. В этом чате статистик разрешен?
+                            if self.statistic.is_enabled(chat_title):
 
-                                    # *** Выводим ответ.
-                                    self.last_chat_id = chat_id
-                                    self.robot.send_message(chat_id, answer)
-                    else:
+                                # *** Проапдейтим базу статистика
+                                self.statistic.save_all_type_of_messages(pmessage)
+                            # *** Болтуну есть что ответить?
+                            answer = self.babbler.talk(chat_title, self.message_text)
+                        # *** Модули сработали?
+                        if answer:
 
-                        # *** Бота привели на чужой канал. Выходим.
-                        answer = "Вашего чата нет в списке разрешённых. Чао!"
-                        self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                        self.robot.leave_chat(chat_id)
-                        print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                            # *** Выводим ответ.
+                            self.robot.send_message(chat_id, answer)
+            # else:
+            #
+            #     # *** Бота привели на чужой канал. Выходим.
+            #     self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+            #     self.robot.leave_chat(chat_id)
+            #     print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
 
             elif pmessage.content_type in EVENTS:
 
@@ -204,12 +201,13 @@ class CSoftIceBot:
         try:
 
             while self.bot_status == CONTINUE_RUNNING:
+
                 self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
                 print(f"Bot status = {BOT_STATUS}")
 
-        except CQuitByDemand as ex:
+        except CQuitByDemand as exception:
 
-            print(ex.message)
+            print(exception.message)
             self.bot_status = QUIT_BY_DEMAND
             self.robot.stop_polling()
 
@@ -217,7 +215,6 @@ class CSoftIceBot:
                         puser: dict):
         """Обрабатывает системные команды"""
         result: bool = False
-        #print("### ", pcommand)
         # *** Да, команду. Это команда перезагрузки конфига?
         if pcommand in CONFIG_COMMANDS:
 
@@ -266,9 +263,7 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, "Ухожу, ухожу...")
             self.exiting = True
             raise CQuitByDemand()
-        else:
-
-            self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
+        self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
@@ -304,16 +299,20 @@ class CSoftIceBot:
         print("**** ", self.message_text)
         answer: str = self.barman.barman(pchat_title, self.message_text, puser_title).strip()
         if not answer:
+
             # *** ... или у теолога...
             answer = self.theolog.theolog(pchat_title, self.message_text).strip()
         if not answer:
+
             # *** ... или у библиотекаря...
             answer = self.librarian.librarian(pchat_title, puser_name,
                                               puser_title, self.message_text).strip()
         if not answer:
+
             # *** ... или у метеоролога...
             answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
         if not answer:
+
             # *** ... или у статистика...
             answer = self.statistic.statistic(pchat_id, pchat_title,
                                               puser_title, self.message_text).strip()
@@ -322,12 +321,14 @@ class CSoftIceBot:
             answer = self.babbler.babbler(pchat_title, self.message_text).strip()
 
         if not answer:
+
             answer = self.stargazer.stargazer(pchat_title, self.message_text).strip()
 
         if not answer:
-            # ToDo: Не надо туда передавать имя пользователя, который ввёл команду!
+
             answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
         if not answer:
+
             # *** Незнакомая команда.
             print(" .. fail.")
         return answer
