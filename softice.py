@@ -218,8 +218,7 @@ class CSoftIceBot:
         # *** Да, команду. Это команда перезагрузки конфига?
         if pcommand in CONFIG_COMMANDS:
 
-            self.reload_config(pchat_id, puser["name"], puser["title"])
-            result = True
+            result = self.reload_config(pchat_id, puser["name"], puser["title"])
         # *** Нет. Запросили выход?
         elif pcommand in EXIT_COMMANDS:
 
@@ -279,9 +278,11 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, "Обновляю конфигурацию.")
             self.load_config()
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
+            return True
         else:
 
             self.robot.send_message(pchat_id, f"Извини, {puser_title}, ты мне не хозяин!")
+            return False
 
     def load_config(self):
         """Загружает конфигурацию из JSON."""
