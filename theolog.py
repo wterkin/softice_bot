@@ -176,7 +176,7 @@ class CTheolog(prototype.CPrototype):
                         line_position = line.index(":", chapter_position + 1)
                         line_number = line[chapter_position + 1:line_position]
                         text = line[line_position:]
-                        message: str = f"{pbook} {chapter}:{line_number} {text}"
+                        message = f"{pbook} {chapter}:{line_number} {text}"
                     if pline_count == 1:
 
                         break
@@ -224,10 +224,10 @@ class CTheolog(prototype.CPrototype):
             "Assert: [theolog.global_search] No <ptestament> parameter specified!"
         assert pphrase is not None, \
             "Assert: [theolog.global_search] No <pphrase> parameter specified!"
-        search_range = None
         result_list: list = []
         parsed_line: list
         answer: str = ""
+        book_name: str = ""
         if ptestament == NEW_TESTAMENT:
 
             search_range = NEW_TESTAMENT_BOOKS
@@ -237,7 +237,7 @@ class CTheolog(prototype.CPrototype):
         for book in search_range:
             # print("** ", pphrase)
             book_title: str = BIBLE_BOOKS[book-1][2]
-            book_name: str = f"{self.data_path}{book}.txt"
+            book_name = f"{self.data_path}{book}.txt"
             with open(book_name, "r", encoding="utf-8") as book_file:
 
                 for line in book_file:
@@ -313,7 +313,7 @@ class CTheolog(prototype.CPrototype):
                 elif word_list[0].lower() == FIND_IN_BOOK:
 
                     # *** Искать в книге
-                    book_name: str = word_list[1]
+                    book_name = word_list[1]
                     book_index: int = -1
                     for index, book in enumerate(BIBLE_BOOKS):
 

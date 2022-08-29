@@ -140,6 +140,9 @@ class CStarGazer(prototype.CPrototype):
             "Assert: [stargazer.stargazer] No <pmessage_text> parameter specified!"
         answer: str = ""
         word_list: list = functions.parse_input(pmessage_text)
+        year: int
+        now_date: date = date.today()
+        today: str
         if self.can_process(pchat_title, pmessage_text):
 
             # *** Возможно, запросили меню.
@@ -159,7 +162,7 @@ class CStarGazer(prototype.CPrototype):
                         year = 0
                 else:
 
-                    year: int = date.today().year
+                    year = date.today().year
                 if HIGH_MARGIN > year > LOW_MARGIN:
 
                     answer = calculate_easter(year).strftime(RUSSIAN_DATE_FORMAT)
@@ -170,14 +173,12 @@ class CStarGazer(prototype.CPrototype):
             # *** Запросили гражданские праздники
             elif word_list[0] in COMMANDS[DATE_CMD_INDEX]:
 
-                now_date: date = date.today()
-                today: str = f"{now_date.day:02}/{now_date.month:02}"
+                today = f"{now_date.day:02}/{now_date.month:02}"
                 answer = self.search_in_calendar(CIVILIAN_CALENDAR, today)
             # *** Запросили церковные праздники
             elif word_list[0] in COMMANDS[DAY_CMD_INDEX]:
 
-                now_date: date = date.today()
-                today: str = f"{now_date.day:02}/{now_date.month:02}"
+                today = f"{now_date.day:02}/{now_date.month:02}"
                 answer = self.search_in_calendar(CHURCH_CALENDAR, today)
 
         if answer:
