@@ -7,6 +7,7 @@ class CTestLibrarian(TestCase):
 
     def setUp(self) -> None:
         with open('config.sample.json', "r", encoding="utf-8") as json_file:
+
             self.config = json.load(json_file)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.config["windows_data_folder"])
         self.librarian.reload()
@@ -34,19 +35,38 @@ class CTestLibrarian(TestCase):
                                                                ["!цт?", "Мы"], 13), quote)
 
     def test_get_help(self):
-        self.fail()
+        self.assertNotEqual(self.librarian.get_help('superchat'), "")
+        self.assertNotEqual(self.librarian.get_help('megachat'), "")
+        self.assertEqual(self.librarian.get_help('левочат'), "")
 
     def test_get_hint(self):
-        self.fail()
+        self.assertNotEqual(self.librarian.get_hint('superchat'), "")
+        self.assertNotEqual(self.librarian.get_hint('megachat'), "")
+        self.assertEqual(self.librarian.get_hint('левочат'), "")
 
     def test_is_enabled(self):
-        self.fail()
+        self.assertEqual(self.librarian.is_enabled('superchat'), True)
+        self.assertEqual(self.librarian.is_enabled('megachat'), True)
+        self.assertEqual(self.librarian.is_enabled('левочат'), False)
 
     def test_is_master(self):
-        self.fail()
+        self.assertEqual(self.librarian.is_master('username', 'usertitle'), (True, ""))
+        self.assertNotEqual(self.librarian.is_master('User', 'Юзер'), (True, ""))
 
     def test_librarian(self):
-        self.fail()
+        pass
+        # reload
+        self.assertEqual(self.librarian.librarian('superchat', 'username', 'usertitle', '!lbreload'),
+                         "Библиотека обновлена")
+        self.assertNotEqual(self.librarian.librarian('superchat', 'User', 'Юзер', '!lbreload'), "Библиотека обновлена")
+        self.assertNotEqual(self.librarian.librarian('gigachat', 'username', 'usertitle', '!lbreload'),
+                            "Библиотека обновлена")
+        # hint
+        self.assertNotEqual(self.librarian.librarian('superchat', 'username', 'usertitle', '!библиотека'), '')
+        self.assertNotEqual(self.librarian.librarian('superchat', 'username', 'usertitle', '!lib'), '')
+        self.assertEqual(self.librarian.librarian('gigachat', 'username', 'usertitle', '!lib'), '')
 
-    def test_reload(self):
-        self.fail()
+        # hokku/quote
+        self.assertNotEqual(self.librarian.librarian('superchat', 'username', 'usertitle', '!хк'), '')
+        self.assertNotEqual(self.librarian.librarian('superchat', 'username', 'usertitle', '!цт'), '')
+        self.assertEqual(self.librarian.librarian('gigachat', 'username', 'usertitle', '!цт'), '')
