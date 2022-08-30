@@ -202,20 +202,26 @@ class CMeteorolog(prototype.CPrototype):
 
                     main = item['main']
                     # *** Температура
-                    if main["temp"] < min_temperature:
-                        min_temperature = main["temp"]
-                    if main["temp"] > max_temperature:
-                        max_temperature = main["temp"]
+                    # if main["temp"] < min_temperature:
+                    #     min_temperature = main["temp"]
+                    min_temperature = min(main["temp"], min_temperature)
+                    # if main["temp"] > max_temperature:
+                    #     max_temperature = main["temp"]
+                    max_temperature = max(main["temp"], max_temperature)
                     # *** Давление
-                    if main["pressure"] < min_pressure:
-                        min_pressure = main["pressure"]
-                    if main["pressure"] > max_pressure:
-                        max_pressure = main["pressure"]
+                    # if main["pressure"] < min_pressure:
+                    #     min_pressure = main["pressure"]
+                    min_pressure = min(main["pressure"], min_pressure)
+                    # if main["pressure"] > max_pressure:
+                    #     max_pressure = main["pressure"]
+                    max_pressure = max(main["pressure"], max_pressure)
                     # *** Влажность
-                    if main["humidity"] < min_humidity:
-                        min_humidity = main["humidity"]
-                    if main["humidity"] > max_humidity:
-                        max_humidity = main["humidity"]
+                    # if main["humidity"] < min_humidity:
+                    #     min_humidity = main["humidity"]
+                    min_humidity = min(main["humidity"], min_humidity)
+                    # if main["humidity"] > max_humidity:
+                    #     max_humidity = main["humidity"]
+                    max_humidity = max(main["humidity"], max_humidity)
                     wind_speed = item["wind"]["speed"]
                     wind_angle = item["wind"]["deg"]
                     if wind_speed < min_wind_speed:
