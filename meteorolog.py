@@ -224,23 +224,24 @@ class CMeteorolog(prototype.CPrototype):
                     if wind_speed > max_wind_speed:
                         max_wind_speed = wind_speed
                         max_wind_angle = wind_angle
-                    icon = item["weather"][0]["icon"]
+                    icon = item["weather"][0]["icon"][0:2]
+
                     # *** Если это не "ясно", то ночь не нужна
-                    if icon[0:2] not in ["01", "02"]:
+                    if icon not in ["01", "02"]:
 
                         # *** Переводим в день
-                        icon = icon[0:2] + "d"
+                        icon += "d"
                     else:
 
                         # *** приводим всё к 1
                         icon = "01d"
                     # *** Если облачно
-                    if icon[0:2] == "04":
+                    if icon == "04":
 
                         # *** приводим всё к 3
                         icon = "03d"
                     # *** Если дождь
-                    elif icon[0:2] == "10":
+                    elif icon == "10":
 
                         # *** Приводим к 9
                         icon = "09d"
@@ -249,7 +250,7 @@ class CMeteorolog(prototype.CPrototype):
 
                         weather.append(icon)
             for icon in weather:
-                # weather_line += self.get_weather(icon) + " "
+
                 weather_line += ICON_CONVERT[icon] + " "
 
             message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
