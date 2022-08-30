@@ -18,11 +18,20 @@ class CTestLibrarian(TestCase):
         self.assertEqual(self.librarian.can_process('megachat', '!хквс'), False)
 
     def test_execute_hokku_commands(self):
+        # execute_hokku_commands(self, puser_name: str, puser_title: str,
+        # pword_list: list, pcommand: int) -> str:
+        self.assertNotEqual(len(self.librarian.execute_hokku_commands("username", "usertitle",
+                                                                      ["!хк"], 0)), 0)
+        hokku = "Снег согнул бамбук, / Словно мир вокруг него / Перевернулся. (Мацуо Басё)"
         self.assertEqual(self.librarian.execute_hokku_commands("username", "usertitle",
-                                                               ["!хк"]))
+                                                               ["!хк?", "Снег"], 3), hokku)
 
     def test_execute_quotes_commands(self):
-        self.fail()
+        self.assertNotEqual(len(self.librarian.execute_quotes_commands("username", "usertitle",
+                                                                       ["!цт"], 10)), 0)
+        quote = "Мы думаем, что Бог видит нас сверху - но Он видит нас изнутри..."
+        self.assertEqual(self.librarian.execute_quotes_commands("username", "usertitle",
+                                                               ["!цт?", "Мы"], 13), quote)
 
     def test_get_help(self):
         self.fail()
