@@ -46,7 +46,7 @@ class CBabbler(prototype.CPrototype):
         if self.can_process(pchat_title, pmessage_text):
 
             # *** Возможно, запросили перезагрузку базы.
-            if puser_name == self.config["master"]:
+            if self.is_master(puser_name):
 
                 if word_list[0] in BABBLER_RELOAD:
 
@@ -79,6 +79,10 @@ class CBabbler(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [babbler.is_enabled] No <pchat_title> parameter specified!"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+
+    def is_master(self, puser_name: str) -> bool:
+        """Проверяет, хозяин ли отдал команду."""
+        return puser_name == self.config["master"]
 
     def reload(self):
         """Загружает тексты болтуна."""
@@ -114,7 +118,7 @@ class CBabbler(prototype.CPrototype):
             "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
-        answer: str = "111"
+        answer: str = ""
         # *** Заданный период времени с последней фразы прошел?
         if self.is_enabled(pchat_title):
 

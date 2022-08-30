@@ -34,11 +34,6 @@ class CTestBarman(TestCase):
         self.assertEqual(self.barman.barman('мяучат', 'user', 'Юзер', '!пиво'), "")
         self.assertEqual(self.barman.barman('кукучат', 'user', 'Юзер', '!beer'), "")
 
-    def test_serve_client(self):
-        self.assertNotEqual(self.barman.serve_client('Юзер', 'пиво'), "")
-        self.assertNotEqual(self.barman.serve_client('Юзер', 'beer'), "")
-        self.assertEqual(self.barman.serve_client('Юзер', 'кузинатра'), "")
-
     def test_can_process(self):
         self.assertEqual(self.barman.can_process('superchat', '!beer'), True)
         self.assertEqual(self.barman.can_process('megachat', '!пиво'), True)
@@ -58,3 +53,12 @@ class CTestBarman(TestCase):
         self.assertEqual(self.barman.is_enabled('superchat'), True)
         self.assertEqual(self.barman.is_enabled('megachat'), True)
         self.assertEqual(self.barman.is_enabled('левочат'), False)
+
+    def test_is_master(self):
+        self.assertEqual(self.barman.is_master('username'), True)
+        self.assertNotEqual(self.barman.is_master('User'), True)
+
+    def test_serve_client(self):
+        self.assertNotEqual(self.barman.serve_client('Юзер', 'пиво'), "")
+        self.assertNotEqual(self.barman.serve_client('Юзер', 'beer'), "")
+        self.assertEqual(self.barman.serve_client('Юзер', 'кузинатра'), "")

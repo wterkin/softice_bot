@@ -77,7 +77,8 @@ class CSoftIceBot:
         """Конструктор класса."""
         super().__init__()
         self.config: dict = {}
-        self.load_config()
+        self.config_name: str = ""
+        self.load_config(CONFIG_FILE_NAME)
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
             apihelper.proxy = {'https': self.config["proxy"]}
@@ -190,11 +191,12 @@ class CSoftIceBot:
         """Проверяет, находится ли данный чат в списке разрешенных."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def load_config(self):
+    def load_config(self, pconfig_file):
         """Загружает конфигурацию из JSON."""
-        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
+        with open(pconfig_file, "r", encoding="utf-8") as json_file:
 
             self.config = json.load(json_file)
+        self.config_name = pconfig_file
 
     def poll(self):
         """Функция опроса ботом телеграмма."""
@@ -228,7 +230,9 @@ class CSoftIceBot:
         elif pcommand in HELP_COMMANDS:
 
             answer: str = self.send_help(pchat_title)
-            self.robot.send_message(pchat_id, answer)
+            if answer:
+
+                self.robot.send_message(pchat_id, answer)
             result = True
         return result
 
@@ -280,6 +284,24 @@ class CSoftIceBot:
             print(" .. fail.")
         return answer
 
+    def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
+        """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
+        assert pchat_id is not None, \
+            "Assert: [softice.is_reload_config_command_queried] " \
+            "No <pchat_id> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [softice.is_reload_config_command_queried] " \
+            "No <puser_title> parameter specified!"
+        # *** Такое запрашивать может только хозяин
+        if self.is_master(puser_name):
+
+            self.robot.send_message(pchat_id, "Обновляю конфигурацию.")
+            self.load_config(self.config_name)
+            self.robot.send_message(pchat_id, "Конфигурация обновлена.")
+            return True
+        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
+        return False
+
     def send_help(self, pchat_title: str):
         """Проверяет, не была ли запрошена подсказка."""
         assert pchat_title is not None, \
@@ -311,24 +333,6 @@ class CSoftIceBot:
             self.exiting = True
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
-
-    def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
-        """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
-        assert pchat_id is not None, \
-            "Assert: [softice.is_reload_config_command_queried] " \
-            "No <pchat_id> parameter specified!"
-        assert puser_title is not None, \
-            "Assert: [softice.is_reload_config_command_queried] " \
-            "No <puser_title> parameter specified!"
-        # *** Такое запрашивать может только хозяин
-        if self.is_master(puser_name):
-
-            self.robot.send_message(pchat_id, "Обновляю конфигурацию.")
-            self.load_config()
-            self.robot.send_message(pchat_id, "Конфигурация обновлена.")
-            return True
-        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
-        return False
 
 
 # @self.robot.callback_query_handler(func=lambda call: True)

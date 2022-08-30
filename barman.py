@@ -167,7 +167,7 @@ class CBarman(prototype.CPrototype):
                          self.get_help(pchat_title)
             elif word_list[0] in BAR_RELOAD:
 
-                if puser_name == self.config["master"]:
+                if self.is_master(puser_name):
 
                     self.reload()
                     answer = "Ассортимент бара обновлён."
@@ -186,29 +186,6 @@ class CBarman(prototype.CPrototype):
 
             print(f"Barman answers: {answer[:16]}")
         return answer.strip()
-
-    def serve_client(self, puser_name: str, pcommand: str):
-        """Обслуживает клиентов."""
-        assert puser_name is not None, \
-            "Assert: [barman.serve_client] No <puser_name> parameter specified!"
-        assert pcommand is not None, \
-            "Assert: [barman.serve_client] No <pcommand> parameter specified!"
-        answer: str = ""
-        for item in ASSORTIMENT:
-
-            if pcommand.strip() in item[COMMAND_KEY]:
-
-                arguments: list = []
-                for prop in item[PROPERTIES_KEY]:
-
-                    arguments.append(random.choice(self.bar_content[item[ID_KEY]][prop]))
-                # *** Предпоследний аргумент - имя пользователя
-                arguments.append(puser_name)
-                # *** Последний аргумент - это эмоджи
-                arguments.append(item[EMODJI_KEY])
-                # *** Ок, формируем ответ
-                answer = item[TEMPLATE_KEY].format(*arguments)
-        return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если бармен может обработать эту команду"""
@@ -264,8 +241,11 @@ class CBarman(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [barman.is_enabled] " \
             "No <pchat_title> parameter specified!"
-
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+
+    def is_master(self, puser_name: str) -> bool:
+        """Проверяет, хозяин ли отдал команду."""
+        return puser_name == self.config["master"]
 
     def load_assortiment(self):
         """Загружает ассортимент бара."""
@@ -289,3 +269,26 @@ class CBarman(prototype.CPrototype):
     def reload(self):  # , pchat_id: int, puser_name: str, puser_title):
         """Перегружает все содержимое бара."""
         self.load_assortiment()
+
+    def serve_client(self, puser_name: str, pcommand: str):
+        """Обслуживает клиентов."""
+        assert puser_name is not None, \
+            "Assert: [barman.serve_client] No <puser_name> parameter specified!"
+        assert pcommand is not None, \
+            "Assert: [barman.serve_client] No <pcommand> parameter specified!"
+        answer: str = ""
+        for item in ASSORTIMENT:
+
+            if pcommand.strip() in item[COMMAND_KEY]:
+
+                arguments: list = []
+                for prop in item[PROPERTIES_KEY]:
+
+                    arguments.append(random.choice(self.bar_content[item[ID_KEY]][prop]))
+                # *** Предпоследний аргумент - имя пользователя
+                arguments.append(puser_name)
+                # *** Последний аргумент - это эмоджи
+                arguments.append(item[EMODJI_KEY])
+                # *** Ок, формируем ответ
+                answer = item[TEMPLATE_KEY].format(*arguments)
+        return answer
