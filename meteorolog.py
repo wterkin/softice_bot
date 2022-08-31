@@ -230,8 +230,8 @@ class CMeteorolog(prototype.CPrototype):
                     if wind_speed > max_wind_speed:
                         max_wind_speed = wind_speed
                         max_wind_angle = wind_angle
-                    icon = item["weather"][0]["icon"][0:2]
 
+                    icon = item["weather"][0]["icon"][0:2]
                     # *** Если это не "ясно", то ночь не нужна
                     if icon not in ["01", "02"]:
 

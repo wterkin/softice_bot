@@ -13,6 +13,7 @@ from telebot import apihelper
 import database
 import babbler
 import barman
+import bellringer
 import librarian
 import meteorolog
 import moderator
@@ -103,6 +104,8 @@ class CSoftIceBot:
         # *** Поехали создавать работников =)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
+        self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config, self.data_path)
+
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
@@ -266,15 +269,18 @@ class CSoftIceBot:
             # *** ... или у статистика...
             answer = self.statistic.statistic(pchat_id, pchat_title,
                                               puser_title, self.message_text).strip()
+        print("!" * 10)
+        if not answer:
+
+            print("!"*10)
+            answer = self.bellringer.bellringer(pchat_title, self.message_text).strip()
         if not answer:
 
             answer = self.babbler.babbler(pchat_title, puser_name, puser_title,
                                           self.message_text).strip()
-
         if not answer:
 
             answer = self.stargazer.stargazer(pchat_title, self.message_text).strip()
-
         if not answer:
 
             answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)

@@ -197,7 +197,6 @@ class CStatistic(prototype.CPrototype):
         answer += f"Отсортировано по количеству {SORTED_BY[porder_by-1]}. \n"
         return answer
 
-
     def get_user_id(self, ptg_user_id):
         """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
         query = self.session.query(m_users.CUser)

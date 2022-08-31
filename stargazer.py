@@ -184,9 +184,6 @@ class CStarGazer(prototype.CPrototype):
         if answer:
 
             print(f"Stargazer answers: {answer[:16]}")
-        else:
-
-            answer = "Ничего не нашел."
         return answer.strip()
 
     def search_in_calendar(self, pcalendar: str, ptoday: str):
