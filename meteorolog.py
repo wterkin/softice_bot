@@ -51,47 +51,74 @@ def get_wind_direction(pdegree):
     return result
 
 
-"""
-def get_temperature(pmain):
-    # *** Температура
-    min_temperature: int = min(pmain["temp"], 100)
-    max_temperature: int = max(pmain["temp"], 0)
-    return f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, "
-
-
-def get_pressure(pmain):
-    # *** Давление
-    min_pressure: int = min(pmain["pressure"], 10000)
-    max_pressure: int = max(pmain["pressure"], 0)
-    return f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" f"мм.рт.ст., "
-
-
-def get_humidity(pmain):
-    min_humidity: int = min(pmain["humidity"], 100)
-    max_humidity: int = max(pmain["humidity"], 0)
-    return f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, "
-
-def get_wind(pitem):
+def parse_weather(pdata, preq_date):
+    """Парсит данные погоды и формирует строку погоды."""
+    min_temperature: int = 100
+    max_temperature: int = 0
+    min_pressure: int = 10000
+    max_pressure: int = 0
+    min_humidity: int = 100
+    max_humidity: int = 0
     min_wind_speed: int = 200
     max_wind_speed: int = 0
     min_wind_angle: int = 360
     max_wind_angle: int = 0
+    weather: list = []
+    weather_line: str = ""
 
-    wind_speed = pitem["wind"]["speed"]
-    wind_angle = pitem["wind"]["deg"]
-    if wind_speed < min_wind_speed:
+    for item in pdata['list']:
 
-        min_wind_speed = wind_speed
-        min_wind_angle = wind_angle
-    if wind_speed > max_wind_speed:
+        # 1. Выбираем данные за заданную дату
+        if pdate.datetime.fromtimestamp(item['dt']).date() == preq_date:
 
-        max_wind_speed = wind_speed
-        max_wind_angle = wind_angle
+            main = item['main']
+            # *** Температура
+            min_temperature = min(main["temp"], min_temperature)
+            max_temperature = max(main["temp"], max_temperature)
+            # *** Давление
+            min_pressure = min(main["pressure"], min_pressure)
+            max_pressure = max(main["pressure"], max_pressure)
+            # *** Влажность
+            min_humidity = min(main["humidity"], min_humidity)
+            max_humidity = max(main["humidity"], max_humidity)
+            # *** Ветер
+            wind_speed = item["wind"]["speed"]
+            wind_angle = item["wind"]["deg"]
+            if wind_speed < min_wind_speed:
+                min_wind_speed = wind_speed
+                min_wind_angle = wind_angle
+            if wind_speed > max_wind_speed:
+                max_wind_speed = wind_speed
+                max_wind_angle = wind_angle
+            # *** Иконка погоды
+            icon = item["weather"][0]["icon"][0:2]
+            # *** Если это не "ясно", то ночь не нужна
+            icon = "01d" if icon in ["01", "02"] else icon + "d"
+            if icon in ["04", "04d"]:
 
-    return f" ветер: {round(min_wind_speed)} " \
-           f"м/с {get_wind_direction(min_wind_angle)} " \
-           f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, " \
-"""
+                # *** приводим всё к 3
+                icon = "03d"
+            # *** Если дождь
+            elif icon == "10":
+
+                # *** Приводим к 9
+                icon = "09d"
+            # print(icon, weather)
+            if icon not in weather:
+
+                weather.append(icon)
+    for icon in weather:
+
+        weather_line += ICON_CONVERT[icon] + " "
+    answer = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
+             f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" \
+             f" мм.рт.ст., " \
+             f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, " \
+             f" ветер: {round(min_wind_speed)} " \
+             f"м/с {get_wind_direction(min_wind_angle)} " \
+             f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, " \
+             f" {weather_line}"
+    return answer
 
 
 class CMeteorolog(prototype.CPrototype):
@@ -160,7 +187,7 @@ class CMeteorolog(prototype.CPrototype):
     def meteorolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
 
-        message: str = ""
+        answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
         # *** Метеоролог может обработать эту команду?
         if self.can_process(pchat_title, pmessage_text):
@@ -168,142 +195,67 @@ class CMeteorolog(prototype.CPrototype):
             # *** Запросили помощь?
             if word_list[0] in HINT:
 
-                message = self.get_help(pchat_title)
-            # *** Запросили погоду?
-            else:
+                answer = self.get_help(pchat_title)
+                return answer
+            # *** Запросили погоду? А город указали?
+            if len(word_list) > 1:
 
-                # *** А город указали?
-                if len(word_list) > 1:
+                # *** Получим ID города
+                city_name = " ".join(word_list[1:])
+                city_id = self.get_city_id(city_name)
+                if city_id > 0:
 
-                    # *** Получим ID города
-                    city_name = " ".join(word_list[1:])
-                    city_id = self.get_city_id(city_name)
-                    if city_id > 0:
+                    # *** Указан существующий город, работаем.
+                    now: pdate.datetime = pdate.datetime.now()
+                    date_str: str = ""
+                    weather_str: str = ""
+                    # *** Прогноз на завтра?
+                    if word_list[0] in ["прогноз", "пр", "forecast", "fr"]:
 
-                        # *** Указан существующий город, работаем.
-                        now: pdate.datetime = pdate.datetime.now()
-                        date_str: str = ""
-                        weather_str: str = ""
-                        # *** Прогноз на завтра?
-                        if word_list[0] in ["прогноз", "пр", "forecast", "fr"]:
+                        # *** Да, так и есть.
+                        tomorrow: pdate.datetime = now + pdate.timedelta(days=1)
+                        date_str = tomorrow.strftime(RUSSIAN_DATE_FORMAT)
+                        weather_str = self.request_weather(city_id, tomorrow)
 
-                            # *** Да, так и есть.
-                            tomorrow: pdate.datetime = now + pdate.timedelta(days=1)
-                            date_str = tomorrow.strftime(RUSSIAN_DATE_FORMAT)
-                            weather_str = self.request_weather(city_id, tomorrow)
+                    elif word_list[0] in ["погода", "пг", "weather", "wt"]:
 
-                        elif word_list[0] in ["погода", "пг", "weather", "wt"]:
-
-                            # *** Нет, на сегодня. Еще не поздно?
-                            if now.hour < 21:
-
-                                # *** Вполне еще можно
-                                date_str = now.strftime(RUSSIAN_DATE_FORMAT)
-                                weather_str = self.request_weather(city_id, now)
-                        # *** Если еще не поздно, то выдадим погоду, иначе дадим знать юзеру
+                        # *** Нет, на сегодня. Еще не поздно?
                         if now.hour < 21:
 
-                            message = f"{city_name} : {date_str} : {weather_str}"
-                        else:
+                            # *** Вполне еще можно
+                            date_str = now.strftime(RUSSIAN_DATE_FORMAT)
+                            weather_str = self.request_weather(city_id, now)
+                    # *** Если еще не поздно, то выдадим погоду, иначе дадим знать юзеру
+                    # answer = f"{city_name} : {date_str} : {weather_str}" if now.hour < 21 else
+                    #    answer = "Поздно уже, какая тебе погода??!"
+                    if now.hour < 21:
 
-                            message = "Поздно уже, какая тебе погода??!"
+                        answer = f"{city_name} : {date_str} : {weather_str}"
                     else:
 
-                        message = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? \
-                                      не знаю такого города!"""
+                        answer = "Поздно уже, какая тебе погода??!"
                 else:
 
-                    message = "А в каком городе погода нужна?"
-        return message
+                    answer = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? \
+                                  не знаю такого города!"""
+            else:
+
+                answer = "А в каком городе погода нужна?"
+        return answer
 
     def reload(self):
         pass
 
     def request_weather(self, pcity_id, prequest_date: pdate.datetime, plang: str = "ru"):
         """Запрос погоды на завтра."""
-        message: str = ""
-        min_temperature: int = 100
-        max_temperature: int = 0
-        min_pressure: int = 10000
-        max_pressure: int = 0
-        min_humidity: int = 100
-        max_humidity: int = 0
-        min_wind_speed: int = 200
-        max_wind_speed: int = 0
-        min_wind_angle: int = 360
-        max_wind_angle: int = 0
-        weather: list = []
-        weather_line: str = ""
+        answer: str = ""
         try:
 
             # *** Запрашиваем информацию
-            # res = requests.get(FORECAST_WEATHER_URL,
-            #                    params={'id': pcity_id, 'units': 'metric',
-            #                            'lang': plang, 'APPID': self.config["api_key"]})
             data = requests.get(FORECAST_WEATHER_URL,
                                 params={'id': pcity_id, 'units': 'metric',
                                         'lang': plang, 'APPID': self.config["api_key"]}).json()
-            # data = res.json()
-            for item in data['list']:
-
-                # 1. Выбираем данные за заданную дату
-                # data_datetime: pdate.datetime = pdate.datetime.fromtimestamp(item['dt'])
-                # if data_datetime.date() == prequest_date.date():
-                # data_datetime: pdate.datetime =
-                if pdate.datetime.fromtimestamp(item['dt']).date() == prequest_date.date():
-
-                    main = item['main']
-                    # *** Температура
-                    min_temperature = min(main["temp"], min_temperature)
-                    max_temperature = max(main["temp"], max_temperature)
-                    # *** Давление
-                    min_pressure = min(main["pressure"], min_pressure)
-                    max_pressure = max(main["pressure"], max_pressure)
-                    # *** Влажность
-                    min_humidity = min(main["humidity"], min_humidity)
-                    max_humidity = max(main["humidity"], max_humidity)
-                    # *** Ветер
-                    wind_speed = item["wind"]["speed"]
-                    wind_angle = item["wind"]["deg"]
-                    if wind_speed < min_wind_speed:
-
-                        min_wind_speed = wind_speed
-                        min_wind_angle = wind_angle
-                    if wind_speed > max_wind_speed:
-
-                        max_wind_speed = wind_speed
-                        max_wind_angle = wind_angle
-                    # *** Иконка погоды
-                    icon = item["weather"][0]["icon"][0:2]
-                    # *** Если это не "ясно", то ночь не нужна
-                    icon = "01d" if icon in ["01", "02"] else icon + "d"
-                    if icon in ["04", "04d"]:
-
-                        # *** приводим всё к 3
-                        icon = "03d"
-                    # *** Если дождь
-                    elif icon == "10":
-
-                        # *** Приводим к 9
-                        icon = "09d"
-                    print(icon, weather)
-                    if icon not in weather:
-
-                        weather.append(icon)
-            for icon in weather:
-
-                weather_line += ICON_CONVERT[icon] + " "
-            # temperature # f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
-            # f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" \
-            # f"мм.рт.ст., " \
-            message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
-                      f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" \
-                      f"мм.рт.ст., " \
-                      f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, " \
-                      f" ветер: {round(min_wind_speed)} " \
-                      f"м/с {get_wind_direction(min_wind_angle)} " \
-                      f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, " \
-                      f" {weather_line}"
+            answer = parse_weather(data, prequest_date.date())
 
         except requests.TooManyRedirects as ex:
             print("Exception (find):", ex)
@@ -313,4 +265,4 @@ class CMeteorolog(prototype.CPrototype):
             print("Exception (find):", ex)
         except requests.ConnectionError as ex:
             print("Exception (find):", ex)
-        return message
+        return answer
