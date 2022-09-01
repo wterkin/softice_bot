@@ -6,7 +6,6 @@ import prototype
 
 COMMANDS: list = ["звонить", "звон", "зв", "bell"]
 BELLRINGER_HINT: list = ["звонарь", "ringer"]
-BAR_RELOAD: list = ["rgreload", "rgrl"]
 BELLRINGER_FOLDER: str = "bellringer/"
 ENABLED_IN_CHATS_KEY: str = "bellringer_chats"
 
@@ -35,7 +34,7 @@ class CBellRinger(prototype.CPrototype):
                 if word_list[0] in COMMANDS:
 
                     user_list = functions.load_from_file(self.data_path+"/"+pchat_title+".txt")
-                    answer = "Эй, " + ", ".join(user_list) + "\n Игра начинается!"
+                    answer = "Эй, " + ", ".join(user_list) + "!!! \n Игра начинается!"
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -77,4 +76,3 @@ class CBellRinger(prototype.CPrototype):
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
-        pass

@@ -51,6 +51,49 @@ def get_wind_direction(pdegree):
     return result
 
 
+"""
+def get_temperature(pmain):
+    # *** Температура
+    min_temperature: int = min(pmain["temp"], 100)
+    max_temperature: int = max(pmain["temp"], 0)
+    return f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, "
+
+
+def get_pressure(pmain):
+    # *** Давление
+    min_pressure: int = min(pmain["pressure"], 10000)
+    max_pressure: int = max(pmain["pressure"], 0)
+    return f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" f"мм.рт.ст., "
+
+
+def get_humidity(pmain):
+    min_humidity: int = min(pmain["humidity"], 100)
+    max_humidity: int = max(pmain["humidity"], 0)
+    return f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, "
+
+def get_wind(pitem):
+    min_wind_speed: int = 200
+    max_wind_speed: int = 0
+    min_wind_angle: int = 360
+    max_wind_angle: int = 0
+
+    wind_speed = pitem["wind"]["speed"]
+    wind_angle = pitem["wind"]["deg"]
+    if wind_speed < min_wind_speed:
+
+        min_wind_speed = wind_speed
+        min_wind_angle = wind_angle
+    if wind_speed > max_wind_speed:
+
+        max_wind_speed = wind_speed
+        max_wind_angle = wind_angle
+
+    return f" ветер: {round(min_wind_speed)} " \
+           f"м/с {get_wind_direction(min_wind_angle)} " \
+           f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, " \
+"""
+
+
 class CMeteorolog(prototype.CPrototype):
     """Класс метеоролога."""
 
@@ -62,7 +105,6 @@ class CMeteorolog(prototype.CPrototype):
         """Возвращает True, если метеоролог может обработать эту команду"""
 
         if self.is_enabled(pchat_title):
-
             word_list: list = func.parse_input(pmessage_text)
             return word_list[0] in WEATHER_COMMANDS or word_list[0] in HINT
         return False
@@ -79,9 +121,15 @@ class CMeteorolog(prototype.CPrototype):
                                        'APPID': self.config["api_key"]})
             data = res.json()
             if len(data['list']) > 0:
-
                 city_id = data['list'][0]['id']
-        except Exception as ex:
+        # except Exception as ex:
+        except requests.TooManyRedirects as ex:
+            print("Exception (find):", ex)
+        except requests.Timeout as ex:
+            print("Exception (find):", ex)
+        except requests.HTTPError as ex:
+            print("Exception (find):", ex)
+        except requests.ConnectionError as ex:
             print("Exception (find):", ex)
         assert isinstance(city_id, int)
         return city_id
@@ -89,7 +137,6 @@ class CMeteorolog(prototype.CPrototype):
     def get_help(self, pchat_title: str) -> str:  # noqa
         """Пользователь запросил список команд."""
         if self.is_enabled(pchat_title):
-
             command_list: str = ", ".join(WEATHER_COMMANDS)
             command_list += "\n"
             return command_list
@@ -102,7 +149,6 @@ class CMeteorolog(prototype.CPrototype):
             "No <pchat_title> parameter specified!"
 
         if self.is_enabled(pchat_title):
-
             return ", ".join(HINT)
         return ""
 
@@ -190,59 +236,48 @@ class CMeteorolog(prototype.CPrototype):
         weather_line: str = ""
         try:
 
-            res = requests.get(FORECAST_WEATHER_URL,
-                               params={'id': pcity_id, 'units': 'metric',
-                                       'lang': plang, 'APPID': self.config["api_key"]})
-            data = res.json()
+            # *** Запрашиваем информацию
+            # res = requests.get(FORECAST_WEATHER_URL,
+            #                    params={'id': pcity_id, 'units': 'metric',
+            #                            'lang': plang, 'APPID': self.config["api_key"]})
+            data = requests.get(FORECAST_WEATHER_URL,
+                                params={'id': pcity_id, 'units': 'metric',
+                                        'lang': plang, 'APPID': self.config["api_key"]}).json()
+            # data = res.json()
             for item in data['list']:
 
-                # 1. Выбираем только завтрашние данные
-                data_datetime: pdate.datetime = pdate.datetime.fromtimestamp(item['dt'])
-                if data_datetime.date() == prequest_date.date():
+                # 1. Выбираем данные за заданную дату
+                # data_datetime: pdate.datetime = pdate.datetime.fromtimestamp(item['dt'])
+                # if data_datetime.date() == prequest_date.date():
+                # data_datetime: pdate.datetime =
+                if pdate.datetime.fromtimestamp(item['dt']).date() == prequest_date.date():
 
                     main = item['main']
                     # *** Температура
-                    # if main["temp"] < min_temperature:
-                    #     min_temperature = main["temp"]
                     min_temperature = min(main["temp"], min_temperature)
-                    # if main["temp"] > max_temperature:
-                    #     max_temperature = main["temp"]
                     max_temperature = max(main["temp"], max_temperature)
                     # *** Давление
-                    # if main["pressure"] < min_pressure:
-                    #     min_pressure = main["pressure"]
                     min_pressure = min(main["pressure"], min_pressure)
-                    # if main["pressure"] > max_pressure:
-                    #     max_pressure = main["pressure"]
                     max_pressure = max(main["pressure"], max_pressure)
                     # *** Влажность
-                    # if main["humidity"] < min_humidity:
-                    #     min_humidity = main["humidity"]
                     min_humidity = min(main["humidity"], min_humidity)
-                    # if main["humidity"] > max_humidity:
-                    #     max_humidity = main["humidity"]
                     max_humidity = max(main["humidity"], max_humidity)
+                    # *** Ветер
                     wind_speed = item["wind"]["speed"]
                     wind_angle = item["wind"]["deg"]
                     if wind_speed < min_wind_speed:
+
                         min_wind_speed = wind_speed
                         min_wind_angle = wind_angle
                     if wind_speed > max_wind_speed:
+
                         max_wind_speed = wind_speed
                         max_wind_angle = wind_angle
-
+                    # *** Иконка погоды
                     icon = item["weather"][0]["icon"][0:2]
                     # *** Если это не "ясно", то ночь не нужна
-                    if icon not in ["01", "02"]:
-
-                        # *** Переводим в день
-                        icon += "d"
-                    else:
-
-                        # *** приводим всё к 1
-                        icon = "01d"
-                    # *** Если облачно
-                    if icon == "04":
+                    icon = "01d" if icon in ["01", "02"] else icon + "d"
+                    if icon in ["04", "04d"]:
 
                         # *** приводим всё к 3
                         icon = "03d"
@@ -251,14 +286,16 @@ class CMeteorolog(prototype.CPrototype):
 
                         # *** Приводим к 9
                         icon = "09d"
-
+                    print(icon, weather)
                     if icon not in weather:
 
                         weather.append(icon)
             for icon in weather:
 
                 weather_line += ICON_CONVERT[icon] + " "
-
+            # temperature # f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
+            # f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" \
+            # f"мм.рт.ст., " \
             message = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
                       f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" \
                       f"мм.рт.ст., " \
@@ -268,7 +305,12 @@ class CMeteorolog(prototype.CPrototype):
                       f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, " \
                       f" {weather_line}"
 
-        except Exception as ex:
-
-            print("Exception (forecast):", ex)
+        except requests.TooManyRedirects as ex:
+            print("Exception (find):", ex)
+        except requests.Timeout as ex:
+            print("Exception (find):", ex)
+        except requests.HTTPError as ex:
+            print("Exception (find):", ex)
+        except requests.ConnectionError as ex:
+            print("Exception (find):", ex)
         return message

@@ -269,10 +269,8 @@ class CSoftIceBot:
             # *** ... или у статистика...
             answer = self.statistic.statistic(pchat_id, pchat_title,
                                               puser_title, self.message_text).strip()
-        print("!" * 10)
         if not answer:
 
-            print("!"*10)
             answer = self.bellringer.bellringer(pchat_title, self.message_text).strip()
         if not answer:
 
@@ -315,6 +313,7 @@ class CSoftIceBot:
             "No <pchat_title> parameter specified!"
         # *** Собираем ответы работников на запрос помощи
         answer: str = f"""\n{self.barman.get_hint(pchat_title)}
+                          \n{self.bellringer.get_hint(pchat_title)}
                           \n{self.librarian.get_hint(pchat_title)}
                           \n{self.meteorolog.get_hint(pchat_title)}
                           \n{self.statistic.get_hint(pchat_title)}
