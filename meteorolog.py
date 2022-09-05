@@ -75,6 +75,7 @@ def parse_weather(pdata, preq_date):
             # *** Температура
             min_temperature = min(main["temp"], min_temperature)
             max_temperature = max(main["temp"], max_temperature)
+            # print(main["temp"], min_temperature, max_temperature)
             # *** Давление
             min_pressure = min(main["pressure"], min_pressure)
             max_pressure = max(main["pressure"], max_pressure)

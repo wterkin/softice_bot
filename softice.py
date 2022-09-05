@@ -303,6 +303,7 @@ class CSoftIceBot:
             self.load_config(self.config_name)
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
             return True
+        print("Softice - нет прав.")
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
         return False
 

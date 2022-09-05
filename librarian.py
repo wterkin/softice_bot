@@ -322,6 +322,7 @@ class CLibrarian(prototype.CPrototype):
 
             return True, ""
         # *** Низзя
+        print("Библиотекарь - нет прав")
         return False, f"У вас нет на это прав, {puser_title}."
 
     def librarian(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:

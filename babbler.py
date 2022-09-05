@@ -46,15 +46,16 @@ class CBabbler(prototype.CPrototype):
         if self.can_process(pchat_title, pmessage_text):
 
             # *** Возможно, запросили перезагрузку базы.
-            if self.is_master(puser_name):
+            if word_list[0] in BABBLER_RELOAD:
 
-                if word_list[0] in BABBLER_RELOAD:
+                if self.is_master(puser_name):
 
                     self.reload()
                     answer = "База болтуна обновлена"
-            else:
+                else:
 
-                answer = f"У вас нет на это прав, {puser_title}."
+                    print("Болтун - нет прав")
+                    answer = f"У вас нет на это прав, {puser_title}."
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
