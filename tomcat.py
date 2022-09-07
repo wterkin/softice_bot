@@ -54,8 +54,8 @@ from sqlalchemy.orm import sessionmaker
 Ласка    - 50 м 30 у
 
 Таблица кошек - привязывается к пользователю
-Справочник пищи
-Справочник игрушек
++ Справочник пищи
++ Справочник игрушек
 
 --Справочник лекарств
 """
@@ -124,6 +124,7 @@ class CTomCat(prototype.CPrototype):
         self.session.add(toy)
         toy = m_cat.CToy("Лазерная указка", 100, 9)
         self.session.add(toy)
+        self.session.commit()
         feed = m_cat.CFeed("Молоко", 3, 1)
         self.session.add(feed)
         feed = m_cat.CFeed("Рыба", 5, 2)
@@ -134,7 +135,7 @@ class CTomCat(prototype.CPrototype):
         self.session.add(feed)
         feed = m_cat.CFeed("Роял Канин", 25, 5)
         self.session.add(feed)
-
+        self.session.commit()
 
     def database_disconnect(self):
         """Разрывает соединение с БД."""
