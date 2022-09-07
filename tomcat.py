@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 # Модуль игры в кошек
+import prototype
+import m_cat
+from pathlib import Path
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 """
 Свойства кошки
 1. Здоровье.
@@ -53,3 +59,84 @@
 --Справочник добычи
 --Справочник лекарств
 """
+
+CAT_GAME_DB: str = "cat_game.db"
+
+
+class CTomCat(prototype.CPrototype):
+    """Класс игры."""
+
+    def __init__(self, pconfig: dict, pdata_path: str):
+        super().__init__()
+        self.config: dict = pconfig
+        self.busy: bool = False
+        self.data_path = pdata_path
+        self.engine = None
+        self.session = None
+        # self.database: database.CDataBase = database.CDataBase(self.config, self.data_path, CAT_GAME_DB)
+        # print("** ", self.database.data_path)
+        # print("** ", self.database.database_name)
+        self.database_connect()
+        if not self.database_exists():
+
+            self.database_create()
+        # self.session = self.database.get_session()
+
+    def database_connect(self):
+        """Устанавливает соединение с БД."""
+        self.engine = create_engine('sqlite:///' + self.data_path + CAT_GAME_DB,
+                                    echo=False,
+                                    connect_args={'check_same_thread': False})
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        self.session = Session()
+        m_cat.Base.metadata.bind = self.engine
+
+    def database_create(self):
+        """Создает или изменяет БД в соответствии с описанной в классах структурой."""
+        m_cat.Base.metadata.create_all()
+        self.session.commit()
+        # *** Добыча
+        prey = m_cat.CPrey("Муха", 5, 3)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Кузнечик", 7, 6)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Мышонок", 10, 9)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Лягушка", 12, 12)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Хомяк", 17, 18)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Крыса", 20, 21)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Белка", 30, 24)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Хорёк", 40, 27)
+        self.session.add(prey)
+        prey = m_cat.CPrey("Ласка", 50, 30)
+        self.session.add(prey)
+        self.session.commit()
+
+    def database_disconnect(self):
+        """Разрывает соединение с БД."""
+        self.session.close()
+        self.engine.dispose()
+
+    def database_exists(self):
+        """Проверяет наличие базы данных по пути в конфигурации."""
+        return Path(self.data_path + CAT_GAME_DB).exists()
+
+    def reload(self):
+        pass
+
+    def is_enabled(self, pchat_title: str) -> bool:
+        pass
+
+    def get_hint(self, pchat_title: str) -> str:
+        pass
+
+    def get_help(self, pchat_title: str) -> str:
+        pass
+
+    def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
+        pass

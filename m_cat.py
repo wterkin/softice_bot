@@ -1,13 +1,51 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль класса справочника чатов."""
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, MetaData
+from sqlalchemy.ext.declarative import declarative_base
 
-import m_ancestor
-import m_users
+STATUS_ACTIVE: int = 1
+STATUS_INACTIVE: int = 0
+
+convention = {
+    "all_column_names": lambda constraint,
+    table: "_".join([
+        column.name for column in constraint.columns.values()
+    ]),
+    "ix": "ix__%(table_name)s__%(all_column_names)s",
+    "uq": "uq__%(table_name)s__%(all_column_names)s",
+    "cq": "cq__%(table_name)s__%(constraint_name)s",
+    "fk": ("fk__%(table_name)s__%(all_column_names)s__"
+           "%(referred_table_name)s"),
+    "pk": "pk__%(table_name)s"
+}
+
+meta_data: object = MetaData(naming_convention=convention)
+Base = declarative_base(metadata=meta_data)
 
 
-class CFeed(m_ancestor.CAncestor):
+class CAncestor(Base):
+    """Класс-предок всех классов-моделей таблиц SQLAlchemy."""
+    __abstract__ = True
+    id = Column(Integer,
+                autoincrement=True,
+                nullable=False,
+                primary_key=True,
+                unique=True)
+    fstatus = Column(Integer,
+                     nullable=False,
+                     )
+
+    def __init__(self):
+        """Конструктор."""
+        self.fstatus = STATUS_ACTIVE
+
+    def __repr__(self):
+        return f"""ID:{self.id},
+                   Status:{self.fstatus}"""
+
+
+class CFeed(CAncestor):
     """Класс справочника еды."""
 
     __tablename__ = 'tbl_feed'
@@ -27,7 +65,7 @@ class CFeed(m_ancestor.CAncestor):
                    Price:{self.fprice}"""
 
 
-class CToy(m_ancestor.CAncestor):
+class CToy(CAncestor):
     """Класс справочника игрушек."""
 
     __tablename__ = 'tbl_toys'
@@ -47,31 +85,58 @@ class CToy(m_ancestor.CAncestor):
                    Price:{self.fprice}"""
 
 
-class CPrey(m_ancestor.CAncestor):
+class CPrey(CAncestor):
     """Класс справочника добычи."""
 
-    __tablename__ = 'tbl_toys'
+    __tablename__ = 'tbl_preys'
     fname = Column(String, nullable=False)
     fworth = Column(Integer, nullable=False)
+    fdamage = Column(Integer, nullable=False)
 
-    def __init__(self, pname: str, pworth: int):
+    def __init__(self, pname: str, pworth: int, pdamage: int):
         """Конструктор"""
         super().__init__()
         self.fname = pname
         self.fworth = pworth
+        self.fdamage = pdamage
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
-                   Prey:{self.fname}
-                   Worth:{self.fworth}"""
+                   Prey:{self.fname},
+                   Worth:{self.fworth},
+                   Damage:{self.fdamage}"""
 
 
-class CCat(m_ancestor.CAncestor):
+class CGameUser(CAncestor):
+    """Класс модели таблицы справочника ID пользователей телеграмма."""
+
+    __tablename__ = 'tbl_gameusers'
+    fuserid = Column(Integer,
+                     nullable=False,
+                     unique=True,
+                     index=True)
+    fusername = Column(String, nullable=False)
+
+    def __init__(self, puserid: int, pusername: str):
+        """Конструктор"""
+        super().__init__()
+        self.fuserid = puserid
+        self.fusername = pusername
+
+    def __repr__(self):
+        ancestor_repr = super().__repr__()
+        return f"""{ancestor_repr},
+                   User ID:{self.fuserid},
+                   User name:{self.fusername}
+                   """
+
+
+class CCat(CAncestor):
     """Класс кошки."""
 
     __tablename__ = 'tbl_cats'
-    fuserid = Column(Integer, ForeignKey(m_users.CUser.id))
+    fuserid = Column(Integer, ForeignKey(CGameUser.id))
     fname = Column(String, nullable=False, default="Мурзик")
     fcolor = Column(String, nullable=False)
     fwooliness = Column(String, nullable=False)
@@ -106,7 +171,7 @@ class CCat(m_ancestor.CAncestor):
                    """
 
 
-class CFeedLink(m_ancestor.CAncestor):
+class CFeedLink(CAncestor):
     """Класс таблицы связки еды."""
 
     __tablename__ = 'tbl_feedlink'
@@ -129,14 +194,14 @@ class CFeedLink(m_ancestor.CAncestor):
                    Quant:{self.fquantity}"""
 
 
-class CToyLink(m_ancestor.CAncestor):
+class CToyLink(CAncestor):
     """Класс таблицы связки игрушек."""
 
     __tablename__ = 'tbl_toylink'
     fcat = Column(Integer, ForeignKey(CCat.id))
     ftoy = Column(Integer, ForeignKey(CToy.id))
 
-    def __init__(self, pcat: int, ptoy: int, pquantity: int):
+    def __init__(self, pcat: int, ptoy: int):
         """Конструктор"""
         super().__init__()
         self.fcat = pcat
@@ -147,4 +212,3 @@ class CToyLink(m_ancestor.CAncestor):
         return f"""{ancestor_repr},
                    Cat:{self.fcat},
                    Toy:{self.ftoy}"""
-

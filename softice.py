@@ -20,6 +20,7 @@ import moderator
 import statistic
 import stargazer
 import theolog
+import tomcat
 
 LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
 WINDOWS_DATA_FOLDER_KEY: str = "windows_data_folder"
@@ -113,7 +114,8 @@ class CSoftIceBot:
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
-
+        # *** Игра
+        self.tomcat: tomcat.CTomCat = tomcat.CTomCat(self.config, self.data_path)
         # *** Обработчик сообщений
         """Обработчик сообщений."""
         @self.robot.message_handler(content_types=EVENTS)

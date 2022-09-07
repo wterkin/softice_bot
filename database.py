@@ -21,9 +21,10 @@ import m_users  # noqa
 DATABASE_VERSION: int = 1
 DATABASE_NAME: str = "softice.db"
 
+
 class CDataBase:
     """Класс."""
-    def __init__(self, pconfig, pdata_path):
+    def __init__(self, pconfig, pdata_path, pdatabase_name=DATABASE_NAME):
         """Конструктор класса."""
         # super(CMainWindow, self).__init__()
         self.application_folder = Path.cwd()
@@ -31,6 +32,7 @@ class CDataBase:
         self.data_path = pdata_path
         self.session = None
         self.engine = None
+        self.database_name = pdatabase_name
         self.connect()
 
     def check(self):
@@ -38,7 +40,7 @@ class CDataBase:
 
     def connect(self):
         """Устанавливает соединение с БД."""
-        self.engine = create_engine('sqlite:///' + self.data_path + DATABASE_NAME,
+        self.engine = create_engine('sqlite:///' + self.data_path + self.database_name,
                                     echo=False,
                                     connect_args={'check_same_thread': False})
         Session = sessionmaker()
@@ -67,7 +69,7 @@ class CDataBase:
 
     def exists(self):
         """Проверяет наличие базы данных по пути в конфигурации."""
-        return Path(self.data_path + DATABASE_NAME).exists()
+        return Path(self.data_path + self.database_name).exists()
 
     def get_session(self):
         """Возвращает экземпляр session."""
