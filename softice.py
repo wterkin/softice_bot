@@ -340,6 +340,49 @@ class CSoftIceBot:
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
 
+    def poll_forever(self):
+        """Функция опроса ботом телеграмма."""
+        while self.bot_status == CONTINUE_RUNNING:
+
+            try:
+
+                # self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
+                self.robot.polling(interval=POLL_INTERVAL)
+            except CQuitByDemand as exception:
+
+                print(exception.message)
+                self.bot_status = QUIT_BY_DEMAND
+                self.robot.stop_polling()
+            except ConnectionError as ex:
+
+                print("*" * 40)
+                print(f"**** Exception occured: {ex}, reconnecting...")
+            except ReadTimeout as ex:
+
+                print("*" * 40)
+                print(f"**** Exception occured: {ex}, reconnecting...")
+
+
+if __name__ == "__main__":
+
+    SofticeBot: CSoftIceBot = CSoftIceBot()
+    SofticeBot.poll_forever()
+    sys.exit(0)
+
+# while not SofticeBot.exiting:
+#
+#     try:
+#
+#         SofticeBot.poll()
+#     except ConnectionError as ex:
+#
+#         print("*" * 40)
+#         print(f"**** Exception occured: {ex}, reconnecting...")
+#     except ReadTimeout as ex:
+#
+#         print("*" * 40)
+#         print(f"**** Exception occured: {ex}, reconnecting...")
+# if SofticeBot.bot_status == QUIT_BY_DEMAND:
 
 # @self.robot.callback_query_handler(func=lambda call: True)
 # def callback_inline(call):
@@ -347,23 +390,3 @@ class CSoftIceBot:
 #
 #     mafiozo_process(BOT_CONFIG, call.message.chat.id, call.message.chat.title,
 #                     call.from_user.id, call.from_user.username, call.data)
-
-if __name__ == "__main__":
-
-    SofticeBot: CSoftIceBot = CSoftIceBot()
-    while not SofticeBot.exiting:
-
-        try:
-
-            SofticeBot.poll()
-        except ConnectionError as ex:
-
-            print("*" * 40)
-            print(f"**** Exception occured: {ex}, reconnecting...")
-        except ReadTimeout as ex:
-
-            print("*" * 40)
-            print(f"**** Exception occured: {ex}, reconnecting...")
-    if SofticeBot.bot_status == QUIT_BY_DEMAND:
-
-        sys.exit(0)
