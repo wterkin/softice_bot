@@ -51,18 +51,21 @@ class CFeed(CAncestor):
     __tablename__ = 'tbl_feed'
     fname = Column(String, nullable=False)
     fprice = Column(Integer, nullable=False)
+    fsatiety = Column(Integer, nullable=False)
 
-    def __init__(self, pname: str, pprice: int):
+    def __init__(self, pname: str, pprice: int, psatiety: int):
         """Конструктор"""
         super().__init__()
         self.fname = pname
         self.fprice = pprice
+        self.fsatiety = psatiety
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
-                   Feed:{self.fname}
-                   Price:{self.fprice}"""
+                   Feed:{self.fname},
+                   Price:{self.fprice},
+                   Satiety:{self.fsatiety}"""
 
 
 class CToy(CAncestor):
@@ -71,18 +74,21 @@ class CToy(CAncestor):
     __tablename__ = 'tbl_toys'
     fname = Column(String, nullable=False)
     fprice = Column(Integer, nullable=False)
+    fjoy = Column(Integer, nullable=False)
 
-    def __init__(self, pname: str, pprice: int):
+    def __init__(self, pname: str, pprice: int, pjoy: int):
         """Конструктор"""
         super().__init__()
         self.fname = pname
         self.fprice = pprice
+        self.fjoy = pjoy
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
-                   Toy:{self.fname}
-                   Price:{self.fprice}"""
+                   Toy:{self.fname},
+                   Price:{self.fprice},
+                   Joy:{self.fjoy}"""
 
 
 class CPrey(CAncestor):
