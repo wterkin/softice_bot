@@ -3,7 +3,7 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 # Модуль игры в кошек
 import prototype
-import m_cat
+import m_catgame
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

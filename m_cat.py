@@ -1,5 +1,5 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
-"""Модуль класса справочника чатов."""
+"""Модели."""
 
 from sqlalchemy import Column, Integer, String, ForeignKey, MetaData
 from sqlalchemy.ext.declarative import declarative_base
