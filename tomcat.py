@@ -100,6 +100,9 @@ STATE: tuple = (("замёрзшая", "замёрзший"),
                 ("голодная", "голодный"))
 
 BREEDS: tuple = ("персидской породы", "сиамской породы", "сибирской породы", "породы мэйн-кун")
+A: tuple = ('её', 'его')
+B: tuple = ('она', 'он')
+
 
 def recognize_command(pmessage_text: str):
     """Возвращает код переданной команды, если есть такая в списке."""
@@ -124,13 +127,9 @@ class CTomCat(prototype.CPrototype):
         self.data_path = pdata_path + 'tomcat/'
         self.engine = None
         self.session = None
-        # self.database: database.CDataBase = database.CDataBase(self.config, self.data_path, CAT_GAME_DB)
-        # print("** ", self.database.data_path)
-        # print("** ", self.database.database_name)
         self.database_connect()
         if not self.database_exists():
             self.database_create()
-        # self.session = self.database.get_session()
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если бармен может обработать эту команду"""
@@ -170,8 +169,8 @@ class CTomCat(prototype.CPrototype):
         new_cat = m_catgame.CCat(pdbuser_id, cat_name, cat_color, cat_wooliness, cat_breed, cat_gender)
         self.session.add(new_cat)
         self.session.commit()
-        answer += f"Судя по её виду, она давно живёт на улице. На ошейнике было написано имя {cat_name}. \n"
-        answer += f"Вы сжалились над несчастным животным и взяли её себе"
+        answer += f"Судя по {A[cat_gender]} виду, {B[cat_gender]} давно живёт на улице. На ошейнике ""было написано имя {cat_name}. \n"
+        answer += f"Вы сжалились над несчастным животным и взяли {A[cat_gender]} себе."
         return answer
 
     def create_user(self, puser_id, puser_title):
@@ -193,6 +192,7 @@ class CTomCat(prototype.CPrototype):
         answer = self.create_cat(new_user.id)
         # *** Предложим его пользователю
         return answer
+
     def database_connect(self):
         """Устанавливает соединение с БД."""
         self.engine = create_engine('sqlite:///' + self.data_path + CAT_GAME_DB,
@@ -313,7 +313,7 @@ class CTomCat(prototype.CPrototype):
                 arguments = word_list[1:]
                 if command == CMD_REGISTRATION:
 
-                    self.create_user(puser_id, puser_title)
-                    pass
+                    answer = self.create_user(puser_id, puser_title)
+                    print("$"*40, answer)
 
         return answer
