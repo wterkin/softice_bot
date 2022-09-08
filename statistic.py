@@ -93,6 +93,7 @@ class CStatistic(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду, иначе False."""
         if self.is_enabled(pchat_title):
+
             word_list: list = functions.parse_input(pmessage_text)
             return word_list[0] in COMMANDS or word_list[0] in HINT
         return False

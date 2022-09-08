@@ -7,6 +7,7 @@ import m_catgame
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import functions
 
 """
 Свойства кошки
@@ -62,6 +63,35 @@ from sqlalchemy.orm import sessionmaker
 
 CAT_GAME_DB: str = "cat_game.db"
 
+CMD_REGISTRATION: int = 0
+CMD_REFRESH: int = 1
+
+COMMANDS: tuple = (("играть", "play"),
+                   ("обновить", "refresh"),
+                   )
+ENABLED_IN_CHATS_KEY = "tomcat_chats"
+
+HINTS: tuple = ("котоигра", "tomcat")
+
+HEALTH_TERMINAL = 9
+SATIETY_TERMINAL = 9
+MOOD_TERMINAL = 9
+DISCIPLINE_TERMINAL = 9
+LOYALTY_TERMINAL = 9
+
+
+def recognize_command(pmessage_text: str):
+    """Возвращает код переданной команды, если есть такая в списке."""
+    cmd: str = pmessage_text.strip().lower()
+    command_code: int = -1
+    for index, command in enumerate(COMMANDS):
+
+        if cmd in command:
+
+            command_code = index
+            break
+    return command_code
+
 
 class CTomCat(prototype.CPrototype):
     """Класс игры."""
@@ -78,9 +108,27 @@ class CTomCat(prototype.CPrototype):
         # print("** ", self.database.database_name)
         self.database_connect()
         if not self.database_exists():
-
             self.database_create()
         # self.session = self.database.get_session()
+
+    def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
+        """Возвращает True, если бармен может обработать эту команду"""
+        assert pchat_title is not None, \
+            "Assert: [barman.can_process] " \
+            "No <pchat_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [barman.can_process] " \
+            "No <pmessage_text> parameter specified!"
+        found: bool = False
+        if self.is_enabled(pchat_title):
+
+            word_list: list = functions.parse_input(pmessage_text)
+            for command in COMMANDS:
+
+                found = word_list[0] in command
+                if found:
+                    break
+        return found
 
     def database_connect(self):
         """Устанавливает соединение с БД."""
@@ -90,50 +138,50 @@ class CTomCat(prototype.CPrototype):
         Session = sessionmaker()
         Session.configure(bind=self.engine)
         self.session = Session()
-        m_cat.Base.metadata.bind = self.engine
+        m_catgame.Base.metadata.bind = self.engine
 
     def database_create(self):
         """Создает или изменяет БД в соответствии с описанной в классах структурой."""
-        m_cat.Base.metadata.create_all()
+        m_catgame.Base.metadata.create_all()
         self.session.commit()
         # *** Добыча
-        prey = m_cat.CPrey("Муха", 5, 3)
+        prey = m_catgame.CPrey("Муха", 5, 3)
         self.session.add(prey)
-        prey = m_cat.CPrey("Кузнечик", 7, 6)
+        prey = m_catgame.CPrey("Кузнечик", 7, 6)
         self.session.add(prey)
-        prey = m_cat.CPrey("Мышонок", 10, 9)
+        prey = m_catgame.CPrey("Мышонок", 10, 9)
         self.session.add(prey)
-        prey = m_cat.CPrey("Лягушка", 12, 12)
+        prey = m_catgame.CPrey("Лягушка", 12, 12)
         self.session.add(prey)
-        prey = m_cat.CPrey("Хомяк", 17, 18)
+        prey = m_catgame.CPrey("Хомяк", 17, 18)
         self.session.add(prey)
-        prey = m_cat.CPrey("Крыса", 20, 21)
+        prey = m_catgame.CPrey("Крыса", 20, 21)
         self.session.add(prey)
-        prey = m_cat.CPrey("Белка", 30, 24)
+        prey = m_catgame.CPrey("Белка", 30, 24)
         self.session.add(prey)
-        prey = m_cat.CPrey("Хорёк", 40, 27)
+        prey = m_catgame.CPrey("Хорёк", 40, 27)
         self.session.add(prey)
-        prey = m_cat.CPrey("Ласка", 50, 30)
+        prey = m_catgame.CPrey("Ласка", 50, 30)
         self.session.add(prey)
         self.session.commit()
-        toy = m_cat.CToy("Бантик на веревочке", 10, 3)
+        toy = m_catgame.CToy("Бантик на веревочке", 10, 3)
         self.session.add(toy)
-        toy = m_cat.CToy("Мячик", 20, 5)
+        toy = m_catgame.CToy("Мячик", 20, 5)
         self.session.add(toy)
-        toy = m_cat.CToy("Заводная мышка", 50, 7)
+        toy = m_catgame.CToy("Заводная мышка", 50, 7)
         self.session.add(toy)
-        toy = m_cat.CToy("Лазерная указка", 100, 9)
+        toy = m_catgame.CToy("Лазерная указка", 100, 9)
         self.session.add(toy)
         self.session.commit()
-        feed = m_cat.CFeed("Молоко", 3, 1)
+        feed = m_catgame.CFeed("Молоко", 3, 1)
         self.session.add(feed)
-        feed = m_cat.CFeed("Рыба", 5, 2)
+        feed = m_catgame.CFeed("Рыба", 5, 2)
         self.session.add(feed)
-        feed = m_cat.CFeed("Вискас", 10, 3)
+        feed = m_catgame.CFeed("Вискас", 10, 3)
         self.session.add(feed)
-        feed = m_cat.CFeed("Китикэт", 15, 4)
+        feed = m_catgame.CFeed("Китикэт", 15, 4)
         self.session.add(feed)
-        feed = m_cat.CFeed("Роял Канин", 25, 5)
+        feed = m_catgame.CFeed("Роял Канин", 25, 5)
         self.session.add(feed)
         self.session.commit()
 
@@ -146,17 +194,62 @@ class CTomCat(prototype.CPrototype):
         """Проверяет наличие базы данных по пути в конфигурации."""
         return Path(self.data_path + CAT_GAME_DB).exists()
 
+    def get_help(self, pchat_title: str) -> str:
+        """Пользователь запросил список команд."""
+        assert pchat_title is not None, \
+            "Assert: [barman.get_help] " \
+            "No <pchat_title> parameter specified!"
+        command_list: str = ""
+        if self.is_enabled(pchat_title):
+
+            for command in COMMANDS:
+                command_list += ", ".join(command) + "\n"
+        return command_list
+
+    def get_hint(self, pchat_title: str) -> str:
+        """Возвращает список команд, поддерживаемых модулем.  """
+        assert pchat_title is not None, \
+            "Assert: [barman.get_hint] " \
+            "No <pchat_title> parameter specified!"
+        if self.is_enabled(pchat_title):
+            return ", ".join(HINTS)
+        return ""
+
+    def is_enabled(self, pchat_title: str) -> bool:
+        """Возвращает True, если бармен разрешен на этом канале."""
+        assert pchat_title is not None, \
+            "Assert: [barman.is_enabled] " \
+            "No <pchat_title> parameter specified!"
+        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+
     def reload(self):
         pass
 
-    def is_enabled(self, pchat_title: str) -> bool:
-        pass
+    def tomcat(self, pchat_title: str, puser_id: int, puser_title: str,
+               pmessage_text: str):
+        """Основная процедура модуля."""
+        assert pchat_title is not None, \
+            "Assert: [tomcat.tomcat] No <pchat_title> parameter specified!"
+        assert puser_id is not None, \
+            "Assert: [tomcat.tomcat] No <puser_id> parameter specified!"
+        assert puser_title is not None, \
+            "Assert: [tomcat.tomcat] No <puser_title> parameter specified!"
+        assert pmessage_text is not None, \
+            "Assert: [tomcat.tomcat] No <pmessage_text> parameter specified!"
+        answer: str
+        word_list: list = functions.parse_input(pmessage_text)
+        if self.can_process(pchat_title, pmessage_text):
 
-    def get_hint(self, pchat_title: str) -> str:
-        pass
+            if word_list[0] in HINTS:
 
-    def get_help(self, pchat_title: str) -> str:
-        pass
+                answer = "Игрок может использовать следующие команды: \n" + \
+                         self.get_help(pchat_title)
+            else:
 
-    def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
-        pass
+                command: int = recognize_command(word_list[0])
+                arguments = word_list[1:]
+                if command == CMD_REGISTRATION:
+
+                    pass
+
+        return answer

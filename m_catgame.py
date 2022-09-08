@@ -1,7 +1,8 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модели."""
+from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, ForeignKey, MetaData
+from sqlalchemy import Column, Integer, String, ForeignKey, MetaData, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 STATUS_ACTIVE: int = 1
@@ -123,6 +124,7 @@ class CGameUser(CAncestor):
                      unique=True,
                      index=True)
     fusername = Column(String, nullable=False)
+    fcoins = Column(Integer, nullable=False, default=5)
 
     def __init__(self, puserid: int, pusername: str):
         """Конструктор"""
@@ -152,6 +154,7 @@ class CCat(CAncestor):
     fsatiety = Column(Integer, nullable=False, default=25)
     fmood = Column(Integer, nullable=False, default=25)
     fdiscipline = Column(Integer, nullable=False, default=25)
+    floyalty = Column(Integer, nullable=False, default=25)
 
     def __init__(self, puser_id: int, pname: str, pcolor: str, pwooliness: str, pbreed: str):
         """Конструктор"""
@@ -174,6 +177,7 @@ class CCat(CAncestor):
                    Satiety:{self.fsatiety},
                    Mood:{self.fmood},
                    Discipline:{self.fdiscipline},
+                   Loyalty:{self.floyalty}
                    """
 
 
@@ -218,3 +222,23 @@ class CToyLink(CAncestor):
         return f"""{ancestor_repr},
                    Cat:{self.fcat},
                    Toy:{self.ftoy}"""
+
+
+class CFeedTimes(CAncestor):
+    """Класс таблицы сеансов кормления."""
+
+    __tablename__ = 'tbl_feedtimes'
+    fcat = Column(Integer, ForeignKey(CCat.id))
+    fdatetime = Column(DateTime, nullable=False)
+
+    def __init__(self, pcat: int, pdate_time: datetime):
+        """Конструктор"""
+        super().__init__()
+        self.fcat = pcat
+        self.fdatetime = pdate_time
+
+    def __repr__(self):
+        ancestor_repr = super().__repr__()
+        return f"""{ancestor_repr},
+                   Cat:{self.fcat},
+                   Time:{self.fdatetime}"""
