@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
+from datetime import date
 import sys
 from sys import platform
 from datetime import datetime
@@ -39,6 +40,7 @@ QUIT_BY_DEMAND: int = 1
 TOKEN_KEY: str = "token"
 BOT_STATUS: int = CONTINUE_RUNNING
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
+RUSSIAN_DATE_FORMAT = "%d.%m.%Y"
 
 
 class CQuitByDemand(Exception):
@@ -366,7 +368,7 @@ class CSoftIceBot:
 
 
 if __name__ == "__main__":
-
+    print(f"Started at {date.today().strftime(RUSSIAN_DATE_FORMAT)}")
     SofticeBot: CSoftIceBot = CSoftIceBot()
     SofticeBot.poll_forever()
     sys.exit(0)

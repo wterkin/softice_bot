@@ -8,7 +8,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import functions
-
+import random
 """
 Свойства кошки
 1. Здоровье.
@@ -79,6 +79,21 @@ MOOD_TERMINAL = 9
 DISCIPLINE_TERMINAL = 9
 LOYALTY_TERMINAL = 9
 
+TOMCAT_NAMES: tuple = ("Мурзик", "Барсик")
+CAT_NAMES: tuple = ("Мурка", "Белка")
+GENDERS: tuple = (0, 1)
+COLORS: tuple = (("рыжая", "рыжий"),
+                 ("чёрная", "чёрный"),
+                 ("белая", "белый"),
+                 ("бежевая", "бежевый"))
+WOOLINESS: tuple = (("короткошёрстная", "короткошёрстный"),
+                    ("средней шерстистости", "средней шерстистости"),
+                    ("длинношёрстная", "длинношёрстный")
+                   )
+BREEDS: tuple = (("персидская", "персидский"),
+                 ("сиамская", "сиамский"),
+                 ("сибирская", "сибирский"),
+                 ("мэйн-кун", "мэйн-кун"))
 
 def recognize_command(pmessage_text: str):
     """Возвращает код переданной команды, если есть такая в списке."""
@@ -100,7 +115,7 @@ class CTomCat(prototype.CPrototype):
         super().__init__()
         self.config: dict = pconfig
         self.busy: bool = False
-        self.data_path = pdata_path
+        self.data_path = pdata_path + 'tomcat/'
         self.engine = None
         self.session = None
         # self.database: database.CDataBase = database.CDataBase(self.config, self.data_path, CAT_GAME_DB)
@@ -129,6 +144,39 @@ class CTomCat(prototype.CPrototype):
                 if found:
                     break
         return found
+
+    def create_cat(self, pdbuser_id):
+        # fbreed = Column(String, nullable=False)
+        cat_gender: int = random.choice(GENDERS)
+        if cat_gender == 0:
+
+            cat_name = random.choice(CAT_NAMES)
+        else:
+
+            cat_name = random.choice(TOMCAT_NAMES)
+        cat_color = random.choice(COLORS)[cat_gender]
+        cat_wooliness = random.choice(WOOLINESS)[cat_gender]
+        cat_breed = random.choice(BREEDS)[cat_gender]
+        # new_cat = m_catgame.CCat()
+        pass
+
+    def create_user(self, puser_id, puser_title):
+        # *** Запишем пользователя в БД
+        new_user = m_catgame.CGameUser(puser_id, puser_title)
+        self.session.add(new_user)
+        self.session.commit()
+        # *** Выдадим ему игрушку базового уровня
+        new_toy = m_catgame.CToyLink(new_user.id, 1)
+        self.session.add(new_toy)
+        self.session.commit()
+        # *** Выдадим ему пару порций корма базового уровня
+        new_feed = m_catgame.CFeedLink(new_user.id, 1)
+        self.session.add(new_feed)
+        new_feed = m_catgame.CFeedLink(new_user.id, 2)
+        self.session.add(new_feed)
+        self.session.commit()
+        # *** Сгенерируем случайного кота
+        # *** Предложим его пользователю
 
     def database_connect(self):
         """Устанавливает соединение с БД."""
@@ -250,6 +298,7 @@ class CTomCat(prototype.CPrototype):
                 arguments = word_list[1:]
                 if command == CMD_REGISTRATION:
 
+                    self.create_user(puser_id, puser_title)
                     pass
 
         return answer

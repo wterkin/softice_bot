@@ -149,6 +149,7 @@ class CCat(CAncestor):
     fcolor = Column(String, nullable=False)
     fwooliness = Column(String, nullable=False)
     fbreed = Column(String, nullable=False)
+    fgender = Column(Integer, nullable=False, default=1)
     fhealth = Column(Integer, nullable=False, default=25)
     fstrength = Column(Integer, nullable=False, default=1)
     fsatiety = Column(Integer, nullable=False, default=25)
@@ -156,7 +157,7 @@ class CCat(CAncestor):
     fdiscipline = Column(Integer, nullable=False, default=25)
     floyalty = Column(Integer, nullable=False, default=25)
 
-    def __init__(self, puser_id: int, pname: str, pcolor: str, pwooliness: str, pbreed: str):
+    def __init__(self, puser_id: int, pname: str, pcolor: str, pwooliness: str, pbreed: str, pgender: int):
         """Конструктор"""
         super().__init__()
         self.fuserid = puser_id
@@ -164,6 +165,7 @@ class CCat(CAncestor):
         self.fcolor = pcolor
         self.fwooliness = pwooliness
         self.fbreed = pbreed
+        self.fgender = pgender
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
@@ -172,6 +174,7 @@ class CCat(CAncestor):
                    Color:{self.fcolor},
                    Wooliness:{self.fwooliness},
                    Breed:{self.fbreed},
+                   Gender:{self.fgender},
                    Health:{self.fhealth},
                    Strength:{self.fstrength},
                    Satiety:{self.fsatiety},
@@ -208,19 +211,19 @@ class CToyLink(CAncestor):
     """Класс таблицы связки игрушек."""
 
     __tablename__ = 'tbl_toylink'
-    fcat = Column(Integer, ForeignKey(CCat.id))
+    fuser = Column(Integer, ForeignKey(CGameUser.id))
     ftoy = Column(Integer, ForeignKey(CToy.id))
 
-    def __init__(self, pcat: int, ptoy: int):
+    def __init__(self, puser: int, ptoy: int):
         """Конструктор"""
         super().__init__()
-        self.fcat = pcat
+        self.fuser = puser
         self.ftoy = ptoy
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
-                   Cat:{self.fcat},
+                   User:{self.fuser},
                    Toy:{self.ftoy}"""
 
 
