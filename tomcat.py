@@ -89,11 +89,17 @@ COLORS: tuple = (("рыжая", "рыжий"),
 WOOLINESS: tuple = (("короткошёрстная", "короткошёрстный"),
                     ("средней шерстистости", "средней шерстистости"),
                     ("длинношёрстная", "длинношёрстный")
-                   )
-BREEDS: tuple = (("персидская", "персидский"),
-                 ("сиамская", "сиамский"),
-                 ("сибирская", "сибирский"),
-                 ("мэйн-кун", "мэйн-кун"))
+                    )
+# BREEDS: tuple = (("персидская", "персидский"),
+#                  ("сиамская", "сиамский"),
+#                  ("сибирская", "сибирский"),
+#                  ("мэйн-кун", "мэйн-кун"))
+
+STATE: tuple = (("замёрзшая", "замёрзший"),
+                ("дрожащая", "дрожащий"),
+                ("голодная", "голодный"))
+
+BREEDS: tuple = ("персидской породы", "сиамской породы", "сибирской породы", "породы мэйн-кун")
 
 def recognize_command(pmessage_text: str):
     """Возвращает код переданной команды, если есть такая в списке."""
@@ -146,19 +152,27 @@ class CTomCat(prototype.CPrototype):
         return found
 
     def create_cat(self, pdbuser_id):
-        # fbreed = Column(String, nullable=False)
+        """Генерирует случайного кота/кошку."""
+        answer = "К вам"
         cat_gender: int = random.choice(GENDERS)
+        cat_color = random.choice(COLORS)[cat_gender]
+        cat_wooliness = random.choice(WOOLINESS)[cat_gender]
+        cat_breed = random.choice(BREEDS)
         if cat_gender == 0:
 
+            answer += f" подошла  {random.choice(STATE)[cat_gender]} {cat_color} {cat_wooliness} кошечка {cat_breed}\n"
             cat_name = random.choice(CAT_NAMES)
         else:
 
+            answer += f" подошёл {random.choice(STATE)[cat_gender]} {cat_color} {cat_wooliness} котик {cat_breed}\n"
             cat_name = random.choice(TOMCAT_NAMES)
-        cat_color = random.choice(COLORS)[cat_gender]
-        cat_wooliness = random.choice(WOOLINESS)[cat_gender]
-        cat_breed = random.choice(BREEDS)[cat_gender]
-        # new_cat = m_catgame.CCat()
-        pass
+
+        new_cat = m_catgame.CCat(pdbuser_id, cat_name, cat_color, cat_wooliness, cat_breed, cat_gender)
+        self.session.add(new_cat)
+        self.session.commit()
+        answer += f"Судя по её виду, она давно живёт на улице. На ошейнике было написано имя {cat_name}. \n"
+        answer += f"Вы сжалились над несчастным животным и взяли её себе"
+        return answer
 
     def create_user(self, puser_id, puser_title):
         # *** Запишем пользователя в БД
@@ -170,14 +184,15 @@ class CTomCat(prototype.CPrototype):
         self.session.add(new_toy)
         self.session.commit()
         # *** Выдадим ему пару порций корма базового уровня
-        new_feed = m_catgame.CFeedLink(new_user.id, 1)
+        new_feed = m_catgame.CFeedLink(new_user.id, 1, 1)
         self.session.add(new_feed)
-        new_feed = m_catgame.CFeedLink(new_user.id, 2)
+        new_feed = m_catgame.CFeedLink(new_user.id, 2, 1)
         self.session.add(new_feed)
         self.session.commit()
         # *** Сгенерируем случайного кота
+        answer = self.create_cat(new_user.id)
         # *** Предложим его пользователю
-
+        return answer
     def database_connect(self):
         """Устанавливает соединение с БД."""
         self.engine = create_engine('sqlite:///' + self.data_path + CAT_GAME_DB,
@@ -284,7 +299,7 @@ class CTomCat(prototype.CPrototype):
             "Assert: [tomcat.tomcat] No <puser_title> parameter specified!"
         assert pmessage_text is not None, \
             "Assert: [tomcat.tomcat] No <pmessage_text> parameter specified!"
-        answer: str
+        answer: str = ""
         word_list: list = functions.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
