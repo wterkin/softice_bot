@@ -105,7 +105,7 @@ STATE: tuple = (("замёрзшая", "замёрзший"),
 BREEDS: tuple = ("персидской породы", "сиамской породы", "сибирской породы", "породы мэйн-кун")
 GENITIVE: tuple = ('её', 'его')  # genitive
 NOMINATIVE: tuple = ('она', 'он')  # nominative
-YOUR_CAT: tuple = ("Вашу кошку зовут", "Вашего кота зовут")
+YOUR_CAT: tuple = ("вашу кошку", "вашего кота")
 
 
 def recognize_command(pmessage_text: str):
@@ -312,12 +312,36 @@ class CTomCat(prototype.CPrototype):
 
             answer += f"[{cat.fname}]:"
             feed_time = self.get_last_feed_time(cat.id)
+            hours_from_last_feeds = (feed_time - datetime.datetime.now()).hours
+            satiety: int = cat.fsatiety - hours_from_last_feeds
+            answer += f"Сытость: {satiety}"
+            if satiety < SATIETY_TERMINAL:
+
+                # *** Поезд чух-чух
+                answer += f"\n Вы слишком долго не кормили {YOUR_CAT[cat.fgender]}. "\
+                          "Несчастное животное обиделось и ушло от вас."
+                # delete(synchronize_session=False)
+                # *** Удаляем время кормёжки
+                query = self.session.query(m_catgame.CFeedTimes)
+                query = query.filter_by(fcat=cat.id)
+                query.delete(synchronize_session=False)
+
+            else:
+
+                # *** Смотрим дальше
+                pass
+            # if hours_from_last_feeds // 3
+            # 3 раза в день
             # fhealth = Column(Integer, nullable=False, default=25)
             # fstrength = Column(Integer, nullable=False, default=1)
             # fsatiety = Column(Integer, nullable=False, default=25)
             # fmood = Column(Integer, nullable=False, default=25)
             # fdiscipline = Column(Integer, nullable=False, default=25)
             # floyalty = Column(Integer, nullable=False, default=25)
+            cat.fsatiety = satiety
+            self.session.add(cat)
+            self.session.commit()
+
         return answer
 
     def is_enabled(self, pchat_title: str) -> bool:

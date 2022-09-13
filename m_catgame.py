@@ -144,7 +144,7 @@ class CCat(CAncestor):
     """Класс кошки."""
 
     __tablename__ = 'tbl_cats'
-    fuserid = Column(Integer, ForeignKey(CGameUser.id))
+    fuser = Column(Integer, ForeignKey(CGameUser.id))
     fname = Column(String, nullable=False, default="Мурзик")
     fcolor = Column(String, nullable=False)
     fwooliness = Column(String, nullable=False)
@@ -188,7 +188,7 @@ class CFeedLink(CAncestor):
     """Класс таблицы связки еды."""
 
     __tablename__ = 'tbl_feedlink'
-    fcat = Column(Integer, ForeignKey(CCat.id))
+    fuser = Column(Integer, ForeignKey(CGameUser.id))
     ffeed = Column(Integer, ForeignKey(CFeed.id))
     fquantity = Column(Integer, nullable=False, default=1)
 
