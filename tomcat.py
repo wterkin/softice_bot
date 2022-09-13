@@ -265,6 +265,16 @@ class CTomCat(prototype.CPrototype):
         """Проверяет наличие базы данных по пути в конфигурации."""
         return Path(self.data_path + CAT_GAME_DB).exists()
 
+    def delete_cat(self, pcat: m_catgame.CCat):
+        """Удаляем заданного кота."""
+        query = self.session.query(m_catgame.CFeedTimes)
+        query = query.filter_by(fcat=pcat.id)
+        query.delete(synchronize_session=False)
+        # *** Удаляем кота
+        query = self.session.query(m_catgame.CCat)
+        query = query.filter_by(id=pcat.id)
+        query.delete(synchronize_session=False)
+
     def get_last_feed_time(self, pcat_id: int):
         """Возвращает время последней кормёжки."""
         query = self.session.query(m_catgame.CFeedTimes)
@@ -298,6 +308,17 @@ class CTomCat(prototype.CPrototype):
             return ", ".join(HINTS)
         return ""
 
+    def get_satiety(self, pcat: m_catgame.CCat):
+        """Возвращает рассчитанную величину сытости."""
+
+        feed_time = self.get_last_feed_time(pcat.id)
+        delta = datetime.datetime.now() - feed_time
+        hours_from_last_feeds = int(delta.total_seconds() // 60) // 60
+        # print(hours_from_last_feeds, type(hours_from_last_feeds))
+        # print(pcat.fsatiety, type(pcat.fsatiety))
+        # print("---"*10)
+        return pcat.fsatiety - hours_from_last_feeds
+
     def get_status(self, puser_id: int, puser_title: str):
         """Выводит игровую информацию."""
         answer: str = ""
@@ -306,35 +327,29 @@ class CTomCat(prototype.CPrototype):
         user = query.first()
         answer += f"У вас {user.fcoins} монет.\n"
         query = self.session.query(m_catgame.CCat)
-        query = query.filter_by(fuserid=user.id)
+        query = query.filter_by(fuser=user.id)
         cat_pool = query.all()
-        for cat in cat_pool:
+        for index, cat in enumerate(cat_pool):
 
-            answer += f"[{cat.fname}]:"
-            feed_time = self.get_last_feed_time(cat.id)
-            hours_from_last_feeds = (feed_time - datetime.datetime.now()).hours
-            satiety: int = cat.fsatiety - hours_from_last_feeds
+            answer += f"#{index+1} [{cat.fname}]:"
+            satiety: int = self.get_satiety(cat)
+            # feed_time = self.get_last_feed_time(cat.id)
+            # hours_from_last_feeds = (feed_time - datetime.datetime.now()).hours
+            # satiety: int = cat.fsatiety - hours_from_last_feeds
             answer += f"Сытость: {satiety}"
             if satiety < SATIETY_TERMINAL:
 
                 # *** Поезд чух-чух
                 answer += f"\n Вы слишком долго не кормили {YOUR_CAT[cat.fgender]}. "\
                           "Несчастное животное обиделось и ушло от вас."
-                # delete(synchronize_session=False)
-                # *** Удаляем время кормёжки
-                query = self.session.query(m_catgame.CFeedTimes)
-                query = query.filter_by(fcat=cat.id)
-                query.delete(synchronize_session=False)
-
+                self.delete_cat(cat)
             else:
 
                 # *** Смотрим дальше
                 pass
-            # if hours_from_last_feeds // 3
-            # 3 раза в день
+
             # fhealth = Column(Integer, nullable=False, default=25)
             # fstrength = Column(Integer, nullable=False, default=1)
-            # fsatiety = Column(Integer, nullable=False, default=25)
             # fmood = Column(Integer, nullable=False, default=25)
             # fdiscipline = Column(Integer, nullable=False, default=25)
             # floyalty = Column(Integer, nullable=False, default=25)
