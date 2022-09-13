@@ -11,6 +11,7 @@ ENABLED_IN_CHATS_KEY: str = "bellringer_chats"
 TOAD_COMMANDS = ["данж", "туса"]
 DUNGEON_COMMAND = 0
 TOAD_CHANNELS = ["OSQ Жабки"]
+MAFIA_CHANNELS = ["Maftown", "Mafiozo-City"]
 
 
 class CBellRinger(prototype.CPrototype):
@@ -37,8 +38,10 @@ class CBellRinger(prototype.CPrototype):
                 # print(word_list[0], COMMANDS)
                 if word_list[0] in COMMANDS:
 
-                    user_list = functions.load_from_file(self.data_path+"/"+pchat_title+".txt")
-                    answer = "Эй, " + ", ".join(user_list) + "!!! \n Игра начинается!"
+                    if pchat_title in MAFIA_CHANNELS:
+
+                        user_list = functions.load_from_file(self.data_path+"/"+pchat_title+".txt")
+                        answer = "Эй, " + ", ".join(user_list) + "! Пошли, поохотимся на дона! или на мителей..."
                 elif word_list[0] in TOAD_COMMANDS:
 
                     if pchat_title in TOAD_CHANNELS:

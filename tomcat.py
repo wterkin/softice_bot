@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 # Модуль игры в кошек
+import datetime
+
 import prototype
 import m_catgame
 from pathlib import Path
@@ -65,10 +67,11 @@ CAT_GAME_DB: str = "cat_game.db"
 
 CMD_REGISTRATION: int = 0
 CMD_REFRESH: int = 1
+CMD_STATUS: int = 2
 
 COMMANDS: tuple = (("играть", "play"),
                    ("обновить", "refresh"),
-                   )
+                   ("стат", "status"))
 ENABLED_IN_CHATS_KEY = "tomcat_chats"
 
 HINTS: tuple = ("котоигра", "tomcat")
@@ -100,8 +103,9 @@ STATE: tuple = (("замёрзшая", "замёрзший"),
                 ("голодная", "голодный"))
 
 BREEDS: tuple = ("персидской породы", "сиамской породы", "сибирской породы", "породы мэйн-кун")
-A: tuple = ('её', 'его')
-B: tuple = ('она', 'он')
+GENITIVE: tuple = ('её', 'его')  # genitive
+NOMINATIVE: tuple = ('она', 'он')  # nominative
+YOUR_CAT: tuple = ("Вашу кошку зовут", "Вашего кота зовут")
 
 
 def recognize_command(pmessage_text: str):
@@ -169,8 +173,12 @@ class CTomCat(prototype.CPrototype):
         new_cat = m_catgame.CCat(pdbuser_id, cat_name, cat_color, cat_wooliness, cat_breed, cat_gender)
         self.session.add(new_cat)
         self.session.commit()
-        answer += f"Судя по {A[cat_gender]} виду, {B[cat_gender]} давно живёт на улице. На ошейнике ""было написано имя {cat_name}. \n"
-        answer += f"Вы сжалились над несчастным животным и взяли {A[cat_gender]} себе."
+        answer += f"Судя по {GENITIVE[cat_gender]} виду, {NOMINATIVE[cat_gender]} давно живёт на улице."\
+                  f" На ошейнике было написано имя {cat_name}. \n"
+        answer += f"Вы сжалились над несчастным животным и взяли {GENITIVE[cat_gender]} себе."
+        feed_time = m_catgame.CFeedTimes(new_cat.id, datetime.datetime.now())
+        self.session.add(feed_time)
+        self.session.commit()
         return answer
 
     def create_user(self, puser_id, puser_title):
@@ -257,6 +265,18 @@ class CTomCat(prototype.CPrototype):
         """Проверяет наличие базы данных по пути в конфигурации."""
         return Path(self.data_path + CAT_GAME_DB).exists()
 
+    def get_last_feed_time(self, pcat_id: int):
+        """Возвращает время последней кормёжки."""
+        query = self.session.query(m_catgame.CFeedTimes)
+        query = query.filter_by(fcat=pcat_id)
+        feed_time = query.first()
+        if feed_time is not None:
+
+            return feed_time.fdatetime
+        else:
+
+            return None
+
     def get_help(self, pchat_title: str) -> str:
         """Пользователь запросил список команд."""
         assert pchat_title is not None, \
@@ -278,12 +298,41 @@ class CTomCat(prototype.CPrototype):
             return ", ".join(HINTS)
         return ""
 
+    def get_status(self, puser_id: int, puser_title: str):
+        """Выводит игровую информацию."""
+        answer: str = ""
+        query = self.session.query(m_catgame.CGameUser)
+        query = query.filter_by(fuserid=puser_id)
+        user = query.first()
+        answer += f"У вас {user.fcoins} монет.\n"
+        query = self.session.query(m_catgame.CCat)
+        query = query.filter_by(fuserid=user.id)
+        cat_pool = query.all()
+        for cat in cat_pool:
+
+            answer += f"[{cat.fname}]:"
+            feed_time = self.get_last_feed_time(cat.id)
+            # fhealth = Column(Integer, nullable=False, default=25)
+            # fstrength = Column(Integer, nullable=False, default=1)
+            # fsatiety = Column(Integer, nullable=False, default=25)
+            # fmood = Column(Integer, nullable=False, default=25)
+            # fdiscipline = Column(Integer, nullable=False, default=25)
+            # floyalty = Column(Integer, nullable=False, default=25)
+        return answer
+
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если бармен разрешен на этом канале."""
         assert pchat_title is not None, \
             "Assert: [barman.is_enabled] " \
             "No <pchat_title> parameter specified!"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+
+    def is_user_registered(self, puser_id: int):
+        """Если пользователь зарегистрирован в игре, возвращает True, иначе False."""
+        query = self.session.query(m_catgame.CGameUser)
+        query = query.filter_by(fuserid=puser_id)
+        user = query.first()
+        return user is not None
 
     def reload(self):
         pass
@@ -313,7 +362,20 @@ class CTomCat(prototype.CPrototype):
                 arguments = word_list[1:]
                 if command == CMD_REGISTRATION:
 
-                    answer = self.create_user(puser_id, puser_title)
-                    print("$"*40, answer)
+                    if self.is_user_registered(puser_id):
 
-        return answer
+                        answer = "Да вы уже в игре!"
+                    else:
+
+                        answer = self.create_user(puser_id, puser_title)
+                        # print("$"*40, answer)
+                elif command == CMD_STATUS:
+
+                    if self.is_user_registered(puser_id):
+
+                        answer = self.get_status(puser_id, puser_title)
+                    else:
+
+                        answer = "Сначала зарегистрируйтесь."
+
+            return answer
