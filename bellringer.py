@@ -4,10 +4,13 @@
 import functions
 import prototype
 
-COMMANDS: list = ["звонить", "звон", "зв", "bell"]
+COMMANDS: list = ["звонить", "звон", "зв", "ring"]
 BELLRINGER_HINT: list = ["звонарь", "ringer"]
 BELLRINGER_FOLDER: str = "bellringer/"
 ENABLED_IN_CHATS_KEY: str = "bellringer_chats"
+TOAD_COMMANDS = ["данж", "туса"]
+DUNGEON_COMMAND = 0
+TOAD_CHANNELS = ["OSQ Жабки"]
 
 
 class CBellRinger(prototype.CPrototype):
@@ -31,10 +34,24 @@ class CBellRinger(prototype.CPrototype):
                 answer = self.get_help(pchat_title)
             else:
 
+                # print(word_list[0], COMMANDS)
                 if word_list[0] in COMMANDS:
 
                     user_list = functions.load_from_file(self.data_path+"/"+pchat_title+".txt")
                     answer = "Эй, " + ", ".join(user_list) + "!!! \n Игра начинается!"
+                elif word_list[0] in TOAD_COMMANDS:
+
+                    if pchat_title in TOAD_CHANNELS:
+
+                        user_list = functions.load_from_file(self.data_path+"/"+pchat_title+".txt")
+                        answer = "Эй, " + ", ".join(user_list)
+                        if word_list[0] == TOAD_COMMANDS[DUNGEON_COMMAND]:
+
+                            answer += ", пошли в рейд! Подземелье ждёт!"
+                        else:
+
+                            answer += ", пошли потусим!"
+
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -43,7 +60,10 @@ class CBellRinger(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             word_list: list = functions.parse_input(pmessage_text)
-            for command in COMMANDS:
+            cmd_list: list = []
+            cmd_list.extend(COMMANDS)
+            cmd_list.extend(TOAD_COMMANDS)
+            for command in cmd_list:
 
                 found = word_list[0] in command
                 if found:
