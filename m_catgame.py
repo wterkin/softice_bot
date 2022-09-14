@@ -156,11 +156,12 @@ class CCat(CAncestor):
     fmood = Column(Integer, nullable=False, default=25)
     fdiscipline = Column(Integer, nullable=False, default=25)
     floyalty = Column(Integer, nullable=False, default=25)
+    facquiredate = Column(DateTime, nullable=False, default=datetime.now())
 
     def __init__(self, puser_id: int, pname: str, pcolor: str, pwooliness: str, pbreed: str, pgender: int):
         """Конструктор"""
         super().__init__()
-        self.fuserid = puser_id
+        self.fuser = puser_id
         self.fname = pname
         self.fcolor = pcolor
         self.fwooliness = pwooliness
@@ -180,7 +181,8 @@ class CCat(CAncestor):
                    Satiety:{self.fsatiety},
                    Mood:{self.fmood},
                    Discipline:{self.fdiscipline},
-                   Loyalty:{self.floyalty}
+                   Loyalty:{self.floyalty},
+                   Acquire date:{self.facquiredate}
                    """
 
 

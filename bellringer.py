@@ -27,7 +27,7 @@ class CBellRinger(prototype.CPrototype):
         """Основная функция модуля."""
         answer: str = ""
         word_list: list = functions.parse_input(pmessage_text)
-        print("bellringer")
+        # print("bellringer")
         if self.can_process(pchat_title, pmessage_text):
 
             if word_list[0] in BELLRINGER_HINT:
