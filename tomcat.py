@@ -11,6 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import functions
 import random
+
 """
 Свойства кошки
 1. Здоровье.
@@ -68,10 +69,12 @@ CAT_GAME_DB: str = "cat_game.db"
 CMD_REGISTRATION: int = 0
 CMD_REFRESH: int = 1
 CMD_STATUS: int = 2
+CMD_FEED: int = 3
 
 COMMANDS: tuple = (("играть", "play"),
                    ("обновить", "refresh"),
-                   ("стат", "state"))
+                   ("стат", "state"),
+                   ("корм", "feed"))
 ENABLED_IN_CHATS_KEY = "tomcat_chats"
 
 HINTS: tuple = ("котоигра", "tomcat")
@@ -124,7 +127,6 @@ def recognize_command(pmessage_text: str):
     for index, command in enumerate(COMMANDS):
 
         if cmd in command:
-
             command_code = index
             break
     return command_code
@@ -171,7 +173,7 @@ class CTomCat(prototype.CPrototype):
 
     def create_cat(self, pdbuser_id):
         """Генерирует случайного кота/кошку."""
-        print("***** ",  pdbuser_id)
+        print("***** ", pdbuser_id)
         answer = "К вам"
         cat_gender: int = random.choice(GENDERS)
         cat_color = random.choice(COLORS)[cat_gender]
@@ -189,7 +191,7 @@ class CTomCat(prototype.CPrototype):
         new_cat = m_catgame.CCat(pdbuser_id, cat_name, cat_color, cat_wooliness, cat_breed, cat_gender)
         self.session.add(new_cat)
         self.session.commit()
-        answer += f"Судя по {GENITIVE[cat_gender]} виду, {NOMINATIVE[cat_gender]} давно живёт на улице."\
+        answer += f"Судя по {GENITIVE[cat_gender]} виду, {NOMINATIVE[cat_gender]} давно живёт на улице." \
                   f" На ошейнике было написано имя {cat_name}. \n"
         answer += f"Вы сжалились над несчастным животным и взяли {GENITIVE[cat_gender]} себе."
         feed_time = m_catgame.CFeedTimes(new_cat.id, datetime.datetime.now())
@@ -299,14 +301,53 @@ class CTomCat(prototype.CPrototype):
         query = query.filter_by(id=pdbuser_id)
         query.delete(synchronize_session=False)
 
-    def get_cat(self, puser_id: int, pnumber: int):
+    def feed_cat(self, puser: m_catgame.CGameUser, parguments: list):
+        number: int
+        cat = None
+        cat_count = self.count_cats(puser.id)
+        # *** Проверим, запросил ли он конкретную кошку?
+        if (parguments is not None and
+                len(parguments) > 0):
+
+            if parguments[0].isdigit():
+
+                number = int(parguments[0])
+                if number <= cat_count:
+
+                    cat = self.get_cat_by_number(puser.id, number)
+            else:
+
+                cat = self.get_cat_by_name(puser.id, parguments[0])
+            if cat is not None:
+
+                # cat.fsatiety +=
+                # event_data.update({c_event.CEvent.fname: pname,
+                #                    c_event.CEvent.fyear: pdate.year,
+                #                    c_event.CEvent.fmonth: pdate.month,
+                #                    c_event.CEvent.fday: pdate.day,
+                #                    c_event.CEvent.ftype: ptype,
+                #                    c_event.CEvent.fperiod: pperiod}, synchronize_session=False)
+                # self.session.commit()
+                pass
+                return cat.fsatiety
+
+    def get_cat_by_name(self, puser_id: int, pname: str):
         """Возвращает выбранную кошку."""
+        query = self.session.query(m_catgame.CCat)
+        query = query.filter_by(fuser=puser_id)
+        query = query.filter_by(fname=pname)
+        return query.first()
+
+    def get_cat_by_number(self, puser_id: int, pnumber: int):
+        """Возвращает выбранную кошку."""
+        # print("UID: ", puser_id)
+        # print("NUM: ", pnumber)
         query = self.session.query(m_catgame.CCat)
         query = query.filter_by(fuser=puser_id)
         query = query.order_by(m_catgame.CCat.facquiredate)
         if pnumber > 1:
 
-            query = query.offset(pnumber-1)
+            query = query.offset(pnumber - 1)
             return query.limit(1)
         else:
 
@@ -322,7 +363,6 @@ class CTomCat(prototype.CPrototype):
         # print("CLS: ", satiety)
         # hours: int = self.get_hours_from_last_feed(pcat)
         if satiety < SATIETY_EDGE:
-
             satiety_diff: int = SATIETY_EDGE - satiety  # pcat.fsatiety
             # print("SDF: ", satiety_diff)
             health_loss_hours: int = int(satiety_diff / NORMAL_SATIETY_LOSS)
@@ -379,30 +419,41 @@ class CTomCat(prototype.CPrototype):
         hours_from_last_feeds = int(delta.total_seconds() // 60) // 60
         return pcat.fsatiety - int(hours_from_last_feeds * NORMAL_SATIETY_LOSS)
 
-    def get_status(self, puser_id: int, puser_title: str, parguments: list):
+    def get_status(self, puser: m_catgame.CGameUser, puser_title: str, parguments: list):
         """Выводит игровую информацию."""
         answer: str = ""
         # *** Получим формуляр игрока из БД по ID телеграмма
-        user = self.get_user(puser_id)
-        answer += f"У вас {user.fcoins} монет.\n"
+        # user = self.get_user(puser_id)
+        # print("USR: ", user)
+        answer += f"У вас {puser.fcoins} монет.\n"
         # *** Сколько кошек у него?
-        cat_count = self.count_cats(user.id)
+        cat_count = self.count_cats(puser.id)
         answer += f"У вас {cat_count} кошек.\n"
+        number: int = 1
+        cat = None
         # *** Проверим, запросил ли он конкретную кошку?
         if (parguments is not None and
-           len(parguments) > 0 and
-           parguments[0].is_digits()):
-            number = int(parguments[0])
-            if number <= cat_count:
+                len(parguments) > 0):
 
-                cat = self.get_cat(puser_id, number)
+            if parguments[0].isdigit():
+
+                number = int(parguments[0])
+                if number <= cat_count:
+
+                    cat = self.get_cat_by_number(puser.id, number)
+            else:
+
+                cat = self.get_cat_by_name(puser.id, parguments[0])
+            if cat is not None:
+
                 satiety: int = self.get_satiety(cat)
-                answer += f"#{number} [{cat.fname}] Сытость: {satiety}%\n"
+                answer += f"#{number} Имя: {cat.fname}\n"
+                answer += f"Сытость: {satiety}%\n"
                 if satiety > SATIETY_TERMINAL:
 
                     # *** Смотрим дальше
                     health: int = self.get_health(cat)
-                    if satiety > SATIETY_TERMINAL:
+                    if health > HEALTH_TERMINAL:
 
                         answer += f"Здоровье: {health}%\n"
                         answer += f"Сила: {cat.fstrength}%\n"
@@ -410,42 +461,34 @@ class CTomCat(prototype.CPrototype):
                         answer += f"Верность: {cat.floyalty}%\n"
                         answer += f"Настроение: {cat.fmood}%\n"
                     else:
+
                         # *** Поезд чух-чух
                         answer += f"\n Вы слишком долго не уделяли внимания {YOUR_CAT_DATIVE[cat.fgender]}. " \
                                   "Несчастное животное заболело и ушло от вас."
                         self.delete_cat(cat)
-                        cat = None
-                        if self.count_cats(user.id) == 0:
+                        if self.count_cats(puser.id) == 0:
                             # *** Пристрелим игрока
-                            self.delete_user(user.id)
+                            self.delete_user(puser.id)
                             answer += f"У вас нет больше кошек. Игра окончена, {puser_title}."
-
                 else:
+
                     # *** Поезд чух-чух
-                    answer += f"\n Вы слишком долго не кормили {YOUR_CAT_NOMINATIVE[cat.fgender]}. "\
+                    answer += f"\n Вы слишком долго не кормили {YOUR_CAT_NOMINATIVE[cat.fgender]}. " \
                               "Несчастное животное обиделось и ушло от вас."
                     self.delete_cat(cat)
-                    cat = None
-                    if self.count_cats(user.id) == 0:
-
+                    if self.count_cats(puser.id) == 0:
                         # *** Пристрелим игрока
-                        self.delete_user(user.id)
+                        self.delete_user(puser.id)
                         answer += f"У вас нет больше кошек. Игра окончена, {puser_title}."
+            else:
 
-                if cat is not None:
-
-                    pass
-                    # *** Не нужно. Это только при кормлении
-                    # cat.fsatiety = satiety
-                    # self.session.add(cat)
-                    # self.session.commit()
-
+                answer = "Такой кошки нет!"
         return answer
 
-    def get_user(self, puser_id):
+    def get_user(self, ptguser_id):
         """Возвращает ID игрока в базе."""
         query = self.session.query(m_catgame.CGameUser)
-        query = query.filter_by(fuserid=puser_id)
+        query = query.filter_by(fuserid=ptguser_id)
         return query.first()
 
     def is_enabled(self, pchat_title: str) -> bool:
@@ -455,22 +498,26 @@ class CTomCat(prototype.CPrototype):
             "No <pchat_title> parameter specified!"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def is_user_registered(self, puser_id: int):
-        """Если пользователь зарегистрирован в игре, возвращает True, иначе False."""
-        query = self.session.query(m_catgame.CGameUser)
-        query = query.filter_by(fuserid=puser_id)
-        user = query.first()
-        return user is not None
+    # def is_user_registered(self, ptguser_id: int):
+    #     """Если пользователь зарегистрирован в игре, возвращает True, иначе False."""
+    #     # query = self.session.query(m_catgame.CGameUser)
+    #     # query = query.filter_by(fuserid=puser_id)
+    #     # user = query.first()
+    #     er = self.get_user(ptguser_id)
+    #     if user is not None:
+    #
+    #         return True, user
+    #     return False, -1
 
     def reload(self):
         pass
 
-    def tomcat(self, pchat_title: str, puser_id: int, puser_title: str,
+    def tomcat(self, pchat_title: str, ptguser_id: int, puser_title: str,
                pmessage_text: str):
         """Основная процедура модуля."""
         assert pchat_title is not None, \
             "Assert: [tomcat.tomcat] No <pchat_title> parameter specified!"
-        assert puser_id is not None, \
+        assert ptguser_id is not None, \
             "Assert: [tomcat.tomcat] No <puser_id> parameter specified!"
         assert puser_title is not None, \
             "Assert: [tomcat.tomcat] No <puser_title> parameter specified!"
@@ -486,24 +533,26 @@ class CTomCat(prototype.CPrototype):
                          self.get_help(pchat_title)
             else:
 
+                user = self.get_user(ptguser_id)
+
                 command: int = recognize_command(word_list[0])
                 arguments = word_list[1:]
-                if command == CMD_REGISTRATION:
+                if user is not None:
 
-                    if self.is_user_registered(puser_id):
+                    if command == CMD_STATUS:
 
-                        answer = "Да вы уже в игре!"
-                    else:
+                        answer = self.get_status(user, puser_title, arguments)
+                    elif command == CMD_FEED:
 
-                        answer = self.create_user(puser_id, puser_title)
+                        answer = self.feed_cat(user, puser_title, arguments)
+
+                else:
+
+                    if command == CMD_REGISTRATION:
+
+                        answer = self.create_user(ptguser_id, puser_title)
                         # print("$"*40, answer)
-                elif command == CMD_STATUS:
-
-                    if self.is_user_registered(puser_id):
-
-                        answer = self.get_status(puser_id, puser_title, arguments)
                     else:
 
                         answer = "Сначала зарегистрируйтесь."
-
             return answer
