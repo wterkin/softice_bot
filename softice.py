@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
-from datetime import date
+from datetime import datetime, date
 import sys
 from sys import platform
-from datetime import datetime
 import json
 import telebot
 from requests import ReadTimeout
@@ -21,7 +20,6 @@ import moderator
 import statistic
 import stargazer
 import theolog
-import tomcat
 
 LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
 WINDOWS_DATA_FOLDER_KEY: str = "windows_data_folder"
@@ -107,7 +105,8 @@ class CSoftIceBot:
         # *** Поехали создавать работников =)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
-        self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config, self.data_path)
+        self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config,
+                                                                         self.data_path)
 
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
@@ -116,8 +115,6 @@ class CSoftIceBot:
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
-        # *** Игра
-        self.tomcat: tomcat.CTomCat = tomcat.CTomCat(self.config, self.data_path)
         # *** Обработчик сообщений
         """Обработчик сообщений."""
         @self.robot.message_handler(content_types=EVENTS)
@@ -162,7 +159,6 @@ class CSoftIceBot:
 
                                 # *** Нет. Ну и пусть модули разбираются....
                                 answer = self.process_modules(chat_id, chat_title,
-                                                              pmessage.from_user.id,
                                                               user_name,
                                                               user_title)
                                 # *** Разобрались?
@@ -245,7 +241,7 @@ class CSoftIceBot:
         return result
 
     def process_modules(self, pchat_id: int, pchat_title: str,
-                        puser_id: int, puser_name: str, puser_title: str):
+                        puser_name: str, puser_title: str):
         """Пытается обработать команду различными модулями."""
         assert pchat_title is not None, \
             "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
@@ -287,9 +283,6 @@ class CSoftIceBot:
         if not answer:
 
             answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
-        if not answer:
-
-            answer = self.tomcat.tomcat(pchat_title, puser_id, puser_title, self.message_text)
         if not answer:
 
             # *** Незнакомая команда.

@@ -26,7 +26,8 @@ COMMANDS = ["топ10", "топ25", "топ50", "перс", "top10", "top25", "t
 ENABLED_IN_CHATS_KEY = "statistic_chats"
 BOTS = ("TrueMafiaBot", "MafiaWarBot", "glagolitic_bot", "combot", "chgk_bot")
 FOREIGN_BOTS = "foreign_bots"
-SORTED_BY: tuple = ("предложений", "слов", "стикеров", "картинок", "звуковых сообщений", "видео сообщений")
+SORTED_BY: tuple = ("предложений", "слов", "стикеров", "картинок",
+                    "звуковых сообщений", "видео сообщений")
 
 
 def decode_stat(pstat: m_stat.CStat):
@@ -264,7 +265,8 @@ class CStatistic(prototype.CPrototype):
     #
     #                 chat_id = data.id
     #             # print("STT:SM:CHAT ID: ", chat_id)
-    #             # *** проверить, нет ли юзера в таблице тг юзеров, если нет - добавить и получить id
+    #             # *** проверить, нет ли юзера в таблице тг юзеров, если нет -
+    #             добавить и получить id
     #             query = session.query(m_users.CUser)
     #             query = query.filter_by(ftguserid=tg_user_id)
     #             data = query.first()
@@ -305,7 +307,8 @@ class CStatistic(prototype.CPrototype):
     #                 # *** Изменяем информацию в базе
     #                 query.update({m_stat.CStat.fletters: data.fletters + letters,
     #                               m_stat.CStat.fwords: data.fwords + words,
-    #                               m_stat.CStat.fphrases: data.fphrases + 1}, synchronize_session=False)
+    #                               m_stat.CStat.fphrases: data.fphrases + 1},
+    #                               synchronize_session=False)
     #             session.commit()
     #             # *** Запись окончена, разлочиваем базу
     #             self.busy = False
