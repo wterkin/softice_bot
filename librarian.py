@@ -7,39 +7,26 @@ from datetime import datetime as dtime
 import functions as func
 import prototype
 
-# *** Команды для цитатника хокку
-ASK_HOKKU_CMD: int = 0
-ADD_HOKKU_CMD: int = 1
-DEL_HOKKU_CMD: int = 2
-FIND_HOKKU_CMD: int = 3
-
 # *** Команды для цитатника высказываний
-ASK_QUOTE_CMD: int = 10
-ADD_QUOTE_CMD: int = 11
-DEL_QUOTE_CMD: int = 12
-FIND_QUOTE_CMD: int = 13
+ASK_QUOTE_CMD: int = 0
+FIND_QUOTE_CMD: int = 1
+ADD_QUOTE_CMD: int = 2
+DEL_QUOTE_CMD: int = 3
 
 RELOAD_LIBRARY: list = ["lbreload", "lbrl"]
 SAVE_LIBRARY: list = ["lbsave", "lbsv"]
 LIBRARIAN_FOLDER: str = "librarian/"
-HOKKU_FILE_NAME: str = "hokku.txt"
 QUOTES_FILE_NAME: str = "quotes.txt"
-"""
-HOKKU_COMMANDS: list = [["хокку", "хк", "hokku", "hk"],
-                        ["хоккуиск", "хк?", "hokkufind", "hk?"]
-                        ["хоккудоб", "хк+", "hokkuadd", "hk+"],
-                        ["хоккуудал", "хк-", "hokkudel", "hk-"],
-                        ]
-"""
 
-HOKKU_COMMANDS: list = [["", "", "", ""],
-                        ["", "", "", ""],
-                        ["", "", "", ""],
-                        ["", "", "", ""]]
+QUOTES_DESC: list = [" : получить случайную цитату",
+                     " : найти цитату по фрагменту текста",
+                     " : добавить цитату"]
+
 QUOTES_COMMANDS: list = [["цитата", "цт", "quote", "qt"],
+                         ["цитиск", "цт?", "quotefind", "qt?"],
                          ["цитдоб", "цт+", "quoteadd", "qt+"],
-                         ["цитудал", "цт-", "quotedel", "qt-"],
-                         ["цитиск", "цт?", "quotefind", "qt?"]]
+                         ["цитудал", "цт-", "quotedel", "qt-"]
+                         ]
 
 HINT = ["библиотека", "биб", "library", "lib"]
 ENABLED_IN_CHATS_KEY: str = "librarian_chats"
@@ -79,19 +66,11 @@ def get_command(pword: str) -> int:
         "Assert: [librarian.get_command] " \
         "No <pword> parameter specified!"
     result: int = -1
-    for command_idx, command in enumerate(HOKKU_COMMANDS):
+    for command_idx, command in enumerate(QUOTES_COMMANDS):
 
         if pword in command:
 
             result = command_idx
-
-    if result < 0:
-
-        for command_idx, command in enumerate(QUOTES_COMMANDS):
-
-            if pword in command:
-
-                result = command_idx + 10
     return result
 
 
@@ -174,7 +153,7 @@ class CLibrarian(prototype.CPrototype):
         super().__init__()
         self.config = pconfig
         self.data_path = pdata_path + LIBRARIAN_FOLDER
-        self.hokku: list = []
+        # self.hokku: list = []
         self.quotes: list = []
         self.reload()
 
@@ -190,7 +169,7 @@ class CLibrarian(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
-            for command in HOKKU_COMMANDS:
+            for command in QUOTES_COMMANDS:
 
                 found = word_list[0] in command
                 if found:
@@ -198,59 +177,14 @@ class CLibrarian(prototype.CPrototype):
                     break
             if not found:
 
-                for command in QUOTES_COMMANDS:
-
-                    found = word_list[0] in command
-                    if found:
-
-                        break
+                found = word_list[0] in HINT
                 if not found:
 
-                    found = word_list[0] in HINT
+                    found = word_list[0] in RELOAD_LIBRARY
                     if not found:
 
-                        found = word_list[0] in RELOAD_LIBRARY
-                        if not found:
-
-                            found = word_list[0] in SAVE_LIBRARY
+                        found = word_list[0] in SAVE_LIBRARY
         return found
-
-    def execute_hokku_commands(self, puser_name: str, puser_title: str,
-                               pword_list: list, pcommand: int) -> str:
-        """Выполняет команды, касающиеся базы хокку."""
-        assert pword_list is not None, \
-            "Assert: [librarian.execute_hokku_commands] " \
-            "No <pword_list> parameter specified!"
-        assert pcommand is not None, \
-            "Assert: [librarian.execute_hokku_commands] " \
-            "No <pcommand> parameter specified!"
-        answer: str = ""
-        if pcommand == ASK_HOKKU_CMD:
-
-            # *** Пользователь хочет хокку....
-            answer = quote(self.hokku, pword_list)
-        elif pcommand == ADD_HOKKU_CMD:
-
-            # *** Пользователь хочет добавить хокку в книгу
-            self.hokku.append(" ".join(pword_list[1:]))
-            answer = f"Спасибо, {puser_title}, хокку добавлено."
-        elif pcommand == DEL_HOKKU_CMD:
-
-            # *** Пользователь хочет удалить хокку из книги...
-            if puser_name == self.config["master"]:
-
-                del self.hokku[int(pword_list[1])]
-                answer = f"Хокку {pword_list[1]} удалена."
-            else:
-
-                # *** ... но не тут-то было...
-                answer = (f"Извини, {puser_title}, "
-                          f"только {self.config['master_name']} может удалять хокку.")
-        elif pcommand == FIND_HOKKU_CMD:
-
-            # *** Пользователь хочет найти хокку по заданной строке
-            answer = find_in_book(self.hokku, pword_list)
-        return answer
 
     def execute_quotes_commands(self, puser_name: str, puser_title: str,
                                 pword_list: list, pcommand: int) -> str:
@@ -270,13 +204,13 @@ class CLibrarian(prototype.CPrototype):
 
             # *** Пользователь хочет добавить цитату в книгу
             self.quotes.append(" ".join(pword_list[1:]))
-            answer = f"Спасибо, {puser_title}, цитата добавлена."
+            answer = f"Спасибо, {puser_title}, цитата добавлена под номером {len(self.quotes)}."
         elif pcommand == DEL_QUOTE_CMD:
 
             # *** Пользователь хочет удалить цитату из книги...
             if puser_name == self.config["master"]:
 
-                del self.quotes[int(pword_list[1])]
+                del self.quotes[int(pword_list[1])-1]
                 answer = f"Цитата {pword_list[1]} удалена."
             else:
 
@@ -296,10 +230,6 @@ class CLibrarian(prototype.CPrototype):
         command_list: str = ""
         if self.is_enabled(pchat_title):
 
-            for command in HOKKU_COMMANDS:
-
-                command_list += ", ".join(command)
-                command_list += "\n"
             for command in QUOTES_COMMANDS:
 
                 command_list += ", ".join(command)
@@ -361,7 +291,6 @@ class CLibrarian(prototype.CPrototype):
                 can_reload, answer = self.is_master(puser_name, puser_title)
                 if can_reload:
 
-                    save_book(self.hokku, self.data_path + HOKKU_FILE_NAME)
                     save_book(self.quotes, self.data_path + QUOTES_FILE_NAME)
                     answer = "Библиотека сохранена"
             elif word_list[0] in HINT:
@@ -370,18 +299,9 @@ class CLibrarian(prototype.CPrototype):
             else:
                 # *** Получим код команды
                 command = get_command(word_list[0])
-                if command >= 0:
-
-                    if command < ASK_QUOTE_CMD:
-
-                        # *** Хокку запрашивали?
-                        answer = self.execute_hokku_commands(puser_name, puser_title,
-                                                             word_list, command)
-                    else:
-
-                        # *** Не, цитату
-                        answer = self.execute_quotes_commands(puser_name, puser_title,
-                                                              word_list, command)
+                # *** Не, цитату
+                answer = self.execute_quotes_commands(puser_name, puser_title,
+                                                      word_list, command)
             if answer:
 
                 print("Librarian answers: ", answer[:16])
@@ -390,7 +310,5 @@ class CLibrarian(prototype.CPrototype):
 
     def reload(self):
         """Перезагружает библиотеку."""
-        self.hokku = load_book_from_file(self.data_path + HOKKU_FILE_NAME)
         self.quotes = load_book_from_file(self.data_path + QUOTES_FILE_NAME)
-        print(f"Librarian successfully reload library - {len(self.hokku)} hokku "
-              f"and {len(self.quotes)} quotes")
+        print(f"Librarian successfully reload library - {len(self.quotes)} quotes")

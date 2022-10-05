@@ -16,19 +16,19 @@ ADD_HOKKU_CMD: int = 2
 DEL_HOKKU_CMD: int = 3
 
 RELOAD_BOOK: list = ["hokkureload", "hkrl"]
-SAVE_BOOK: list = ["hokkuksave", "hksv"]
+SAVE_BOOK: list = ["hokkusave", "hksv"]
 HAIJIN_FOLDER: str = "haijin/"
 HAIJIN_FILE_NAME: str = "hokku.txt"
 
-HAIJIN_DESC: list = ["Получить случайное хокку",
-                     "Найти хокку по фрагменту текста",
-                     "Добавить хокку в базу",
-                     "Удалить хокку из базы"]
+HAIJIN_DESC: list = [" : получить случайное хокку",
+                     " : найти хокку по фрагменту текста",
+                     " : добавить хокку в базу",
+                     " : удалить хокку из базы"]
 
-HAIJIN_COMMANDS: list = [["!хк", "!hk"],
-                         ["!хк?", "!hk?"],
-                         ["!хк+", "!hk+"],
-                         ["!хк-", "!hk-"]]
+HAIJIN_COMMANDS: list = [["хк", "hk"],
+                         ["хк?", "hk?"],
+                         ["хк+", "hk+"],
+                         ["хк-", "hk-"]]
 
 HINT = ["хокку", "hokku"]
 ENABLED_IN_CHATS_KEY: str = "haijin_chats"
@@ -70,7 +70,6 @@ class CHaijin(prototype.CPrototype):
             "No <pmessage_text> parameter specified!"
         found: bool = False
         if self.is_enabled(pchat_title):
-
             word_list: list = func.parse_input(pmessage_text)
             for command in HAIJIN_COMMANDS:
 
@@ -102,7 +101,7 @@ class CHaijin(prototype.CPrototype):
 
                 if idx+1 != len(HAIJIN_COMMANDS):
 
-                    command_list += ", ".join(command) + " : " + HAIJIN_DESC[idx]
+                    command_list += ", ".join(command) + HAIJIN_DESC[idx]
                     command_list += "\n"
         return command_list
 
@@ -164,13 +163,13 @@ class CHaijin(prototype.CPrototype):
 
                         # *** Пользователь хочет добавить хокку в книгу
                         self.hokku.append(" ".join(word_list[1:]))
-                        answer = f"Спасибо, {puser_title}, хокку добавлено."
+                        answer = f"Спасибо, {puser_title}, хокку добавлено под номером {len(self.hokku)}."
                     elif command == DEL_HOKKU_CMD:
 
                         # *** Пользователь хочет удалить хокку из книги...
                         if puser_name == self.config["master"]:
 
-                            del self.hokku[int(word_list[1])]
+                            del self.hokku[int(word_list[1])-1]
                             answer = f"Хокку {word_list[1]} удалена."
                         else:
 
