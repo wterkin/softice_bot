@@ -249,14 +249,16 @@ class CSoftIceBot:
         assert puser_title is not None, \
             "Assert: [softice.process_modules] No <puser_title> parameter specified!"
         # *** Проверим, не запросил ли пользователь что-то у бармена...
-        print("**** ", self.message_text)
         answer: str = self.barman.barman(pchat_title, puser_name, puser_title,
                                          self.message_text).strip()
-
         if not answer:
 
-            # *** ... или у теолога...
-            answer = self.theolog.theolog(pchat_title, self.message_text).strip()
+            # *** Или у звонаря
+            answer = self.bellringer.bellringer(pchat_title, self.message_text).strip()
+        if not answer:
+
+            # *** ... или у хайдзина
+            answer = self.haijin.haijin(pchat_title, puser_name, puser_title, self.message_text)
         if not answer:
 
             # *** ... или у библиотекаря...
@@ -268,25 +270,26 @@ class CSoftIceBot:
             answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
         if not answer:
 
+            # *** ... или у модератора...
+            answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
+        if not answer:
+
             # *** ... или у статистика...
             answer = self.statistic.statistic(pchat_id, pchat_title,
                                               puser_title, self.message_text).strip()
         if not answer:
 
-            answer = self.bellringer.bellringer(pchat_title, self.message_text).strip()
-        if not answer:
-
-            answer = self.babbler.babbler(pchat_title, puser_name, puser_title,
-                                          self.message_text).strip()
-        if not answer:
-
+            # *** ... или у звездочёта...
             answer = self.stargazer.stargazer(pchat_title, self.message_text).strip()
         if not answer:
 
-            answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
+            # *** ... или у теолога...
+            answer = self.theolog.theolog(pchat_title, self.message_text).strip()
         if not answer:
-            # def haijin(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
-            answer = self.haijin.haijin(pchat_title, puser_name, puser_title, self.message_text)
+
+            # *** ... может, у болтуна есть, что сказать?
+            answer = self.babbler.babbler(pchat_title, puser_name, puser_title,
+                                          self.message_text).strip()
         if not answer:
 
             # *** Незнакомая команда.
@@ -320,6 +323,7 @@ class CSoftIceBot:
         # *** Собираем ответы работников на запрос помощи
         answer: str = f"""\n{self.barman.get_hint(pchat_title)}
                           \n{self.bellringer.get_hint(pchat_title)}
+                          \n{self.haijin.get_hint(pchat_title)}
                           \n{self.librarian.get_hint(pchat_title)}
                           \n{self.meteorolog.get_hint(pchat_title)}
                           \n{self.statistic.get_hint(pchat_title)}

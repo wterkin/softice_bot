@@ -20,11 +20,15 @@ SAVE_BOOK: list = ["hokkuksave", "hksv"]
 HAIJIN_FOLDER: str = "haijin/"
 HAIJIN_FILE_NAME: str = "hokku.txt"
 
-HAIJIN_COMMANDS: list = [["хк", "hk", "Получить случайное хокку"],
-                         ["хк?", "hk?", "Найти хокку по фрагменту текста"],
-                         ["хк+", "hk+", "Добавить хокку в базу"],
-                         ["хк-", "hk-", "Удалить хокку из базы"],
-                         ]
+HAIJIN_DESC: list = ["Получить случайное хокку",
+                     "Найти хокку по фрагменту текста",
+                     "Добавить хокку в базу",
+                     "Удалить хокку из базы"]
+
+HAIJIN_COMMANDS: list = [["!хк", "!hk"],
+                         ["!хк?", "!hk?"],
+                         ["!хк+", "!hk+"],
+                         ["!хк-", "!hk-"]]
 
 HINT = ["хокку", "hokku"]
 ENABLED_IN_CHATS_KEY: str = "haijin_chats"
@@ -67,12 +71,10 @@ class CHaijin(prototype.CPrototype):
         found: bool = False
         if self.is_enabled(pchat_title):
 
-            print("********")
             word_list: list = func.parse_input(pmessage_text)
             for command in HAIJIN_COMMANDS:
 
                 found = word_list[0] in command
-                print(command)
                 if found:
 
                     break
@@ -86,7 +88,6 @@ class CHaijin(prototype.CPrototype):
                     if not found:
 
                         found = word_list[0] in SAVE_BOOK
-        print(found)
         return found
 
     def get_help(self, pchat_title: str) -> str:
@@ -97,10 +98,12 @@ class CHaijin(prototype.CPrototype):
         command_list: str = ""
         if self.is_enabled(pchat_title):
 
-            for command in HAIJIN_COMMANDS:
+            for idx, command in enumerate(HAIJIN_COMMANDS):
 
-                command_list += ", ".join(command)
-                command_list += "\n"
+                if idx+1 != len(HAIJIN_COMMANDS):
+
+                    command_list += ", ".join(command) + " : " + HAIJIN_DESC[idx]
+                    command_list += "\n"
         return command_list
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
@@ -124,10 +127,8 @@ class CHaijin(prototype.CPrototype):
         command: int
         answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
-        print(word_list, pchat_title)
         if self.can_process(pchat_title, pmessage_text):
 
-            print(1)
             # *** Возможно, запросили перезагрузку.
             if word_list[0] in RELOAD_BOOK:
 
@@ -154,10 +155,7 @@ class CHaijin(prototype.CPrototype):
                 command = get_command(word_list[0])
                 if command >= 0:
 
-                    print(command)
                     # *** Хокку запрашивали?
-                    # answer = self.execute_hokku_commands(puser_name, puser_title,
-                    #                                      word_list, command)
                     if command == ASK_HOKKU_CMD:
 
                         # *** Пользователь хочет хокку....
@@ -185,7 +183,7 @@ class CHaijin(prototype.CPrototype):
                         answer = librarian.find_in_book(self.hokku, word_list)
             if answer:
 
-                print("Librarian answers: ", answer[:16])
+                print("Haijin answers: ", answer[:16])
 
         return answer
 
@@ -194,7 +192,6 @@ class CHaijin(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [librarian.is_enabled] " \
             "No <pchat_title> parameter specified!"
-        print(pchat_title, self.config[ENABLED_IN_CHATS_KEY])
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name, puser_title):
@@ -204,7 +201,7 @@ class CHaijin(prototype.CPrototype):
 
             return True, ""
         # *** Низзя
-        print("Библиотекарь - нет прав")
+        print("Haijin - нет прав")
         return False, f"У вас нет на это прав, {puser_title}."
 
     def reload(self):
