@@ -14,6 +14,7 @@ import database
 import babbler
 import barman
 import bellringer
+import haijin
 import librarian
 import meteorolog
 import moderator
@@ -107,7 +108,7 @@ class CSoftIceBot:
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
         self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config,
                                                                          self.data_path)
-
+        self.haijin: haijin.CHaijin = haijin.CHaijin(self.config, self.data_path)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
@@ -283,6 +284,9 @@ class CSoftIceBot:
         if not answer:
 
             answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
+        if not answer:
+            # def haijin(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
+            answer = self.haijin.haijin(pchat_title, puser_name, puser_title, self.message_text)
         if not answer:
 
             # *** Незнакомая команда.

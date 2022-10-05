@@ -32,10 +32,10 @@ HOKKU_COMMANDS: list = [["хокку", "хк", "hokku", "hk"],
                         ]
 """
 
-HOKKU_COMMANDS: list = [["хокку", "хк", "hokku", "hk"],
-                        ["хоккудоб", "хк+", "hokkuadd", "hk+"],
-                        ["хоккуудал", "хк-", "hokkudel", "hk-"],
-                        ["хоккуиск", "хк?", "hokkufind", "hk?"]]
+HOKKU_COMMANDS: list = [["", "", "", ""],
+                        ["", "", "", ""],
+                        ["", "", "", ""],
+                        ["", "", "", ""]]
 QUOTES_COMMANDS: list = [["цитата", "цт", "quote", "qt"],
                          ["цитдоб", "цт+", "quoteadd", "qt+"],
                          ["цитудал", "цт-", "quotedel", "qt-"],
