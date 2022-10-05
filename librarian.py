@@ -24,16 +24,24 @@ SAVE_LIBRARY: list = ["lbsave", "lbsv"]
 LIBRARIAN_FOLDER: str = "librarian/"
 HOKKU_FILE_NAME: str = "hokku.txt"
 QUOTES_FILE_NAME: str = "quotes.txt"
+"""
+HOKKU_COMMANDS: list = [["хокку", "хк", "hokku", "hk"],
+                        ["хоккуиск", "хк?", "hokkufind", "hk?"]
+                        ["хоккудоб", "хк+", "hokkuadd", "hk+"],
+                        ["хоккуудал", "хк-", "hokkudel", "hk-"],
+                        ]
+"""
+
 HOKKU_COMMANDS: list = [["хокку", "хк", "hokku", "hk"],
                         ["хоккудоб", "хк+", "hokkuadd", "hk+"],
                         ["хоккуудал", "хк-", "hokkudel", "hk-"],
                         ["хоккуиск", "хк?", "hokkufind", "hk?"]]
 QUOTES_COMMANDS: list = [["цитата", "цт", "quote", "qt"],
-                         ["цитатдоб", "цт+", "quoteadd", "qt+"],
-                         ["цитатудал", "цт-", "quotedel", "qt-"],
-                         ["цитатиск", "цт?", "quotefind", "qt?"]]
+                         ["цитдоб", "цт+", "quoteadd", "qt+"],
+                         ["цитудал", "цт-", "quotedel", "qt-"],
+                         ["цитиск", "цт?", "quotefind", "qt?"]]
 
-HINT = ["библиотека", "ббл", "library", "lib"]
+HINT = ["библиотека", "биб", "library", "lib"]
 ENABLED_IN_CHATS_KEY: str = "librarian_chats"
 
 
