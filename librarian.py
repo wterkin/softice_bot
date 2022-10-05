@@ -45,11 +45,11 @@ def find_in_book(pbook: list, pword_list: list) -> str:
 
         found_list: list = []
         search_line: str = " ".join(pword_list[1:])
-        for line in pbook:
+        for idx, line in enumerate(pbook):
 
             if search_line.upper() in line.upper():
 
-                found_list.append(line)
+                found_list.append(f"[{idx}]{line}")
         if len(found_list) > 0:
 
             answer = random.choice(found_list)

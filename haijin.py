@@ -32,6 +32,14 @@ HAIJIN_COMMANDS: list = [["хк", "hk"],
 
 HINT = ["хокку", "hokku"]
 ENABLED_IN_CHATS_KEY: str = "haijin_chats"
+BOLD = "*"
+ITALIC = "_"
+SLASH = "/"
+LF = "\n"
+SPACE = " "
+LEFT_PARENTHESIS = "("
+RIGHT_PARENTHESIS = ")"
+AUTHOR_INDENT = "     "
 
 
 def format_hokku(ptext: str) -> str:
@@ -39,12 +47,34 @@ def format_hokku(ptext: str) -> str:
     left_par = ptext.index("[")
     right_par = ptext.index("]")
     number = ptext[left_par+1:right_par]
-    text = "_" + ptext[right_par+1:]
-    text = text.replace("/ ", "\n")
-    text = text.replace("/", "\n")
-    text = text.replace("(", "_\n*")
-    text = text.replace(")", "*")
-    text += " | " + number + " |"
+    # text = "* _" + ptext[right_par+1:]
+    # text = text.replace("/ ", "\n")
+    # text = text.replace("/", "\n")
+    # text = text.replace("(", "_ *\n     *")
+    # text = text.replace(")", "*")
+    # text += " | " + number + " |"
+    # *** Выкусим текст после номера и зададим форматирование - жирный курсив
+    text = BOLD + ITALIC + ptext[right_par+1:]
+    # TODO: Вот тут сплитнуть текст по / и всё будет проще.
+    # *** Заменим / на перевод строки
+    text = text.replace(SLASH + SPACE, LF)
+    text = text.replace(SLASH, LF)
+    # *** Если в скобках указан автор
+    if text.index(LEFT_PARENTHESIS) > 0:
+
+        # *** Убираем скобки, форматируем
+        text = text.replace(LEFT_PARENTHESIS, ITALIC+BOLD+LF+AUTHOR_INDENT+BOLD)
+        text = text.replace(RIGHT_PARENTHESIS, BOLD)
+    else:
+
+        # *** Вставляем завершение форматирования текста
+        text += ITALIC+BOLD
+    # *** Точки экранируем
+    text = text.replace(".", "\.")
+    # *** Тире экранируем
+    text = text.replace("-", "\-")
+    # *** Номер помещаем в разделители
+    text += " \| " + number + " \|"
     return text
 
 
@@ -213,6 +243,7 @@ class CHaijin(prototype.CPrototype):
         """Перезагружает библиотеку."""
         self.hokku = librarian.load_book_from_file(self.data_path + HAIJIN_FILE_NAME)
         print(f"Haijin successfully reload library - {len(self.hokku)} hokku ")
+
 
 """*bold \*text*
 _italic \*text_
