@@ -176,7 +176,7 @@ class CSoftIceBot:
                         if answer:
 
                             # *** Выводим ответ.
-                            self.robot.send_message(chat_id, answer)
+                            self.robot.send_message(chat_id, answer, parse_mode="Markdown")
             # else:
             #
             #     # *** Бота привели на чужой канал. Выходим.

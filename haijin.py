@@ -34,6 +34,20 @@ HINT = ["хокку", "hokku"]
 ENABLED_IN_CHATS_KEY: str = "haijin_chats"
 
 
+def format_hokku(ptext: str) -> str:
+    """Форматирует хокку так, как нам хочется."""
+    left_par = ptext.index("[")
+    right_par = ptext.index("]")
+    number = ptext[left_par+1:right_par]
+    text = "_" + ptext[right_par+1:]
+    text = text.replace("/ ", "\n")
+    text = text.replace("/", "\n")
+    text = text.replace("(", "_\n*")
+    text = text.replace(")", "*")
+    text += " | " + number + " |"
+    return text
+
+
 def get_command(pword: str) -> int:
     """Распознает команду и возвращает её код, в случае неудачи - None.
     """
@@ -75,7 +89,6 @@ class CHaijin(prototype.CPrototype):
 
                 found = word_list[0] in command
                 if found:
-
                     break
 
             if not found:
@@ -85,7 +98,6 @@ class CHaijin(prototype.CPrototype):
 
                     found = word_list[0] in RELOAD_BOOK
                     if not found:
-
                         found = word_list[0] in SAVE_BOOK
         return found
 
@@ -99,8 +111,7 @@ class CHaijin(prototype.CPrototype):
 
             for idx, command in enumerate(HAIJIN_COMMANDS):
 
-                if idx+1 != len(HAIJIN_COMMANDS):
-
+                if idx + 1 != len(HAIJIN_COMMANDS):
                     command_list += ", ".join(command) + HAIJIN_DESC[idx]
                     command_list += "\n"
         return command_list
@@ -111,7 +122,6 @@ class CHaijin(prototype.CPrototype):
             "Assert: [barman.get_hint] " \
             "No <pchat_title> parameter specified!"
         if self.is_enabled(pchat_title):
-
             return ", ".join(HINT)
         return ""
 
@@ -134,7 +144,6 @@ class CHaijin(prototype.CPrototype):
                 # *** Пользователь хочет перезагрузить книгу хокку
                 can_reload, answer = self.is_master(puser_name, puser_title)
                 if can_reload:
-
                     self.reload()
                     answer = "Книга загружена"
             elif word_list[0] in SAVE_BOOK:
@@ -142,7 +151,6 @@ class CHaijin(prototype.CPrototype):
                 # *** Пользователь хочет сохранить книгу хокку
                 can_reload, answer = self.is_master(puser_name, puser_title)
                 if can_reload:
-
                     librarian.save_book(self.hokku, self.data_path + HAIJIN_FILE_NAME)
                     answer = "Книга сохранена"
             elif word_list[0] in HINT:
@@ -158,7 +166,7 @@ class CHaijin(prototype.CPrototype):
                     if command == ASK_HOKKU_CMD:
 
                         # *** Пользователь хочет хокку....
-                        answer = librarian.quote(self.hokku, word_list)
+                        answer = format_hokku(librarian.quote(self.hokku, word_list))
                     elif command == ADD_HOKKU_CMD:
 
                         # *** Пользователь хочет добавить хокку в книгу
@@ -169,7 +177,7 @@ class CHaijin(prototype.CPrototype):
                         # *** Пользователь хочет удалить хокку из книги...
                         if puser_name == self.config["master"]:
 
-                            del self.hokku[int(word_list[1])-1]
+                            del self.hokku[int(word_list[1]) - 1]
                             answer = f"Хокку {word_list[1]} удалена."
                         else:
 
@@ -179,9 +187,8 @@ class CHaijin(prototype.CPrototype):
                     elif command == FIND_HOKKU_CMD:
 
                         # *** Пользователь хочет найти хокку по заданной строке
-                        answer = librarian.find_in_book(self.hokku, word_list)
+                        answer = format_hokku(librarian.find_in_book(self.hokku, word_list))
             if answer:
-
                 print("Haijin answers: ", answer[:16])
 
         return answer
@@ -197,7 +204,6 @@ class CHaijin(prototype.CPrototype):
         """Проверяет, является ли пользователь хозяином бота."""
 
         if puser_name == self.config["master"]:
-
             return True, ""
         # *** Низзя
         print("Haijin - нет прав")
@@ -207,3 +213,19 @@ class CHaijin(prototype.CPrototype):
         """Перезагружает библиотеку."""
         self.hokku = librarian.load_book_from_file(self.data_path + HAIJIN_FILE_NAME)
         print(f"Haijin successfully reload library - {len(self.hokku)} hokku ")
+
+"""*bold \*text*
+_italic \*text_
+__underline__
+~strikethrough~
+||spoiler||
+*bold _italic bold ~italic bold strikethrough ||italic bold strikethrough spoiler||~ __underline italic bold___ bold*
+[inline URL](http://www.example.com/)
+[inline mention of a user](tg://user?id=123456789)
+`inline fixed-width code`
+```
+pre-formatted fixed-width code block
+```
+```python
+pre-formatted fixed-width code block written in the Python programming language
+```"""
