@@ -42,41 +42,6 @@ RIGHT_PARENTHESIS = ")"
 AUTHOR_INDENT = "     "
 
 
-def format_hokku(ptext: str) -> str:
-    """Форматирует хокку так, как нам хочется."""
-    left_par = ptext.index("[")
-    right_par = ptext.index("]")
-    number = ptext[left_par+1:right_par]
-    # text = "* _" + ptext[right_par+1:]
-    # text = text.replace("/ ", "\n")
-    # text = text.replace("/", "\n")
-    # text = text.replace("(", "_ *\n     *")
-    # text = text.replace(")", "*")
-    # text += " | " + number + " |"
-    # *** Выкусим текст после номера и зададим форматирование - жирный курсив
-    text = BOLD + ITALIC + ptext[right_par+1:]
-    # TODO: Вот тут сплитнуть текст по / и всё будет проще.
-    # *** Заменим / на перевод строки
-    text = text.replace(SLASH + SPACE, LF)
-    text = text.replace(SLASH, LF)
-    # *** Если в скобках указан автор
-    if text.index(LEFT_PARENTHESIS) > 0:
-
-        # *** Убираем скобки, форматируем
-        text = text.replace(LEFT_PARENTHESIS, ITALIC+BOLD+LF+AUTHOR_INDENT+BOLD)
-        text = text.replace(RIGHT_PARENTHESIS, BOLD)
-    else:
-
-        # *** Вставляем завершение форматирования текста
-        text += ITALIC+BOLD
-    # *** Точки экранируем
-    text = text.replace(".", "\.")
-    # *** Тире экранируем
-    text = text.replace("-", "\-")
-    # *** Номер помещаем в разделители
-    text += " \| " + number + " \|"
-    return text
-
 
 def get_command(pword: str) -> int:
     """Распознает команду и возвращает её код, в случае неудачи - None.
@@ -130,6 +95,35 @@ class CHaijin(prototype.CPrototype):
                     if not found:
                         found = word_list[0] in SAVE_BOOK
         return found
+
+    def format_hokku(self, ptext: str) -> str:
+        """Форматирует хокку так, как нам хочется."""
+        left_par = ptext.index("[")
+        right_par = ptext.index("]")
+        number = ptext[left_par + 1:right_par]
+        # *** Выкусим текст после номера и зададим форматирование - жирный курсив
+        text = BOLD + ITALIC + ptext[right_par + 1:]
+        # TODO: Вот тут сплитнуть текст по / и всё будет проще.
+        # *** Заменим / на перевод строки
+        text = text.replace(SLASH + SPACE, LF)
+        text = text.replace(SLASH, LF)
+        # *** Если в скобках указан автор
+        if text.index(LEFT_PARENTHESIS) > 0:
+
+            # *** Убираем скобки, форматируем
+            text = text.replace(LEFT_PARENTHESIS, ITALIC + BOLD + LF + AUTHOR_INDENT)
+            text = text.replace(RIGHT_PARENTHESIS, "")
+        else:
+
+            # *** Вставляем завершение форматирования текста
+            text += ITALIC + BOLD
+        # *** Точки экранируем
+        text = text.replace(".", "\.")
+        # *** Тире экранируем
+        text = text.replace("-", "\-")
+        # *** Номер помещаем в разделители
+        text = f"{text} || \| {number} \| {len(self.hokku)} ||"
+        return text
 
     def get_help(self, pchat_title: str) -> str:
         """Пользователь запросил список команд."""
@@ -196,7 +190,7 @@ class CHaijin(prototype.CPrototype):
                     if command == ASK_HOKKU_CMD:
 
                         # *** Пользователь хочет хокку....
-                        answer = format_hokku(librarian.quote(self.hokku, word_list))
+                        answer = self.format_hokku(librarian.quote(self.hokku, word_list))
                     elif command == ADD_HOKKU_CMD:
 
                         # *** Пользователь хочет добавить хокку в книгу
@@ -217,7 +211,7 @@ class CHaijin(prototype.CPrototype):
                     elif command == FIND_HOKKU_CMD:
 
                         # *** Пользователь хочет найти хокку по заданной строке
-                        answer = format_hokku(librarian.find_in_book(self.hokku, word_list))
+                        answer = self.format_hokku(librarian.find_in_book(self.hokku, word_list))
             if answer:
                 print("Haijin answers: ", answer[:16])
 
