@@ -49,13 +49,13 @@ def find_in_book(pbook: list, pword_list: list) -> str:
 
             if search_line.upper() in line.upper():
 
-                found_list.append(f"[{idx}]{line}")
+                found_list.append(f"[{idx+1}]{line}")
         if len(found_list) > 0:
 
             answer = random.choice(found_list)
     if not answer:
 
-        answer = "Ничего не нашёл!"
+        answer = "??? Ничего не нашёл"
     return answer
 
 
@@ -110,16 +110,16 @@ def quote(pbook: list, pword_list: list) -> str:
 
                 if len(pbook) >= number:
 
-                    answer = f"[{number}] {pbook[number-1]}"
+                    answer = f"[{number+1}] {pbook[number-1]}"
                 else:
 
-                    answer = "Нет такой."
+                    answer = "??? Нет такой."
             else:
 
-                answer = "Нет такой."
+                answer = "??? Нет такой."
         else:
 
-            answer = "Чего??.."
+            answer = "??? Чего??.."
     else:
 
         # *** случайную.

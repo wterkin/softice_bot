@@ -32,15 +32,28 @@ HAIJIN_COMMANDS: list = [["хк", "hk"],
 
 HINT = ["хокку", "hokku"]
 ENABLED_IN_CHATS_KEY: str = "haijin_chats"
-BOLD = "*"
-ITALIC = "_"
-SLASH = "/"
-LF = "\n"
-SPACE = " "
-LEFT_PARENTHESIS = "("
-RIGHT_PARENTHESIS = ")"
-AUTHOR_INDENT = "     "
+BOLD: str = "*"
+ITALIC: str = "_"
+SPOILER: str = "||"
+SLASH: str = "/"
+LF: str = "\n"
+SPACE: str = " "
+LEFT_PARENTHESIS: str = "("
+RIGHT_PARENTHESIS: str = ")"
+LEFT_BRACKET: str = "["
+RIGHT_BRACKET: str = "]"
+AUTHOR_INDENT: str = "     "
+DELIMITER: str = "\|"
 
+
+def screen_text(ptext: str)-> str:
+    """Экранирует текст перед выводом в телеграм."""
+
+    result_text = ptext.replace(".", "\.")
+    result_text = result_text.replace("-", "\-")
+    result_text = result_text.replace("!", "\!")
+    result_text = result_text.replace(")", "\)")
+    return result_text
 
 
 def get_command(pword: str) -> int:
@@ -98,32 +111,29 @@ class CHaijin(prototype.CPrototype):
 
     def format_hokku(self, ptext: str) -> str:
         """Форматирует хокку так, как нам хочется."""
-        left_par = ptext.index("[")
-        right_par = ptext.index("]")
-        number = ptext[left_par + 1:right_par]
-        # *** Выкусим текст после номера и зададим форматирование - жирный курсив
-        text = BOLD + ITALIC + ptext[right_par + 1:]
-        # TODO: Вот тут сплитнуть текст по / и всё будет проще.
-        # *** Заменим / на перевод строки
-        text = text.replace(SLASH + SPACE, LF)
-        text = text.replace(SLASH, LF)
-        # *** Если в скобках указан автор
-        if text.index(LEFT_PARENTHESIS) > 0:
+        # *** Вырежем номер
+        print("*** ", ptext)
+        if "???" not in ptext:
+            left_par = ptext.index(LEFT_BRACKET)
+            right_par = ptext.index(RIGHT_BRACKET)
+            number = ptext[left_par + 1:right_par].strip()
+            text = ptext[right_par + 1:]
+            # *** Вырежем автора
+            left_par = text.index(LEFT_PARENTHESIS)
+            right_par = text.index(RIGHT_PARENTHESIS)
+            author = text[left_par + 1:right_par].strip()
+            text = text[:left_par]
+            # *** Разобьём текст на строки
+            text_list: list = text.split(SLASH)
+            result_text: str = ""
+            for line in text_list:
 
-            # *** Убираем скобки, форматируем
-            text = text.replace(LEFT_PARENTHESIS, ITALIC + BOLD + LF + AUTHOR_INDENT)
-            text = text.replace(RIGHT_PARENTHESIS, "")
-        else:
+                result_text += line.strip() + LF
 
-            # *** Вставляем завершение форматирования текста
-            text += ITALIC + BOLD
-        # *** Точки экранируем
-        text = text.replace(".", "\.")
-        # *** Тире экранируем
-        text = text.replace("-", "\-")
-        # *** Номер помещаем в разделители
-        text = f"{text} || \| {number} \| {len(self.hokku)} ||"
-        return text
+            result_text = f"{BOLD}{ITALIC}{result_text[:-1]}{ITALIC}{BOLD}{LF}{AUTHOR_INDENT}{author} {SPOILER}" + \
+                          f"{DELIMITER} {number} {DELIMITER} {len(self.hokku)} {SPOILER}"
+            return result_text
+        return ptext
 
     def get_help(self, pchat_title: str) -> str:
         """Пользователь запросил список команд."""
@@ -215,7 +225,7 @@ class CHaijin(prototype.CPrototype):
             if answer:
                 print("Haijin answers: ", answer[:16])
 
-        return answer
+        return screen_text(answer)
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если библиотекарь разрешен на этом канале."""
