@@ -46,16 +46,6 @@ AUTHOR_INDENT: str = "     "
 DELIMITER: str = "\|"
 
 
-def screen_text(ptext: str)-> str:
-    """Экранирует текст перед выводом в телеграм."""
-
-    result_text = ptext.replace(".", "\.")
-    result_text = result_text.replace("-", "\-")
-    result_text = result_text.replace("!", "\!")
-    result_text = result_text.replace(")", "\)")
-    return result_text
-
-
 def get_command(pword: str) -> int:
     """Распознает команду и возвращает её код, в случае неудачи - None.
     """
@@ -225,7 +215,7 @@ class CHaijin(prototype.CPrototype):
             if answer:
                 print("Haijin answers: ", answer[:16])
 
-        return screen_text(answer)
+        return answer
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если библиотекарь разрешен на этом канале."""

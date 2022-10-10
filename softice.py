@@ -9,7 +9,7 @@ import json
 import telebot
 from requests import ReadTimeout
 from telebot import apihelper
-
+# *** Собственные модули
 import database
 import babbler
 import barman
@@ -39,15 +39,26 @@ QUIT_BY_DEMAND: int = 1
 TOKEN_KEY: str = "token"
 BOT_STATUS: int = CONTINUE_RUNNING
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
-RUSSIAN_DATE_FORMAT = "%d.%m.%Y"
+RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
 
 
 class CQuitByDemand(Exception):
     """Исключение выхода."""
 
     def __init__(self):
-        self.message = "Выход по требованию..."
+        self.message: str = "Выход по требованию..."
         super().__init__(self.message)
+
+
+def screen_text(ptext: str) -> str:
+    """Экранирует текст перед выводом в телеграм."""
+
+    result_text: str = ptext.replace(".", "\.")
+    result_text = result_text.replace("-", "\-")
+    result_text = result_text.replace("!", "\!")
+    result_text = result_text.replace(")", "\)")
+    result_text = result_text.replace("(", "\(")
+    return result_text
 
 
 def decode_message(pmessage):
@@ -84,6 +95,7 @@ class CSoftIceBot:
         self.load_config(CONFIG_FILE_NAME)
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
+
             apihelper.proxy = {'https': self.config["proxy"]}
         # *** Создаём собственно бота.
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
@@ -117,14 +129,13 @@ class CSoftIceBot:
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
         # *** Обработчик сообщений
-        """Обработчик сообщений."""
+
         @self.robot.message_handler(content_types=EVENTS)
         def process_message(pmessage):
 
             # *** Если это текстовое сообщение - обрабатываем в этой ветке.
             if pmessage.content_type == "text":
 
-                # print(pmessage)
                 # *** Вытаскиваем из сообщения нужные поля
                 self.message_text, command, chat_id, chat_title, user_name, user_title = \
                     decode_message(pmessage)
@@ -176,14 +187,7 @@ class CSoftIceBot:
                         if answer:
 
                             # *** Выводим ответ.
-                            self.robot.send_message(chat_id, answer, parse_mode="MarkdownV2")
-                            # self.robot.send_message(chat_id, answer, parse_mode="html")
-            # else:
-            #
-            #     # *** Бота привели на чужой канал. Выходим.
-            #     self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-            #     self.robot.leave_chat(chat_id)
-            #     print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                            self.robot.send_message(chat_id, screen_text(answer), parse_mode="MarkdownV2")
 
             elif pmessage.content_type in EVENTS:
 
@@ -363,36 +367,23 @@ class CSoftIceBot:
                 print(exception.message)
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
+                sys.exit(0)
             except ConnectionError as ex:
 
                 print("*" * 40)
                 print(f"**** Exception occured: {ex}, reconnecting...")
+                sys.exit(1)
             except ReadTimeout as ex:
 
                 print("*" * 40)
                 print(f"**** Exception occured: {ex}, reconnecting...")
+                sys.exit(2)
 
 
 if __name__ == "__main__":
     print(f"Started at {date.today().strftime(RUSSIAN_DATE_FORMAT)}")
     SofticeBot: CSoftIceBot = CSoftIceBot()
     SofticeBot.poll_forever()
-    sys.exit(0)
-
-# while not SofticeBot.exiting:
-#
-#     try:
-#
-#         SofticeBot.poll()
-#     except ConnectionError as ex:
-#
-#         print("*" * 40)
-#         print(f"**** Exception occured: {ex}, reconnecting...")
-#     except ReadTimeout as ex:
-#
-#         print("*" * 40)
-#         print(f"**** Exception occured: {ex}, reconnecting...")
-# if SofticeBot.bot_status == QUIT_BY_DEMAND:
 
 # @self.robot.callback_query_handler(func=lambda call: True)
 # def callback_inline(call):
