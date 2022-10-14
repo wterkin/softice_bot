@@ -58,6 +58,7 @@ def screen_text(ptext: str) -> str:
     result_text = result_text.replace("!", "\!")
     result_text = result_text.replace(")", "\)")
     result_text = result_text.replace("(", "\(")
+    result_text = result_text.replace("_", "\_")
     return result_text
 
 
@@ -371,12 +372,12 @@ class CSoftIceBot:
             except ConnectionError as ex:
 
                 print("*" * 40)
-                print(f"**** Exception occured: {ex}, reconnecting...")
+                print(f"**** Exception occured: \n {ex}, \nreconnecting...")
                 sys.exit(1)
             except ReadTimeout as ex:
 
                 print("*" * 40)
-                print(f"**** Exception occured: {ex}, reconnecting...")
+                print(f"**** Exception occured: \n {ex}, \nreconnecting...")
                 sys.exit(2)
 
 
