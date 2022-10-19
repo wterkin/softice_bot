@@ -237,7 +237,7 @@ class CMeteorolog(prototype.CPrototype):
                         answer = "Поздно уже, какая тебе погода??!"
                 else:
 
-                    answer = f"""Какой-такой \" {' '.join(word_list[1:])}\" ? \
+                    answer = f"""Какой-такой \" {' '.join(word_list[1:]).strip()}\" ? \
                                   не знаю такого города!"""
             else:
 
