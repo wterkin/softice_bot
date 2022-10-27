@@ -102,12 +102,12 @@ class CHaijin(prototype.CPrototype):
     def format_hokku(self, ptext: str) -> str:
         """Форматирует хокку так, как нам хочется."""
         # *** Вырежем номер
-        print("*** ", ptext)
+        # print("*** ", ptext)
         if "???" not in ptext:
-            left_par = ptext.index(LEFT_BRACKET)
-            right_par = ptext.index(RIGHT_BRACKET)
-            number = ptext[left_par + 1:right_par].strip()
-            text = ptext[right_par + 1:]
+            left_par: int = ptext.index(LEFT_BRACKET)
+            right_par: int = ptext.index(RIGHT_BRACKET)
+            number: str = ptext[left_par + 1:right_par].strip()
+            text: str = ptext[right_par + 1:]
             # *** Вырежем автора
             left_par = text.index(LEFT_PARENTHESIS)
             right_par = text.index(RIGHT_PARENTHESIS)

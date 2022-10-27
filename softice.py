@@ -58,7 +58,7 @@ def screen_text(ptext: str) -> str:
     result_text = result_text.replace("!", "\!")
     result_text = result_text.replace(")", "\)")
     result_text = result_text.replace("(", "\(")
-    # result_text = result_text.replace("_", "\_")
+    result_text = result_text.replace("+", "\+")
     return result_text
 
 
@@ -187,7 +187,8 @@ class CSoftIceBot:
                         # *** Модули сработали?
                         if answer:
 
-                            # *** Выводим ответ.
+                            # *** Выводим ответ
+                            print(screen_text(answer))
                             self.robot.send_message(chat_id, screen_text(answer), parse_mode="MarkdownV2")
 
             elif pmessage.content_type in EVENTS:

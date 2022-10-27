@@ -108,9 +108,10 @@ def quote(pbook: list, pword_list: list) -> str:
             number: int = abs(int(pword_list[1]))
             if number > 0:
 
+                print(f"*** [{number}]")
                 if len(pbook) >= number:
 
-                    answer = f"[{number+1}] {pbook[number-1]}"
+                    answer = f"[{number}] {pbook[number-1]}"
                 else:
 
                     answer = "??? Нет такой."
@@ -124,7 +125,7 @@ def quote(pbook: list, pword_list: list) -> str:
 
         # *** случайную.
         answer = random.choice(pbook)
-        answer = f"[{pbook.index(answer)}] {answer}"
+        answer = f"[{pbook.index(answer)+1}] {answer}"
     return answer
 
 
