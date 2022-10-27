@@ -11,22 +11,22 @@ import librarian
 
 # *** Команды для цитатника хокку
 ASK_HOKKU_CMD: int = 0
-FIND_HOKKU_CMD: int = 1
-ADD_HOKKU_CMD: int = 2
-DEL_HOKKU_CMD: int = 3
+# FIND_HOKKU_CMD: int = 1
+ADD_HOKKU_CMD: int = 1
+DEL_HOKKU_CMD: int = 2
 
 RELOAD_BOOK: list = ["hokkureload", "hkrl"]
 SAVE_BOOK: list = ["hokkusave", "hksv"]
 HAIJIN_FOLDER: str = "haijin/"
 HAIJIN_FILE_NAME: str = "hokku.txt"
 
-HAIJIN_DESC: list = [" : получить случайное хокку",
-                     " : найти хокку по фрагменту текста",
+HAIJIN_DESC: list = [" : получить случайное хокку, \n"
+                     "хк, hk номер : с заданным номером \n"
+                     "хк, hk строка : содержащее заданную строку",
                      " : добавить хокку в базу",
                      " : удалить хокку из базы"]
 
 HAIJIN_COMMANDS: list = [["хк", "hk"],
-                         ["хк?", "hk?"],
                          ["хк+", "hk+"],
                          ["хк-", "hk-"]]
 
@@ -159,6 +159,7 @@ class CHaijin(prototype.CPrototype):
             "No <puser_title> parameter specified!"
         command: int
         answer: str = ""
+        result: int = -1
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
@@ -190,7 +191,10 @@ class CHaijin(prototype.CPrototype):
                     if command == ASK_HOKKU_CMD:
 
                         # *** Пользователь хочет хокку....
-                        answer = self.format_hokku(librarian.quote(self.hokku, word_list))
+                        answer, result = librarian.quote(self.hokku, word_list)
+                        if result > 0:
+
+                            answer = self.format_hokku(answer)
                     elif command == ADD_HOKKU_CMD:
 
                         # *** Пользователь хочет добавить хокку в книгу
@@ -208,10 +212,10 @@ class CHaijin(prototype.CPrototype):
                             # *** ... но не тут-то было...
                             answer = (f"Извини, {puser_title}, "
                                       f"только {self.config['master_name']} может удалять хокку.")
-                    elif command == FIND_HOKKU_CMD:
-
-                        # *** Пользователь хочет найти хокку по заданной строке
-                        answer = self.format_hokku(librarian.find_in_book(self.hokku, word_list))
+                    # elif command == FIND_HOKKU_CMD:
+                    #
+                    #     # *** Пользователь хочет найти хокку по заданной строке
+                    #     answer = self.format_hokku(librarian.find_in_book(self.hokku, word_list))
             if answer:
                 print("Haijin answers: ", answer[:16])
 
@@ -230,7 +234,7 @@ class CHaijin(prototype.CPrototype):
         if puser_name == self.config["master"]:
             return True, ""
         # *** Низзя
-        print("Haijin - нет прав")
+        # print("Haijin - нет прав")
         return False, f"У вас нет на это прав, {puser_title}."
 
     def reload(self):

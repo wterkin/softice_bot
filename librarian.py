@@ -6,6 +6,7 @@ import random
 from datetime import datetime as dtime
 import functions as func
 import prototype
+import messages
 
 # *** Команды для цитатника высказываний
 ASK_QUOTE_CMD: int = 0
@@ -41,6 +42,7 @@ def find_in_book(pbook: list, pword_list: list) -> str:
         "Assert: [librarian.find_in_book] " \
         "No <pword_list> parameter specified!"
     answer: str = ""
+    result: int = -1
     if len(pword_list) > 1:
 
         found_list: list = []
@@ -53,10 +55,11 @@ def find_in_book(pbook: list, pword_list: list) -> str:
         if len(found_list) > 0:
 
             answer = random.choice(found_list)
+            result = 1
     if not answer:
 
-        answer = "??? Ничего не нашёл"
-    return answer
+        answer = messages.MESSAGE_NOT_FOUND
+    return answer, result
 
 
 def get_command(pword: str) -> int:
@@ -100,6 +103,7 @@ def quote(pbook: list, pword_list: list) -> str:
     assert pword_list is not None, \
         "Assert: [librarian.quote] " \
         "No <pword_list> parameter specified!"
+    result: int = -1
     if len(pword_list) > 1:
 
         # *** ... с заданным номером.
@@ -112,21 +116,24 @@ def quote(pbook: list, pword_list: list) -> str:
                 if len(pbook) >= number:
 
                     answer = f"[{number}] {pbook[number-1]}"
+                    result = 1
                 else:
 
-                    answer = "??? Нет такой."
+                    answer = f"Номер должен быть от 1 до {len(pbook)}"
             else:
 
-                answer = "??? Нет такой."
+                answer = "Номер должен быть больше нуля."
         else:
 
-            answer = "??? Чего??.."
+            # answer = messages.MESSAGE_NOT_FOUND
+            answer, result = find_in_book(pbook, pword_list)
     else:
 
         # *** случайную.
         answer = random.choice(pbook)
         answer = f"[{pbook.index(answer)+1}] {answer}"
-    return answer
+        result = 1
+    return answer, result
 
 
 def save_book(pbook: list, pbook_name: str): # noqa
@@ -197,6 +204,7 @@ class CLibrarian(prototype.CPrototype):
             "Assert: [librarian.execute_quotes_commands] " \
             "No <pcommand> parameter specified!"
         answer: str = ""
+        result: int = -1
         # *** В зависимости от команды выполняем действия
         if pcommand == ASK_QUOTE_CMD:
 
@@ -220,7 +228,7 @@ class CLibrarian(prototype.CPrototype):
                           f"только {self.config['master_name']} может удалять цитаты.")
         elif pcommand == FIND_QUOTE_CMD:
 
-            answer = find_in_book(self.quotes, pword_list)
+            answer, result = find_in_book(self.quotes, pword_list)
         return answer
 
     def get_help(self, pchat_title: str) -> str:
@@ -285,7 +293,7 @@ class CLibrarian(prototype.CPrototype):
                 if can_reload:
 
                     self.reload()
-                    answer = "Библиотека обновлена"
+                    answer = "Книга обновлена"
             elif word_list[0] in SAVE_LIBRARY:
 
                 # *** Пользователь хочет сохранить книгу хокку
@@ -293,7 +301,7 @@ class CLibrarian(prototype.CPrototype):
                 if can_reload:
 
                     save_book(self.quotes, self.data_path + QUOTES_FILE_NAME)
-                    answer = "Библиотека сохранена"
+                    answer = "Книга сохранена"
             elif word_list[0] in HINT:
 
                 answer = self.get_help(pchat_title)
