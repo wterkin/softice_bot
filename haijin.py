@@ -198,7 +198,11 @@ class CHaijin(prototype.CPrototype):
                     elif command == ADD_HOKKU_CMD:
 
                         # *** Пользователь хочет добавить хокку в книгу
-                        self.hokku.append(" ".join(word_list[1:]))
+                        text: str = " ".join(word_list[1:])
+                        if '(' not in text:
+
+                            text += "(автор не  известен)"
+                        self.hokku.append(text)
                         answer = f"Спасибо, {puser_title}, хокку добавлено под номером {len(self.hokku)}."
                     elif command == DEL_HOKKU_CMD:
 

@@ -148,8 +148,11 @@ class CMeteorolog(prototype.CPrototype):
                                        'units': 'metric', 'lang': plang,
                                        'APPID': self.config["api_key"]})
             data = res.json()
-            if len(data['list']) > 0:
-                city_id = data['list'][0]['id']
+            if 'list' in data:
+
+                if len(data['list']) > 0:
+
+                    city_id = data['list'][0]['id']
         # except Exception as ex:
         except requests.TooManyRedirects as ex:
             print("Exception (find):", ex)
@@ -237,8 +240,7 @@ class CMeteorolog(prototype.CPrototype):
                         answer = "Поздно уже, какая тебе погода??!"
                 else:
 
-                    answer = f"""Какой-такой \" {' '.join(word_list[1:]).strip()}\" ? \
-                                  не знаю такого города!"""
+                    answer = f"Нет данных о погоде для города {' '.join(word_list[1:]).strip()}"
             else:
 
                 answer = "А в каком городе погода нужна?"
