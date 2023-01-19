@@ -59,6 +59,7 @@ def screen_text(ptext: str) -> str:
     result_text = result_text.replace(")", "\)")
     result_text = result_text.replace("(", "\(")
     result_text = result_text.replace("+", "\+")
+    result_text = result_text.replace("_", "\_")
     return result_text
 
 
