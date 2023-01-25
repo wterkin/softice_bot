@@ -11,7 +11,7 @@ import functions as func
 import prototype
 
 # *** Команда перегрузки текстов
-BABBLER_RELOAD: list = ["blreload", "bllr"]
+BABBLER_RELOAD: list = ["blreload", "blrl"]
 # *** Ключ для списка доступных каналов в словаре конфига
 ENABLED_IN_CHATS_KEY: str = "babbler_chats"
 BABBLER_PATH: str = "babbler/"
@@ -96,6 +96,7 @@ class CBabbler(prototype.CPrototype):
         self.mind.clear()
         for trigger in triggers_path.iterdir():
 
+            # print(trigger)
             if trigger.is_file():
 
                 module = Path(trigger).resolve().name
@@ -103,6 +104,7 @@ class CBabbler(prototype.CPrototype):
                 if reaction.is_file():
 
                     trigger_content: list = func.load_from_file(str(trigger))
+                    # print(trigger_content)
                     block: list = [trigger_content]
                     reaction_content: list = func.load_from_file(str(reaction))
                     block.append(reaction_content)

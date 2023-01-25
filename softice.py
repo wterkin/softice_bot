@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
+import os
 from datetime import datetime, date
 import sys
 from sys import platform
@@ -40,6 +41,7 @@ TOKEN_KEY: str = "token"
 BOT_STATUS: int = CONTINUE_RUNNING
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
 RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
+RUNNING_FLAG: str = "running.flg"
 
 
 class CQuitByDemand(Exception):
@@ -104,6 +106,9 @@ class CSoftIceBot:
         self.bot_status: int = CONTINUE_RUNNING
         self.exiting: bool = False
         self.message_text: str = ""
+        with open(RUNNING_FLAG, 'tw', encoding='utf-8') as f:
+
+            pass
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -339,6 +344,7 @@ class CSoftIceBot:
                           \n{self.theolog.get_hint(pchat_title)}""".strip()
         # *** Если ответы есть, отвечаем на запрос
         if answer:
+
             return HELP_MESSAGE + answer
         return answer
 
@@ -353,6 +359,7 @@ class CSoftIceBot:
         if self.is_master(puser_name):
 
             self.robot.send_message(pchat_id, "Ухожу, ухожу...")
+            os.remove(RUNNING_FLAG)
             self.exiting = True
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")

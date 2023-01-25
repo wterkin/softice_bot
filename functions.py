@@ -5,7 +5,7 @@
 
 def parse_input(pmessage_text: str) -> list:
     """Разбивает введённую строку на отдельные слова."""
-    return pmessage_text[1:].split(" ")
+    return pmessage_text[1:].strip().split(" ")
 
 
 def load_from_file(pfile_name: str) -> list:
