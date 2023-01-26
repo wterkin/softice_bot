@@ -119,7 +119,7 @@ class CHaijin(prototype.CPrototype):
             for line in text_list:
 
                 result_text += line.strip() + LF
-
+            result_text = func.screen_text(result_text)
             result_text = f"{BOLD}{ITALIC}{result_text[:-1]}{ITALIC}{BOLD}{LF}{AUTHOR_INDENT}{author} {SPOILER}" + \
                           f"{DELIMITER} {number} {DELIMITER} {len(self.hokku)} {SPOILER}"
             return result_text

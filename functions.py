@@ -31,3 +31,16 @@ def load_from_file(pfile_name: str) -> list:
 
         return content
     return content
+
+
+def screen_text(ptext: str) -> str:
+    """Экранирует текст перед выводом в телеграм."""
+
+    result_text: str = ptext.replace(".", "\.")
+    result_text = result_text.replace("-", "\-")
+    result_text = result_text.replace("!", "\!")
+    result_text = result_text.replace(")", "\)")
+    result_text = result_text.replace("(", "\(")
+    result_text = result_text.replace("+", "\+")
+    result_text = result_text.replace("_", "\_")
+    return result_text

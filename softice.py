@@ -11,6 +11,7 @@ import telebot
 from requests import ReadTimeout
 from telebot import apihelper
 # *** Собственные модули
+import functions as func
 import database
 import babbler
 import barman
@@ -53,17 +54,17 @@ class CQuitByDemand(Exception):
         super().__init__(self.message)
 
 
-def screen_text(ptext: str) -> str:
-    """Экранирует текст перед выводом в телеграм."""
-
-    result_text: str = ptext.replace(".", "\.")
-    result_text = result_text.replace("-", "\-")
-    result_text = result_text.replace("!", "\!")
-    result_text = result_text.replace(")", "\)")
-    result_text = result_text.replace("(", "\(")
-    result_text = result_text.replace("+", "\+")
-    result_text = result_text.replace("_", "\_")
-    return result_text
+# def screen_text(ptext: str) -> str:
+#     """Экранирует текст перед выводом в телеграм."""
+#
+#     result_text: str = ptext.replace(".", "\.")
+#     result_text = result_text.replace("-", "\-")
+#     result_text = result_text.replace("!", "\!")
+#     result_text = result_text.replace(")", "\)")
+#     result_text = result_text.replace("(", "\(")
+#     result_text = result_text.replace("+", "\+")
+#     result_text = result_text.replace("_", "\_")
+#     return result_text
 
 
 def decode_message(pmessage):
@@ -147,6 +148,7 @@ class CSoftIceBot:
         @self.robot.message_handler(content_types=EVENTS)
         def process_message(pmessage):
 
+            do_not_screen: bool = False
             # *** Если это текстовое сообщение - обрабатываем в этой ветке.
             if pmessage.content_type == "text":
 
@@ -184,9 +186,9 @@ class CSoftIceBot:
                                                         {"name": user_name, "title": user_title}):
 
                                 # *** Нет. Ну и пусть модули разбираются....
-                                answer = self.process_modules(chat_id, chat_title,
-                                                              user_name,
-                                                              user_title)
+                                answer, do_not_screen = self.process_modules(chat_id, chat_title,
+                                                                             user_name,
+                                                                             user_title)
                                 # *** Разобрались?
                         else:
 
@@ -202,7 +204,12 @@ class CSoftIceBot:
 
                             # *** Выводим ответ
                             # print(screen_text(answer))
-                            self.robot.send_message(chat_id, screen_text(answer), parse_mode="MarkdownV2")
+                            if do_not_screen:
+
+                                self.robot.send_message(chat_id, answer, parse_mode="MarkdownV2")
+                            else:
+
+                                self.robot.send_message(chat_id, func.screen_text(answer), parse_mode="MarkdownV2")
 
             elif pmessage.content_type in EVENTS:
 
@@ -270,6 +277,7 @@ class CSoftIceBot:
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         answer: str = self.barman.barman(pchat_title, puser_name, puser_title,
                                          self.message_text).strip()
+        do_not_screen: bool = False
         if not answer:
 
             # *** Или у звонаря
@@ -278,6 +286,7 @@ class CSoftIceBot:
 
             # *** ... или у хайдзина
             answer = self.haijin.haijin(pchat_title, puser_name, puser_title, self.message_text)
+            do_not_screen = True
         if not answer:
 
             # *** ... или у библиотекаря...
@@ -313,7 +322,7 @@ class CSoftIceBot:
 
             # *** Незнакомая команда.
             print(" .. fail.")
-        return answer
+        return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
