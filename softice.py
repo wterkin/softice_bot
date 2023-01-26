@@ -3,7 +3,7 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
 import os
-from datetime import datetime, date
+from datetime import datetime  # , date
 import sys
 from sys import platform
 import json
@@ -41,6 +41,7 @@ TOKEN_KEY: str = "token"
 BOT_STATUS: int = CONTINUE_RUNNING
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
 RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
+RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
 RUNNING_FLAG: str = "running.flg"
 
 
@@ -48,7 +49,7 @@ class CQuitByDemand(Exception):
     """Исключение выхода."""
 
     def __init__(self):
-        self.message: str = "Выход по требованию..."
+        self.message: str = "* Quit by demand."
         super().__init__(self.message)
 
 
@@ -95,8 +96,8 @@ class CSoftIceBot:
         """Конструктор класса."""
         super().__init__()
         self.config: dict = {}
-        self.config_name: str = ""
-        self.load_config(CONFIG_FILE_NAME)
+        self.config_name: str = CONFIG_FILE_NAME
+        self.load_config()
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
 
@@ -106,9 +107,15 @@ class CSoftIceBot:
         self.bot_status: int = CONTINUE_RUNNING
         self.exiting: bool = False
         self.message_text: str = ""
-        with open(RUNNING_FLAG, 'tw', encoding='utf-8') as f:
+        self.running_flag: str = os.getcwd() + "/" + RUNNING_FLAG
+        if os.path.exists(self.running_flag):
 
-            pass
+            print("* Restart after fail.")
+        else:
+
+            with open(self.running_flag, 'tw', encoding='utf-8'):
+
+                pass
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -194,7 +201,7 @@ class CSoftIceBot:
                         if answer:
 
                             # *** Выводим ответ
-                            print(screen_text(answer))
+                            # print(screen_text(answer))
                             self.robot.send_message(chat_id, screen_text(answer), parse_mode="MarkdownV2")
 
             elif pmessage.content_type in EVENTS:
@@ -209,12 +216,11 @@ class CSoftIceBot:
         """Проверяет, находится ли данный чат в списке разрешенных."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def load_config(self, pconfig_file):
+    def load_config(self):
         """Загружает конфигурацию из JSON."""
-        with open(pconfig_file, "r", encoding="utf-8") as json_file:
+        with open(self.config_name, "r", encoding="utf-8") as json_file:
 
             self.config = json.load(json_file)
-        self.config_name = pconfig_file
 
     def poll(self):
         """Функция опроса ботом телеграмма."""
@@ -321,7 +327,7 @@ class CSoftIceBot:
         if self.is_master(puser_name):
 
             self.robot.send_message(pchat_id, "Обновляю конфигурацию.")
-            self.load_config(self.config_name)
+            self.load_config()
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
             return True
         print("Softice - нет прав.")
@@ -358,8 +364,8 @@ class CSoftIceBot:
             "No <puser_title> parameter specified!"
         if self.is_master(puser_name):
 
-            self.robot.send_message(pchat_id, "Ухожу, ухожу...")
-            os.remove(RUNNING_FLAG)
+            self.robot.send_message(pchat_id, "Добби свободен!")
+            os.remove(self.running_flag)
             self.exiting = True
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
@@ -378,20 +384,22 @@ class CSoftIceBot:
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(0)
-            except ConnectionError as ex:
+            except ConnectionError:  # as ex:
 
-                print("*" * 40)
-                print(f"**** Exception occured: \n {ex}, \nreconnecting...")
+                # print("*" * 40)
+                # print(f"**** Exception occured: \n {ex}, reconnecting...")
+                print("* Disconnected. Exiting.")
                 sys.exit(1)
-            except ReadTimeout as ex:
+            except ReadTimeout:  # as ex:
 
-                print("*" * 40)
-                print(f"**** Exception occured: \n {ex}, \nreconnecting...")
+                # print("*" * 40)
+                # print(f"**** Exception occured: \n {ex}, reconnecting...")
+                print("* Read timeout. Exiting.")
                 sys.exit(2)
 
 
 if __name__ == "__main__":
-    print(f"Started at {date.today().strftime(RUSSIAN_DATE_FORMAT)}")
+    print(f"* SoftIce started {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
     SofticeBot: CSoftIceBot = CSoftIceBot()
     SofticeBot.poll_forever()
 
