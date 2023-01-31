@@ -138,7 +138,7 @@ class CHaijin(prototype.CPrototype):
                 if idx + 1 != len(HAIJIN_COMMANDS):
                     command_list += ", ".join(command) + HAIJIN_DESC[idx]
                     command_list += "\n"
-        return command_list
+        return func.screen_text(command_list)
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """
@@ -146,7 +146,7 @@ class CHaijin(prototype.CPrototype):
             "Assert: [barman.get_hint] " \
             "No <pchat_title> parameter specified!"
         if self.is_enabled(pchat_title):
-            return ", ".join(HINT)
+            return func.screen_text(", ".join(HINT))
         return ""
 
     def haijin(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
@@ -203,7 +203,7 @@ class CHaijin(prototype.CPrototype):
 
                             text += "(автор не  известен)"
                         self.hokku.append(text)
-                        answer = f"Спасибо, {puser_title}, хокку добавлено под номером {len(self.hokku)}."
+                        answer = f"Спасибо, {puser_title}, хокку добавлено под номером {len(self.hokku)}"
                     elif command == DEL_HOKKU_CMD:
 
                         # *** Пользователь хочет удалить хокку из книги...
@@ -215,7 +215,7 @@ class CHaijin(prototype.CPrototype):
 
                             # *** ... но не тут-то было...
                             answer = (f"Извини, {puser_title}, "
-                                      f"только {self.config['master_name']} может удалять хокку.")
+                                      f"только {self.config['master_name']} может удалять хокку")
                     # elif command == FIND_HOKKU_CMD:
                     #
                     #     # *** Пользователь хочет найти хокку по заданной строке

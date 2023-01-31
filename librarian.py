@@ -122,7 +122,7 @@ def quote(pbook: list, pword_list: list) -> str:
                     answer = f"Номер должен быть от 1 до {len(pbook)}"
             else:
 
-                answer = "Номер должен быть больше нуля."
+                answer = "Номер должен быть больше нуля"
         else:
 
             # answer = messages.MESSAGE_NOT_FOUND
@@ -220,12 +220,12 @@ class CLibrarian(prototype.CPrototype):
             if puser_name == self.config["master"]:
 
                 del self.quotes[int(pword_list[1])-1]
-                answer = f"Цитата {pword_list[1]} удалена."
+                answer = f"Цитата {pword_list[1]} удалена"
             else:
 
                 # *** ... но не тут-то было...
                 answer = (f"Извини, {puser_title}, "
-                          f"только {self.config['master_name']} может удалять цитаты.")
+                          f"только {self.config['master_name']} может удалять цитаты")
         elif pcommand == FIND_QUOTE_CMD:
 
             answer, result = find_in_book(self.quotes, pword_list)

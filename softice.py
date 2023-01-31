@@ -203,13 +203,14 @@ class CSoftIceBot:
                         if answer:
 
                             # *** Выводим ответ
-                            # print(screen_text(answer))
+                            print(answer)
                             if do_not_screen:
 
                                 self.robot.send_message(chat_id, answer, parse_mode="MarkdownV2")
                             else:
 
-                                self.robot.send_message(chat_id, func.screen_text(answer), parse_mode="MarkdownV2")
+                                self.robot.send_message(chat_id, func.screen_text(answer),
+                                                        parse_mode="MarkdownV2")
 
             elif pmessage.content_type in EVENTS:
 
@@ -289,6 +290,7 @@ class CSoftIceBot:
             do_not_screen = True
         if not answer:
 
+            do_not_screen = False
             # *** ... или у библиотекаря...
             answer = self.librarian.librarian(pchat_title, puser_name,
                                               puser_title, self.message_text).strip()
@@ -322,6 +324,8 @@ class CSoftIceBot:
 
             # *** Незнакомая команда.
             print(" .. fail.")
+        if do_not_screen:
+            print("Not screen!")
         return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
