@@ -169,6 +169,7 @@ class CHaijin(prototype.CPrototype):
                 # *** Пользователь хочет перезагрузить книгу хокку
                 can_reload, answer = self.is_master(puser_name, puser_title)
                 if can_reload:
+
                     self.reload()
                     answer = "Книга загружена"
             elif word_list[0] in SAVE_BOOK:
@@ -176,6 +177,7 @@ class CHaijin(prototype.CPrototype):
                 # *** Пользователь хочет сохранить книгу хокку
                 can_reload, answer = self.is_master(puser_name, puser_title)
                 if can_reload:
+
                     librarian.save_book(self.hokku, self.data_path + HAIJIN_FILE_NAME)
                     answer = "Книга сохранена"
             elif word_list[0] in HINT:
@@ -194,6 +196,7 @@ class CHaijin(prototype.CPrototype):
                         answer, result = librarian.quote(self.hokku, word_list)
                         if result > 0:
 
+                            print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
                             answer = self.format_hokku(answer)
                     elif command == ADD_HOKKU_CMD:
 
@@ -221,7 +224,7 @@ class CHaijin(prototype.CPrototype):
                     #     # *** Пользователь хочет найти хокку по заданной строке
                     #     answer = self.format_hokku(librarian.find_in_book(self.hokku, word_list))
             if answer:
-                print("Haijin answers: ", answer[:16])
+                print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
 
         return answer
 

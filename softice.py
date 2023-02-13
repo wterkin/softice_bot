@@ -4,12 +4,14 @@
 """Бот для Телеграмма"""
 import os
 from datetime import datetime  # , date
+import time
 import sys
 from sys import platform
 import json
 import telebot
 from requests import ReadTimeout
 from telebot import apihelper
+import urllib3.exceptions
 # *** Собственные модули
 import functions as func
 import database
@@ -44,6 +46,7 @@ EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voi
 RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
 RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
 RUNNING_FLAG: str = "running.flg"
+SLEEP_BEFORE_EXIT_BY_ERROR: int = 10
 
 
 class CQuitByDemand(Exception):
@@ -203,7 +206,6 @@ class CSoftIceBot:
                         if answer:
 
                             # *** Выводим ответ
-                            print(answer)
                             if do_not_screen:
 
                                 self.robot.send_message(chat_id, answer, parse_mode="MarkdownV2")
@@ -323,9 +325,7 @@ class CSoftIceBot:
         if not answer:
 
             # *** Незнакомая команда.
-            print(" .. fail.")
-        if do_not_screen:
-            print("Not screen!")
+            print(f"* Asking {self.message_text} .. fail.")
         return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
@@ -397,19 +397,26 @@ class CSoftIceBot:
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(0)
-            except ConnectionError:  # as ex:
+            except ConnectionError:
 
-                # print("*" * 40)
-                # print(f"**** Exception occured: \n {ex}, reconnecting...")
                 print("* Disconnected. Exiting.")
+                time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(1)
             except ReadTimeout:  # as ex:
 
-                # print("*" * 40)
-                # print(f"**** Exception occured: \n {ex}, reconnecting...")
                 print("* Read timeout. Exiting.")
+                time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(2)
+            except telebot.apihelper.ApiTelegramException:
 
+                print("* Telegram refusing connection. Exiting.")
+                time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
+                sys.exit(3)
+            except urllib3.exceptions.MaxRetryError:
+
+                print("* Too much connections. Exiting.")
+                time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
+                sys.exit(3)
 
 if __name__ == "__main__":
     print(f"* SoftIce started {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")

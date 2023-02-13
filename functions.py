@@ -2,6 +2,8 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль общих функций."""
 
+SLASH: str = "\\"
+OUT_MSG_LOG_LEN = 60
 
 def parse_input(pmessage_text: str) -> list:
     """Разбивает введённую строку на отдельные слова."""
@@ -36,11 +38,11 @@ def load_from_file(pfile_name: str) -> list:
 def screen_text(ptext: str) -> str:
     """Экранирует текст перед выводом в телеграм."""
 
-    result_text: str = ptext.replace(".", "\.")
-    result_text = result_text.replace("-", "\-")
-    result_text = result_text.replace("!", "\!")
-    result_text = result_text.replace(")", "\)")
-    result_text = result_text.replace("(", "\(")
-    result_text = result_text.replace("+", "\+")
-    result_text = result_text.replace("_", "\_")
+    result_text: str = ptext.replace(".", f"{SLASH}.")
+    result_text = result_text.replace("-", f"{SLASH}-")
+    result_text = result_text.replace("!", f"{SLASH}!")
+    result_text = result_text.replace(")", f"{SLASH})")
+    result_text = result_text.replace("(", f"{SLASH}(")
+    result_text = result_text.replace("+", f"{SLASH}+")
+    result_text = result_text.replace("_", f"{SLASH}_")
     return result_text

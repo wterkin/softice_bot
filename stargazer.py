@@ -183,7 +183,7 @@ class CStarGazer(prototype.CPrototype):
 
         if answer:
 
-            print(f"Stargazer answers: {answer[:16]}")
+            print(f"Stargazer answers: {answer[:func.OUT_MSG_LOG_LEN]}")
         return answer.strip()
 
     def search_in_calendar(self, pcalendar: str, ptoday: str):

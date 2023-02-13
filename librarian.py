@@ -313,7 +313,7 @@ class CLibrarian(prototype.CPrototype):
                                                       word_list, command)
             if answer:
 
-                print("Librarian answers: ", answer[:16])
+                print("Librarian answers: ", answer[:func.OUT_MSG_LOG_LEN])
 
         return answer
 

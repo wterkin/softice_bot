@@ -132,7 +132,7 @@ class CBabbler(prototype.CPrototype):
                 answer = self.think(pmessage_text)
             if answer:
 
-                print(f"Babbler answers: {answer[:16]}...")
+                print(f"Babbler answers: {answer[:func.OUT_MSG_LOG_LEN]}...")
                 self.last_phrase_time = datetime.now()
         return answer
 

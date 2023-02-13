@@ -342,7 +342,7 @@ class CTheolog(prototype.CPrototype):
                     answer = self.execute_quote(chapter, book_name, line_count)
             if len(answer) > 0:
 
-                print(f"Theolog answers: {answer[:16]}...")
+                print(f"Theolog answers: {answer[:func.OUT_MSG_LOG_LEN]}...")
             else:
 
                 answer = "Ничего не нашёл."

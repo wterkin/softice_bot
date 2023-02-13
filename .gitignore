@@ -9,3 +9,4 @@ GPL-3
 trash/*
 config.json
 *.7z
+running.flg

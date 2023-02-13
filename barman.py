@@ -185,7 +185,7 @@ class CBarman(prototype.CPrototype):
                     answer = self.serve_client(puser_title, word_list[0])
         if answer:
 
-            print(f"Barman answers: {answer[:16]}")
+            print(f"Barman answers: {answer[:func.OUT_MSG_LOG_LEN]}")
         return answer.strip()
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:

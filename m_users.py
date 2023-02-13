@@ -24,3 +24,5 @@ class CUser(m_ancestor.CAncestor):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
                    TG user ID:{self.ftguserid}"""
+    def null(self):
+        """Чтоб линтер был щаслив."""
