@@ -405,7 +405,7 @@ class CSoftIceBot:
 
                 print("# Connect timeout. Exiting.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
-                sys.exit(3)
+                sys.exit(4)
 
 
 if __name__ == "__main__":

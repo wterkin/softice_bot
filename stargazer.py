@@ -7,7 +7,7 @@ import prototype
 
 from datetime import date
 
-import functions
+import functions as func
 
 NEW_STYLE_OFFSET: int = 13
 EASTER_CMD_INDEX: int = 0
@@ -25,11 +25,10 @@ HIGH_MARGIN: int = 2100
 CHURCH_CALENDAR: str = "calendar.txt"
 CIVILIAN_CALENDAR: str = "dates.txt"
 
+
 def calculate_easter(pyear):
     """Вычисляет дату пасхи на заданный год."""
-    # a = (19*(year mod 19)+15) mod 30
     first_value: int = (19 * (pyear % 19) + 15) % 30
-    # b = (2*(year mod 4) + 4*(year mod 7) +6*a + 6) mod 7
     second_value: int = (2 * (pyear % 4) + 4 * (pyear % 7) + 6 * first_value + 6) % 7
     month: int
     day: int
@@ -67,9 +66,7 @@ def calculate_easter(pyear):
 #
 
 class CStarGazer(prototype.CPrototype):
-    """Прототип классов модулей бота."""
-
-    # __metaclass__ = ABCMeta
+    """Класс модуля звездочёта."""
 
     def __init__(self, pconfig, pdata_path):
         super().__init__()
@@ -87,7 +84,7 @@ class CStarGazer(prototype.CPrototype):
         found: bool = False
         if self.is_enabled(pchat_title):
 
-            word_list: list = functions.parse_input(pmessage_text)
+            word_list: list = func.parse_input(pmessage_text)
             for command in COMMANDS:
 
                 found = word_list[0] in command
@@ -139,7 +136,7 @@ class CStarGazer(prototype.CPrototype):
         assert pmessage_text is not None, \
             "Assert: [stargazer.stargazer] No <pmessage_text> parameter specified!"
         answer: str = ""
-        word_list: list = functions.parse_input(pmessage_text)
+        word_list: list = func.parse_input(pmessage_text)
         year: int
         now_date: date = date.today()
         today: str
@@ -188,7 +185,7 @@ class CStarGazer(prototype.CPrototype):
 
     def search_in_calendar(self, pcalendar: str, ptoday: str):
         """Ищет заданную дату в заданном календаре."""
-        calendar: list = functions.load_from_file(self.data_path + pcalendar)
+        calendar: list = func.load_from_file(self.data_path + pcalendar)
         answer: str = ""
         for item in calendar:
 
