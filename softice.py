@@ -9,7 +9,7 @@ import sys
 from sys import platform
 import json
 import telebot
-from requests import ReadTimeout
+from requests import ReadTimeout, ConnectTimeout
 from telebot import apihelper
 import urllib3.exceptions
 # *** Собственные модули
@@ -232,21 +232,6 @@ class CSoftIceBot:
 
             self.config = json.load(json_file)
 
-    def poll(self):
-        """Функция опроса ботом телеграмма."""
-        try:
-
-            while self.bot_status == CONTINUE_RUNNING:
-
-                self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
-                print(f"Bot status = {BOT_STATUS}")
-
-        except CQuitByDemand as exception:
-
-            print(exception.message)
-            self.bot_status = QUIT_BY_DEMAND
-            self.robot.stop_polling()
-
     def process_command(self, pcommand: str, pchat_id: int, pchat_title: str,
                         puser: dict):
         """Обрабатывает системные команды"""
@@ -389,7 +374,6 @@ class CSoftIceBot:
 
             try:
 
-                # self.robot.polling(none_stop=NON_STOP, interval=POLL_INTERVAL)
                 self.robot.polling(interval=POLL_INTERVAL)
             except CQuitByDemand as exception:
 
@@ -399,26 +383,33 @@ class CSoftIceBot:
                 sys.exit(0)
             except ConnectionError:
 
-                print("* Disconnected. Exiting.")
+                print("# Disconnected. Exiting.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(1)
             except ReadTimeout:  # as ex:
 
-                print("* Read timeout. Exiting.")
+                print("# Read timeout. Exiting.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(2)
             except telebot.apihelper.ApiTelegramException:
 
-                print("* Telegram refusing connection. Exiting.")
+                print("# Telegram refusing connection. Exiting.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(3)
             except urllib3.exceptions.MaxRetryError:
 
-                print("* Too much connections. Exiting.")
+                print("# Too much connections. Exiting.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(3)
+            except ConnectTimeout:
+
+                print("# Connect timeout. Exiting.")
+                time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
+                sys.exit(3)
+
 
 if __name__ == "__main__":
+
     print(f"* SoftIce started {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
     SofticeBot: CSoftIceBot = CSoftIceBot()
     SofticeBot.poll_forever()
