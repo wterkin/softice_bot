@@ -253,7 +253,7 @@ class CHaijin(prototype.CPrototype):
                 else:
 
                     # *** ... но не тут-то было...
-                    print("* Запрос на удаление хокку от нелегитимного лица {puser_title}.")
+                    print(f"* Haijin: Запрос на удаление хокку от нелегитимного лица {puser_title}.")
                     answer = (f"Извини, {puser_title}, "
                               f"только {self.config['master_name']} может удалять хокку")
         return answer, unformatted_answer
