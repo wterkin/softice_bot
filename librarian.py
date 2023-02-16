@@ -215,7 +215,8 @@ class CLibrarian(prototype.CPrototype):
             else:
 
                 # *** ... но не тут-то было...
-                print(f"* Librarian: Запрос на удаление цитаты от нелегитимного лица {puser_title}.")
+                print(f"* Librarian: Запрос на удаление цитаты от "
+                      f"нелегитимного лица {puser_title}.")
                 answer = (f"Извини, {puser_title}, "
                           f"только {self.config['master_name']} может удалять цитаты")
         elif pcommand == FIND_QUOTE_CMD:
@@ -289,9 +290,10 @@ class CLibrarian(prototype.CPrototype):
                 else:
 
                     # *** ... но не тут-то было...
-                    print(f"* Librarian: Запрос на перегрузку цитат от нелегитимного лица {puser_title}.")
+                    print(f"* Librarian: Запрос на перегрузку цитат от "
+                          f"нелегитимного лица {puser_title}.")
                     answer = (f"Извини, {puser_title}, "
-                              f"только {self.config['master_name']} может перегружать цитаты")
+                              f"только {self.config['master_name']} может перегружать цитаты!")
             elif word_list[0] in SAVE_LIBRARY:
 
                 # *** Пользователь хочет сохранить книгу хокку
@@ -300,6 +302,13 @@ class CLibrarian(prototype.CPrototype):
 
                     save_book(self.quotes, self.data_path + QUOTES_FILE_NAME)
                     answer = "Книга сохранена"
+                else:
+
+                    # *** ... но не тут-то было...
+                    print(f"* Librarian: Запрос на сохранение цитат от "
+                          f"нелегитимного лица {puser_title}.")
+                    answer = (f"Извини, {puser_title}, "
+                              f"только {self.config['master_name']} может сохранять цитаты!")
             elif word_list[0] in HINT:
 
                 answer = self.get_help(pchat_title)
@@ -318,4 +327,4 @@ class CLibrarian(prototype.CPrototype):
     def reload(self):
         """Перезагружает библиотеку."""
         self.quotes = load_book_from_file(self.data_path + QUOTES_FILE_NAME)
-        print(f"Librarian successfully reload library - {len(self.quotes)} quotes")
+        print(f"Librarian успешно (пере)загрузил - {len(self.quotes)} цитат")
