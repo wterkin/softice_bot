@@ -3,7 +3,7 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Бот для Телеграмма"""
 import os
-from datetime import datetime  # , date
+from datetime import datetime
 import time
 import sys
 from sys import platform
@@ -53,21 +53,8 @@ class CQuitByDemand(Exception):
     """Исключение выхода."""
 
     def __init__(self):
-        self.message: str = "* Quit by demand."
+        self.message: str = "* Выход по требованию."
         super().__init__(self.message)
-
-
-# def screen_text(ptext: str) -> str:
-#     """Экранирует текст перед выводом в телеграм."""
-#
-#     result_text: str = ptext.replace(".", "\.")
-#     result_text = result_text.replace("-", "\-")
-#     result_text = result_text.replace("!", "\!")
-#     result_text = result_text.replace(")", "\)")
-#     result_text = result_text.replace("(", "\(")
-#     result_text = result_text.replace("+", "\+")
-#     result_text = result_text.replace("_", "\_")
-#     return result_text
 
 
 def decode_message(pmessage):
@@ -114,7 +101,7 @@ class CSoftIceBot:
         self.running_flag: str = os.getcwd() + "/" + RUNNING_FLAG
         if os.path.exists(self.running_flag):
 
-            print("* Restart after fail.")
+            print("* Перезапуск после падения.")
         else:
 
             with open(self.running_flag, 'tw', encoding='utf-8'):
@@ -146,8 +133,8 @@ class CSoftIceBot:
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
-        # *** Обработчик сообщений
 
+        # *** Обработчик сообщений
         @self.robot.message_handler(content_types=EVENTS)
         def process_message(pmessage):
 
@@ -162,6 +149,7 @@ class CSoftIceBot:
                 # *** Защита от привата
                 if chat_title is None:
 
+                    print("* Обращение к боту в привате.")
                     return
 
                 # *** Проверим, легитимный ли этот чат
@@ -170,7 +158,7 @@ class CSoftIceBot:
                     # *** Бота привели на чужой канал. Выходим.
                     self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
                     self.robot.leave_chat(chat_id)
-                    print(f"Караул! Меня похитили и затащили в чат {chat_title}! Но я удрал.")
+                    print(f"* Попытка нелегитимного использования бота в чате {chat_title}.")
                     return
 
                 # *** Да, вполне легитимный. Сообщение не протухло?
@@ -259,9 +247,9 @@ class CSoftIceBot:
                         puser_name: str, puser_title: str):
         """Пытается обработать команду различными модулями."""
         assert pchat_title is not None, \
-            "Assert: [softice.process_modules] No <pchat_title> parameter specified!"
+            "Assert: [softice.process_modules] Пропущен параметр <pchat_title> !"
         assert puser_title is not None, \
-            "Assert: [softice.process_modules] No <puser_title> parameter specified!"
+            "Assert: [softice.process_modules] Пропущен параметр <puser_title> !"
         # *** Проверим, не запросил ли пользователь что-то у бармена...
         answer: str = self.barman.barman(pchat_title, puser_name, puser_title,
                                          self.message_text).strip()
@@ -310,17 +298,17 @@ class CSoftIceBot:
         if not answer:
 
             # *** Незнакомая команда.
-            print(f"* Asking {self.message_text} .. fail.")
+            print(f"* Запрошена неподдерживаемая команда {self.message_text}.")
         return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
         assert pchat_id is not None, \
             "Assert: [softice.is_reload_config_command_queried] " \
-            "No <pchat_id> parameter specified!"
+            "Пропущен параметр <pchat_id> !"
         assert puser_title is not None, \
             "Assert: [softice.is_reload_config_command_queried] " \
-            "No <puser_title> parameter specified!"
+            "Пропущен параметр <puser_title> !"
         # *** Такое запрашивать может только хозяин
         if self.is_master(puser_name):
 
@@ -328,7 +316,7 @@ class CSoftIceBot:
             self.load_config()
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
             return True
-        print("Softice - нет прав.")
+        print(f"* Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
         return False
 
@@ -336,8 +324,8 @@ class CSoftIceBot:
         """Проверяет, не была ли запрошена подсказка."""
         assert pchat_title is not None, \
             "Assert: [softice.is_help_command_queried] " \
-            "No <pchat_title> parameter specified!"
-        # *** Собираем ответы работников на запрос помощи
+            "Пропущен параметр <pchat_title> !"
+        # *** Собираем ответы модулей на запрос помощи
         answer: str = f"""\n{self.barman.get_hint(pchat_title)}
                           \n{self.bellringer.get_hint(pchat_title)}
                           \n{self.haijin.get_hint(pchat_title)}
@@ -356,10 +344,10 @@ class CSoftIceBot:
         """Проверка, вдруг была команда выхода."""
         assert pchat_id is not None, \
             "Assert: [softice.is_quit_command_queried] " \
-            "No <pchat_id> parameter specified!"
+            "Пропущен параметр <pchat_id> !"
         assert puser_title is not None, \
             "Assert: [softice.is_quit_command_queried] " \
-            "No <puser_title> parameter specified!"
+            "Пропущен параметр <puser_title> !"
         if self.is_master(puser_name):
 
             self.robot.send_message(pchat_id, "Добби свободен!")
@@ -383,38 +371,39 @@ class CSoftIceBot:
                 sys.exit(0)
             except ConnectionError:
 
-                print("# Disconnected. Exiting.")
+                print("# Соединение прервано. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(1)
             except ReadTimeout:  # as ex:
 
-                print("# Read timeout. Exiting.")
+                print("# Превышен интервал ожидания ответа. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(2)
             except telebot.apihelper.ApiTelegramException:
 
-                print("# Telegram refusing connection. Exiting.")
+                print("# Telegram отказал в соединении. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(3)
             except urllib3.exceptions.MaxRetryError:
 
-                print("# Too much connections. Exiting.")
+                print("# Слишком много попыток соединения. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(3)
             except ConnectTimeout:
 
-                print("# Connect timeout. Exiting.")
+                print("# Превышен интервал времени для соединения. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(4)
             except urllib3.exceptions.ProtocolError:
 
-                print("# Connect aborted. Exiting.")
+                print("# Соединение разорвано. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(5)
 
+
 if __name__ == "__main__":
 
-    print(f"* SoftIce started {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
+    print(f"* SoftIce (пере)запущен {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
     SofticeBot: CSoftIceBot = CSoftIceBot()
     SofticeBot.poll_forever()
 

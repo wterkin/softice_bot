@@ -159,7 +159,8 @@ class CHaijin(prototype.CPrototype):
             "No <puser_title> parameter specified!"
         command: int
         answer: str = ""
-        result: int = -1
+        # result: int = -1
+        unformatted_answer: str
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
@@ -196,8 +197,9 @@ class CHaijin(prototype.CPrototype):
                         answer, result = librarian.quote(self.hokku, word_list)
                         if result > 0:
 
-                            print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
-                            answer = self.format_hokku(answer)
+                            # print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
+                            unformatted_answer = answer
+                            answer = self.format_hokku(unformatted_answer)
                     elif command == ADD_HOKKU_CMD:
 
                         # *** Пользователь хочет добавить хокку в книгу
@@ -224,7 +226,11 @@ class CHaijin(prototype.CPrototype):
                     #     # *** Пользователь хочет найти хокку по заданной строке
                     #     answer = self.format_hokku(librarian.find_in_book(self.hokku, word_list))
             if answer:
-                print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
+                if unformatted_answer:
+
+                    print("Haijin answers: ", unformatted_answer[:func.OUT_MSG_LOG_LEN])
+                else:
+                    print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
 
         return answer
 
