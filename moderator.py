@@ -48,7 +48,8 @@ class CModerator(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         word_list: list = func.parse_input(pmessage_text)
-        return self.is_enabled(pchat_title) and word_list[0] in MUTE_COMMANDS
+        return self.is_enabled(pchat_title) and \
+            (word_list[0] in MUTE_COMMANDS or word_list[0] in ADMINISTRATION_CMD)
 
     def find_user_id(self, puser_title: str):
         """Ищет в базе ID пользователя по его нику."""
@@ -107,6 +108,7 @@ class CModerator(prototype.CPrototype):
 
                     if self.is_admin(pchat_id, puser_title):
 
+                        answer = " ".join(MUTE_COMMANDS)
                         self.administration()
                     else:
 
@@ -157,3 +159,4 @@ class CModerator(prototype.CPrototype):
 
     def administration(self):
         """Выводит список пользователей для модерирования."""
+

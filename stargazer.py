@@ -177,6 +177,7 @@ class CStarGazer(prototype.CPrototype):
 
                 today = f"{now_date.day:02}/{now_date.month:02}"
                 answer = self.search_in_calendar(CHURCH_CALENDAR, today)
+                easter_date = calculate_easter(now_date.year)
 
         if answer:
 

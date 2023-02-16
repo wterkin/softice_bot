@@ -406,7 +406,11 @@ class CSoftIceBot:
                 print("# Connect timeout. Exiting.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(4)
+            except urllib3.exceptions.ProtocolError:
 
+                print("# Connect aborted. Exiting.")
+                time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
+                sys.exit(5)
 
 if __name__ == "__main__":
 

@@ -11,7 +11,7 @@ ENABLED_IN_CHATS_KEY: str = "bellringer_chats"
 TOAD_COMMANDS = ["данж", "туса"]
 DUNGEON_COMMAND = 0
 TOAD_CHANNELS = ["OSQ Жабки"]
-MAFIA_CHANNELS = ["Maftown", "Mafiozo-City"]
+MAFIA_CHANNELS = ["Maftown", "Mafia City"]
 
 
 class CBellRinger(prototype.CPrototype):
@@ -27,7 +27,6 @@ class CBellRinger(prototype.CPrototype):
         """Основная функция модуля."""
         answer: str = ""
         word_list: list = functions.parse_input(pmessage_text)
-        # print("bellringer")
         if self.can_process(pchat_title, pmessage_text):
 
             if word_list[0] in BELLRINGER_HINT:
@@ -79,7 +78,7 @@ class CBellRinger(prototype.CPrototype):
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
-        return ", ".join(COMMANDS) + "\n"
+        return ", ".join(COMMANDS) + ", ".join(TOAD_COMMANDS) + "\n"
 
     def get_hint(self, pchat_title: str) -> str:
         """Возвращает команду верхнего уровня, в ответ на которую
