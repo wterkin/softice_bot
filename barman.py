@@ -174,7 +174,8 @@ class CBarman(prototype.CPrototype):
                     answer = "Ассортимент бара обновлён."
                 else:
 
-                    print("* Barman: Запрос на перезагрузку бара от нелегитимного лица {puser_title}.")
+                    print(f"* Barman: Запрос на перезагрузку бара от "
+                          f"нелегитимного лица {puser_title}.")
                     answer = f"У вас нет на это прав, {puser_title}."
             else:
 

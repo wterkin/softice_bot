@@ -2,16 +2,12 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль - цитатник хокку. 俳人"""
 
-# import os
-# import random
-# from datetime import datetime as dtime
 import functions as func
 import prototype
 import librarian
 
 # *** Команды для цитатника хокку
 ASK_HOKKU_CMD: int = 0
-# FIND_HOKKU_CMD: int = 1
 ADD_HOKKU_CMD: int = 1
 DEL_HOKKU_CMD: int = 2
 
@@ -43,7 +39,7 @@ RIGHT_PARENTHESIS: str = ")"
 LEFT_BRACKET: str = "["
 RIGHT_BRACKET: str = "]"
 AUTHOR_INDENT: str = "     "
-DELIMITER: str = "\|"
+DELIMITER: str = f"{func.BACKSLASH}|"
 
 
 def get_command(pword: str) -> int:
@@ -51,7 +47,7 @@ def get_command(pword: str) -> int:
     """
     assert pword is not None, \
         "Assert: [haijin.get_command] " \
-        "No <pword> parameter specified!"
+        "Пропущен параметр <pword> !"
     result: int = -1
     for command_idx, command in enumerate(HAIJIN_COMMANDS):
 
@@ -76,17 +72,19 @@ class CHaijin(prototype.CPrototype):
         """Возвращает True, если хайдзин может обработать эту команду."""
         assert pchat_title is not None, \
             "Assert: [haijin.can_process] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         assert pmessage_text is not None, \
             "Assert: [haijin.can_process] " \
-            "No <pmessage_text> parameter specified!"
+            "Пропущен параметр <pmessage_text> !"
         found: bool = False
         if self.is_enabled(pchat_title):
+
             word_list: list = func.parse_input(pmessage_text)
             for command in HAIJIN_COMMANDS:
 
                 found = word_list[0] in command
                 if found:
+
                     break
 
             if not found:
@@ -96,13 +94,13 @@ class CHaijin(prototype.CPrototype):
 
                     found = word_list[0] in RELOAD_BOOK
                     if not found:
+
                         found = word_list[0] in SAVE_BOOK
         return found
 
     def format_hokku(self, ptext: str) -> str:
         """Форматирует хокку так, как нам хочется."""
         # *** Вырежем номер
-        # print("*** ", ptext)
         if "???" not in ptext:
             left_par: int = ptext.index(LEFT_BRACKET)
             right_par: int = ptext.index(RIGHT_BRACKET)
@@ -120,7 +118,8 @@ class CHaijin(prototype.CPrototype):
 
                 result_text += line.strip() + LF
             result_text = func.screen_text(result_text)
-            result_text = f"{BOLD}{ITALIC}{result_text[:-1]}{ITALIC}{BOLD}{LF}{AUTHOR_INDENT}{author} {SPOILER}" + \
+            result_text = f"{BOLD}{ITALIC}{result_text[:-1]}{ITALIC}{BOLD}{LF}" \
+                          f"{AUTHOR_INDENT}{author} {SPOILER}" + \
                           f"{DELIMITER} {number} {DELIMITER} {len(self.hokku)} {SPOILER}"
             return result_text
         return ptext
@@ -129,13 +128,14 @@ class CHaijin(prototype.CPrototype):
         """Пользователь запросил список команд."""
         assert pchat_title is not None, \
             "Assert: [librarian.get_help] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         command_list: str = ""
         if self.is_enabled(pchat_title):
 
             for idx, command in enumerate(HAIJIN_COMMANDS):
 
                 if idx + 1 != len(HAIJIN_COMMANDS):
+
                     command_list += ", ".join(command) + HAIJIN_DESC[idx]
                     command_list += "\n"
         return func.screen_text(command_list)
@@ -144,8 +144,9 @@ class CHaijin(prototype.CPrototype):
         """Возвращает список команд, поддерживаемых модулем.  """
         assert pchat_title is not None, \
             "Assert: [barman.get_hint] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         if self.is_enabled(pchat_title):
+
             return func.screen_text(", ".join(HINT))
         return ""
 
@@ -153,14 +154,12 @@ class CHaijin(prototype.CPrototype):
         """Процедура разбора запроса пользователя."""
         assert pchat_title is not None, \
             "Assert: [haijin.haijin] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         assert puser_title is not None, \
             "Assert: [haijin.haijin] " \
-            "No <puser_title> parameter specified!"
-        command: int
+            "Пропущен параметр <puser_title> !"
         answer: str = ""
-        # result: int = -1
-        unformatted_answer: str
+        unformatted_answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
@@ -185,89 +184,82 @@ class CHaijin(prototype.CPrototype):
 
                 answer = self.get_help(pchat_title)
             else:
-
-                # *** Получим код команды
-                command = get_command(word_list[0])
-                if command >= 0:
-
-                    # *** Хокку запрашивали?
-                    if command == ASK_HOKKU_CMD:
-
-                        # *** Пользователь хочет хокку....
-                        answer, result = librarian.quote(self.hokku, word_list)
-                        if result > 0:
-
-                            # print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
-                            unformatted_answer = answer
-                            answer = self.format_hokku(unformatted_answer)
-                    elif command == ADD_HOKKU_CMD:
-
-                        # *** Пользователь хочет добавить хокку в книгу
-                        text: str = " ".join(word_list[1:])
-                        if '(' not in text:
-
-                            text += "(автор не  известен)"
-                        self.hokku.append(text)
-                        answer = f"Спасибо, {puser_title}, хокку добавлено под номером {len(self.hokku)}"
-                    elif command == DEL_HOKKU_CMD:
-
-                        # *** Пользователь хочет удалить хокку из книги...
-                        if puser_name == self.config["master"]:
-
-                            del self.hokku[int(word_list[1]) - 1]
-                            answer = f"Хокку {word_list[1]} удалена."
-                        else:
-
-                            # *** ... но не тут-то было...
-                            answer = (f"Извини, {puser_title}, "
-                                      f"только {self.config['master_name']} может удалять хокку")
-                    # elif command == FIND_HOKKU_CMD:
-                    #
-                    #     # *** Пользователь хочет найти хокку по заданной строке
-                    #     answer = self.format_hokku(librarian.find_in_book(self.hokku, word_list))
+                answer, unformatted_answer = self.process_command(word_list,
+                                                                  puser_name,
+                                                                  puser_title)
             if answer:
+
                 if unformatted_answer:
 
-                    print("Haijin answers: ", unformatted_answer[:func.OUT_MSG_LOG_LEN])
+                    print("Haijin отвечает: ", unformatted_answer[:func.OUT_MSG_LOG_LEN])
                 else:
-                    print("Haijin answers: ", answer[:func.OUT_MSG_LOG_LEN])
 
+                    print("Haijin отвечает: ", answer[:func.OUT_MSG_LOG_LEN])
         return answer
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если библиотекарь разрешен на этом канале."""
         assert pchat_title is not None, \
             "Assert: [librarian.is_enabled] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name, puser_title):
         """Проверяет, является ли пользователь хозяином бота."""
 
         if puser_name == self.config["master"]:
+
             return True, ""
         # *** Низзя
-        # print("Haijin - нет прав")
         return False, f"У вас нет на это прав, {puser_title}."
+
+    def process_command(self, pcommand: list, puser_name: str, puser_title: str):
+        """Обрабатывает пользовательские команды."""
+
+        # *** Получим код команды
+        answer: str = ""
+        unformatted_answer: str = ""
+        command: int = get_command(pcommand[0])
+        if command >= 0:
+
+            # *** Хокку запрашивали?
+            if command == ASK_HOKKU_CMD:
+
+                # *** Пользователь хочет хокку....
+                answer, result = librarian.quote(self.hokku, pcommand)
+                if result > 0:
+                    unformatted_answer = answer
+                    answer = self.format_hokku(unformatted_answer)
+                    # print(unformatted_answer)
+                    # print(answer)
+                    # answer = ""
+            elif command == ADD_HOKKU_CMD:
+
+                # *** Пользователь хочет добавить хокку в книгу
+                text: str = " ".join(pcommand[1:])
+                if '(' not in text:
+
+                    text += "(автор не  известен)"
+                self.hokku.append(text)
+                answer = f"Спасибо, {puser_title}, хокку добавлено под номером " \
+                         f"{len(self.hokku)}"
+            elif command == DEL_HOKKU_CMD:
+
+                # *** Пользователь хочет удалить хокку из книги...
+                if puser_name == self.config["master"]:
+
+                    del self.hokku[int(pcommand[1]) - 1]
+                    answer = f"Хокку {pcommand[1]} удалена."
+                else:
+
+                    # *** ... но не тут-то было...
+                    print("* Запрос на удаление хокку от нелегитимного лица {puser_title}.")
+                    answer = (f"Извини, {puser_title}, "
+                              f"только {self.config['master_name']} может удалять хокку")
+        return answer, unformatted_answer
 
     def reload(self):
         """Перезагружает библиотеку."""
+
         self.hokku = librarian.load_book_from_file(self.data_path + HAIJIN_FILE_NAME)
-        print(f"Haijin successfully reload library - {len(self.hokku)} hokku ")
-
-
-"""*bold \*text*
-_italic \*text_
-__underline__
-~strikethrough~
-||spoiler||
-*bold _italic bold ~italic bold strikethrough ||italic bold strikethrough spoiler||~ __underline italic bold___ bold*
-[inline URL](http://www.example.com/)
-[inline mention of a user](tg://user?id=123456789)
-`inline fixed-width code`
-```
-pre-formatted fixed-width code block
-```
-```python
-pre-formatted fixed-width code block written in the Python programming language
-```"""
+        print(f"* Haijin успешно перезагрузил {len(self.hokku)} хокку.")

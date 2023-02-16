@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль для бота."""
-import functions
+
+import functions as func
 import prototype
 
 COMMANDS: list = ["звонить", "звон", "зв", "ring"]
@@ -26,7 +27,7 @@ class CBellRinger(prototype.CPrototype):
     def bellringer(self, pchat_title: str, pmessage_text: str):
         """Основная функция модуля."""
         answer: str = ""
-        word_list: list = functions.parse_input(pmessage_text)
+        word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
             if word_list[0] in BELLRINGER_HINT:
@@ -39,13 +40,14 @@ class CBellRinger(prototype.CPrototype):
 
                     if pchat_title in MAFIA_CHANNELS:
 
-                        user_list = functions.load_from_file(self.data_path+"/"+pchat_title+".txt")
-                        answer = "Эй, " + ", ".join(user_list) + "! Пошли, поохотимся на дона! или на мителей..."
+                        user_list = func.load_from_file(self.data_path+"/"+pchat_title+".txt")
+                        answer = "Эй, " + ", ".join(user_list) + \
+                                 "! Пошли, поохотимся на дона! или на мителей..."
                 elif word_list[0] in TOAD_COMMANDS:
 
                     if pchat_title in TOAD_CHANNELS:
 
-                        user_list = functions.load_from_file(self.data_path+"/"+pchat_title+".txt")
+                        user_list = func.load_from_file(self.data_path+"/"+pchat_title+".txt")
                         answer = "Эй, " + ", ".join(user_list)
                         if word_list[0] == TOAD_COMMANDS[DUNGEON_COMMAND]:
 
@@ -53,7 +55,9 @@ class CBellRinger(prototype.CPrototype):
                         else:
 
                             answer += ", пошли потусим!"
+        if answer:
 
+            print(f"BellRinger отвечает: {answer[:func.OUT_MSG_LOG_LEN]}")
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -61,7 +65,7 @@ class CBellRinger(prototype.CPrototype):
         found: bool = False
         if self.is_enabled(pchat_title):
 
-            word_list: list = functions.parse_input(pmessage_text)
+            word_list: list = func.parse_input(pmessage_text)
             cmd_list: list = []
             cmd_list.extend(COMMANDS)
             cmd_list.extend(TOAD_COMMANDS)
