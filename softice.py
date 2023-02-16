@@ -87,7 +87,7 @@ class CSoftIceBot:
         """Конструктор класса."""
         super().__init__()
         self.config: dict = {}
-        self.config_name: str = CONFIG_FILE_NAME
+        # self.config_name: str = CONFIG_FILE_NAME
         self.load_config()
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
@@ -96,7 +96,7 @@ class CSoftIceBot:
         # *** Создаём собственно бота.
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
-        self.exiting: bool = False
+        # self.exiting: bool = False
         self.message_text: str = ""
         self.running_flag: str = os.getcwd() + "/" + RUNNING_FLAG
         if os.path.exists(self.running_flag):
@@ -120,7 +120,7 @@ class CSoftIceBot:
 
             # *** А нету ещё БД, создавать треба.
             self.database.create()
-        # *** Поехали создавать работников =)
+        # *** Поехали создавать объекты модулей =)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
         self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config,
@@ -216,7 +216,7 @@ class CSoftIceBot:
 
     def load_config(self):
         """Загружает конфигурацию из JSON."""
-        with open(self.config_name, "r", encoding="utf-8") as json_file:
+        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
 
             self.config = json.load(json_file)
 
@@ -352,7 +352,7 @@ class CSoftIceBot:
 
             self.robot.send_message(pchat_id, "Добби свободен!")
             os.remove(self.running_flag)
-            self.exiting = True
+            # self.exiting = True
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
 

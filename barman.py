@@ -151,11 +151,11 @@ class CBarman(prototype.CPrototype):
                pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
         assert pchat_title is not None, \
-            "Assert: [barman.barman] No <pchat_title> parameter specified!"
+            "Assert: [barman.barman] Пропущен параметр <pchat_title> !"
         assert puser_title is not None, \
-            "Assert: [barman.barman] No <puser_title> parameter specified!"
+            "Assert: [barman.barman] Пропущен параметр <puser_title> !"
         assert pmessage_text is not None, \
-            "Assert: [barman.barman] No <pmessage_text> parameter specified!"
+            "Assert: [barman.barman] Пропущен параметр <pmessage_text> !"
         answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
@@ -170,10 +170,11 @@ class CBarman(prototype.CPrototype):
                 if self.is_master(puser_name):
 
                     self.reload()
+                    print("* Barman успешно перегрузил содержимое бара.")
                     answer = "Ассортимент бара обновлён."
-                    print("Barman successfully reload bar assortiment.")
                 else:
-                    print("Barman: нет прав")
+
+                    print("* Barman: Запрос на перезагрузку бара от нелегитимного лица {puser_title}.")
                     answer = f"У вас нет на это прав, {puser_title}."
             else:
 
@@ -185,17 +186,17 @@ class CBarman(prototype.CPrototype):
                     answer = self.serve_client(puser_title, word_list[0])
         if answer:
 
-            print(f"Barman answers: {answer[:func.OUT_MSG_LOG_LEN]}")
+            print(f"Barman отвечает: {answer[:func.OUT_MSG_LOG_LEN]}")
         return answer.strip()
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если бармен может обработать эту команду"""
         assert pchat_title is not None, \
             "Assert: [barman.can_process] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         assert pmessage_text is not None, \
             "Assert: [barman.can_process] " \
-            "No <pmessage_text> parameter specified!"
+            "Пропущен параметр <pmessage_text> !"
         found: bool = False
         if self.is_enabled(pchat_title):
 
@@ -218,7 +219,7 @@ class CBarman(prototype.CPrototype):
         """Пользователь запросил список команд."""
         assert pchat_title is not None, \
             "Assert: [barman.get_help] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         command_list: str = ""
         if self.is_enabled(pchat_title):
 
@@ -231,7 +232,7 @@ class CBarman(prototype.CPrototype):
         """Возвращает список команд, поддерживаемых модулем.  """
         assert pchat_title is not None, \
             "Assert: [barman.get_hint] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         if self.is_enabled(pchat_title):
 
             return ", ".join(BAR_HINT)
@@ -241,7 +242,7 @@ class CBarman(prototype.CPrototype):
         """Возвращает True, если бармен разрешен на этом канале."""
         assert pchat_title is not None, \
             "Assert: [barman.is_enabled] " \
-            "No <pchat_title> parameter specified!"
+            "Пропущен параметр <pchat_title> !"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name: str) -> bool:
@@ -253,13 +254,13 @@ class CBarman(prototype.CPrototype):
         for item in ASSORTIMENT:
 
             self.load_item(item)
-        print(f"Barman successfully loaded {len(ASSORTIMENT)} items")
+        print(f"* Barman успешно загрузил {len(ASSORTIMENT)} наименований.")
 
     def load_item(self, pitem: dict):  # pmainkey: str, pkeys: tuple, pproperties: dict):
         """Загружает одно наименование ассортимента бара."""
         assert pitem is not None, \
             "Assert: [barman.load_item] " \
-            "No <pitem> parameter specified!"
+            "Пропущен параметр <pitem> !"
         storage: dict = {}
         for key in pitem[PROPERTIES_KEY]:
 
@@ -274,9 +275,9 @@ class CBarman(prototype.CPrototype):
     def serve_client(self, puser_name: str, pcommand: str):
         """Обслуживает клиентов."""
         assert puser_name is not None, \
-            "Assert: [barman.serve_client] No <puser_name> parameter specified!"
+            "Assert: [barman.serve_client] Пропущен параметр <puser_name> !"
         assert pcommand is not None, \
-            "Assert: [barman.serve_client] No <pcommand> parameter specified!"
+            "Assert: [barman.serve_client] Пропущен параметр <pcommand> !"
         answer: str = ""
         for item in ASSORTIMENT:
 

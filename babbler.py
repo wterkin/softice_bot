@@ -38,9 +38,9 @@ class CBabbler(prototype.CPrototype):
                 pmessage_text: str) -> str:
         """Улучшенная версия болтуна."""
         assert pchat_title is not None, \
-            "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
+            "Assert: [babbler.babbler] Пропущен параметр <pchat_title> !"
         assert pmessage_text is not None, \
-            "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
+            "Assert: [babbler.babbler] Пропущен параметр <pmessage_text> !"
         answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
@@ -54,16 +54,16 @@ class CBabbler(prototype.CPrototype):
                     answer = "База болтуна обновлена"
                 else:
 
-                    print("Болтун - нет прав")
+                    print("* Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
                     answer = f"У вас нет на это прав, {puser_title}."
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Болтун всегда может обработать эту команду."""
         assert pchat_title is not None, \
-            "Assert: [babbler.can_process] No <pchat_title> parameter specified!"
+            "Assert: [babbler.can_process] Пропущен параметр <pchat_title> !"
         assert pmessage_text is not None, \
-            "Assert: [babbler.can_process] No <pmessage_text> parameter specified!"
+            "Assert: [babbler.can_process] Пропущен параметр <pmessage_text> !"
         return self.is_enabled(pchat_title)
 
     def get_help(self, pchat_title: str):
@@ -78,7 +78,7 @@ class CBabbler(prototype.CPrototype):
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если бармен разрешен на этом канале."""
         assert pchat_title is not None, \
-            "Assert: [babbler.is_enabled] No <pchat_title> parameter specified!"
+            "Assert: [babbler.is_enabled] Пропущен параметр <pchat_title> !"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name: str) -> bool:
@@ -96,7 +96,6 @@ class CBabbler(prototype.CPrototype):
         self.mind.clear()
         for trigger in triggers_path.iterdir():
 
-            # print(trigger)
             if trigger.is_file():
 
                 module = Path(trigger).resolve().name
@@ -104,7 +103,6 @@ class CBabbler(prototype.CPrototype):
                 if reaction.is_file():
 
                     trigger_content: list = func.load_from_file(str(trigger))
-                    # print(trigger_content)
                     block: list = [trigger_content]
                     reaction_content: list = func.load_from_file(str(reaction))
                     block.append(reaction_content)
@@ -112,15 +110,15 @@ class CBabbler(prototype.CPrototype):
                     result = True
         if self.mind:
 
-            print("Babbler successfully reload his mind.")
+            print("* Babbler успешно перезагружен.")
         return result
 
     def talk(self, pchat_title: str, pmessage_text: str) -> str:
         """Улучшенная версия болтуна."""
         assert pchat_title is not None, \
-            "Assert: [babbler.babbler] No <pchat_title> parameter specified!"
+            "Assert: [babbler.babbler] Пропущен параметр <pchat_title> !"
         assert pmessage_text is not None, \
-            "Assert: [babbler.babbler] No <pmessage_text> parameter specified!"
+            "Assert: [babbler.babbler] Пропущен параметр <pmessage_text> !"
         answer: str = ""
         # *** Заданный период времени с последней фразы прошел?
         if self.is_enabled(pchat_title):
@@ -132,7 +130,7 @@ class CBabbler(prototype.CPrototype):
                 answer = self.think(pmessage_text)
             if answer:
 
-                print(f"Babbler answers: {answer[:func.OUT_MSG_LOG_LEN]}...")
+                print(f"Babbler отвечает: {answer[:func.OUT_MSG_LOG_LEN]}...")
                 self.last_phrase_time = datetime.now()
         return answer
 
