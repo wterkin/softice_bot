@@ -187,7 +187,7 @@ class CBarman(prototype.CPrototype):
                     answer = self.serve_client(puser_title, word_list[0])
         if answer:
 
-            print(f"Barman отвечает: {answer[:func.OUT_MSG_LOG_LEN]}")
+            print(f"> Barman отвечает: {answer[:func.OUT_MSG_LOG_LEN]}")
         return answer.strip()
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -255,7 +255,7 @@ class CBarman(prototype.CPrototype):
         for item in ASSORTIMENT:
 
             self.load_item(item)
-        print(f"* Barman успешно загрузил {len(ASSORTIMENT)} наименований.")
+        print(f"> Barman успешно (пере)загрузил {len(ASSORTIMENT)} типов товаров.")
 
     def load_item(self, pitem: dict):  # pmainkey: str, pkeys: tuple, pproperties: dict):
         """Загружает одно наименование ассортимента бара."""

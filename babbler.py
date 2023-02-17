@@ -54,7 +54,7 @@ class CBabbler(prototype.CPrototype):
                     answer = "База болтуна обновлена"
                 else:
 
-                    print("* Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
+                    print(f"> Babbler: Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
                     answer = f"У вас нет на это прав, {puser_title}."
         return answer
 
@@ -110,7 +110,7 @@ class CBabbler(prototype.CPrototype):
                     result = True
         if self.mind:
 
-            print("* Babbler успешно перезагружен.")
+            print(f"> Babbler успешно (пере)загрузил {len(self.mind)} реакций.")
         return result
 
     def talk(self, pchat_title: str, pmessage_text: str) -> str:

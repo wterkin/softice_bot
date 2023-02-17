@@ -320,11 +320,11 @@ class CLibrarian(prototype.CPrototype):
                                                       word_list, command)
             if answer:
 
-                print("* Librarian отвечает: ", answer[:func.OUT_MSG_LOG_LEN])
+                print("> Librarian отвечает: ", answer[:func.OUT_MSG_LOG_LEN])
 
         return answer
 
     def reload(self):
         """Перезагружает библиотеку."""
         self.quotes = load_book_from_file(self.data_path + QUOTES_FILE_NAME)
-        print(f"Librarian успешно (пере)загрузил - {len(self.quotes)} цитат")
+        print(f"> Librarian успешно (пере)загрузил {len(self.quotes)} цитат(ы)")

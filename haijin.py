@@ -191,10 +191,10 @@ class CHaijin(prototype.CPrototype):
 
                 if unformatted_answer:
 
-                    print("Haijin отвечает: ", unformatted_answer[:func.OUT_MSG_LOG_LEN])
+                    print("> Haijin отвечает: ", unformatted_answer[:func.OUT_MSG_LOG_LEN])
                 else:
 
-                    print("Haijin отвечает: ", answer[:func.OUT_MSG_LOG_LEN])
+                    print("> Haijin отвечает: ", answer[:func.OUT_MSG_LOG_LEN])
         return answer
 
     def is_enabled(self, pchat_title: str) -> bool:
@@ -253,7 +253,7 @@ class CHaijin(prototype.CPrototype):
                 else:
 
                     # *** ... но не тут-то было...
-                    print(f"* Haijin: Запрос на удаление хокку от нелегитимного лица {puser_title}.")
+                    print(f"> Haijin: Запрос на удаление хокку от нелегитимного лица {puser_title}.")
                     answer = (f"Извини, {puser_title}, "
                               f"только {self.config['master_name']} может удалять хокку")
         return answer, unformatted_answer
@@ -262,4 +262,4 @@ class CHaijin(prototype.CPrototype):
         """Перезагружает библиотеку."""
 
         self.hokku = librarian.load_book_from_file(self.data_path + HAIJIN_FILE_NAME)
-        print(f"* Haijin успешно перезагрузил {len(self.hokku)} хокку.")
+        print(f"> Haijin успешно (пере)загрузил {len(self.hokku)} хокку.")

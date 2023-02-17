@@ -399,6 +399,11 @@ class CSoftIceBot:
                 print("# Соединение разорвано. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(5)
+            # except ConnectionResetError:
+            #
+            #     print("# Ошибка переустановления соединения. Выход.")
+            #     time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
+            #     sys.exit(5)
 
 
 if __name__ == "__main__":
