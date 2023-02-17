@@ -54,7 +54,8 @@ class CBabbler(prototype.CPrototype):
                     answer = "База болтуна обновлена"
                 else:
 
-                    print(f"> Babbler: Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
+                    print(f"> Babbler: Запрос на перезагрузку конфига от "
+                          f"нелегитимного лица {puser_title}.")
                     answer = f"У вас нет на это прав, {puser_title}."
         return answer
 

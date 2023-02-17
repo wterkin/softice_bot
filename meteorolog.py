@@ -64,24 +64,23 @@ def parse_weather(pdata, preq_date):
     min_wind_angle: int = 360
     max_wind_angle: int = 0
     weather: list = []
-    weather_line: str = ""
+    # weather_line: str = ""
 
     for item in pdata['list']:
 
         # 1. Выбираем данные за заданную дату
         if pdate.datetime.fromtimestamp(item['dt']).date() == preq_date:
 
-            main = item['main']
+            # main = item['main']
             # *** Температура
-            min_temperature = min(main["temp"], min_temperature)
-            max_temperature = max(main["temp"], max_temperature)
-            # print(main["temp"], min_temperature, max_temperature)
+            min_temperature = min(item['main']["temp"], min_temperature)
+            max_temperature = max(item['main']["temp"], max_temperature)
             # *** Давление
-            min_pressure = min(main["pressure"], min_pressure)
-            max_pressure = max(main["pressure"], max_pressure)
+            min_pressure = min(item['main']["pressure"], min_pressure)
+            max_pressure = max(item['main']["pressure"], max_pressure)
             # *** Влажность
-            min_humidity = min(main["humidity"], min_humidity)
-            max_humidity = max(main["humidity"], max_humidity)
+            min_humidity = min(item['main']["humidity"], min_humidity)
+            max_humidity = max(item['main']["humidity"], max_humidity)
             # *** Ветер
             wind_speed = item["wind"]["speed"]
             wind_angle = item["wind"]["deg"]
@@ -108,17 +107,16 @@ def parse_weather(pdata, preq_date):
             if icon not in weather:
 
                 weather.append(icon)
-    for icon in weather:
-
-        weather_line += ICON_CONVERT[icon] + " "
     answer = f"Темп.: {round(min_temperature)} - {round(max_temperature)} °C, " \
              f" давл.: {round(min_pressure * 0.75)} - {round(max_pressure * 0.75)}" \
              f" мм.рт.ст., " \
              f" влажн.: {round(min_humidity)} - {round(max_humidity)} %, " \
              f" ветер: {round(min_wind_speed)} " \
              f"м/с {get_wind_direction(min_wind_angle)} " \
-             f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, " \
-             f" {weather_line}"
+             f"- {round(max_wind_speed)} м/c {get_wind_direction(max_wind_angle)}, "
+    for icon in weather:
+
+        answer += ICON_CONVERT[icon] + " "
     return answer
 
 
@@ -237,7 +235,7 @@ class CMeteorolog(prototype.CPrototype):
                         answer = f"{city_name} : {date_str} : {weather_str}"
                     else:
 
-                        answer = "Поздно уже, какая тебе погода??!"
+                        answer = "Уже слишком поздно, метеоролог уснул..."
                 else:
 
                     answer = f"Нет данных о погоде для города {' '.join(word_list[1:]).strip()}"
@@ -245,6 +243,7 @@ class CMeteorolog(prototype.CPrototype):
 
                 answer = "А в каком городе погода нужна?"
         return answer
+
 
     def reload(self):
         pass
