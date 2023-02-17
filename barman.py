@@ -170,11 +170,11 @@ class CBarman(prototype.CPrototype):
                 if self.is_master(puser_name):
 
                     self.reload()
-                    print("* Barman успешно перегрузил содержимое бара.")
+                    # print("> Barman успешно перегрузил содержимое бара.")
                     answer = "Ассортимент бара обновлён."
                 else:
 
-                    print(f"* Barman: Запрос на перезагрузку бара от "
+                    print(f"> Barman: Запрос на перезагрузку бара от "
                           f"нелегитимного лица {puser_title}.")
                     answer = f"У вас нет на это прав, {puser_title}."
             else:

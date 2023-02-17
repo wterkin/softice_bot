@@ -97,6 +97,28 @@ OLD_TESTAMENT_BOOKS = range(1, 40)
 NEW_TESTAMENT_BOOKS = range(40, 67)
 
 THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMENT}", f"{FIND_IN_BOOK}"]
+MAX_SEARCH_RESULT: int = 4
+
+def search_in_book(pbook_file: str, pbook_title: str, pphrase: str):
+    """Ищет заданную строку в заданном файле."""
+    result_list: list = []
+    with open(pbook_file, "r", encoding="utf-8") as book_file:
+
+        for line in book_file:
+
+            lower_line = line.lower()
+            parsed_line = re.split(r':', lower_line, maxsplit=2)
+            joined_line: str = " ".join(parsed_line[2:])
+            if pphrase in joined_line:
+                parsed_line = re.split(r':', line, maxsplit=2)
+                # print(parsed_line, pbook_title)
+                result_line: str = " ".join(parsed_line[2:])
+                result_list.append(f"{pbook_title} глава {parsed_line[0]} стих "
+                                   f"{parsed_line[1]}: {result_line}")
+            if len(result_list) > MAX_SEARCH_RESULT:
+
+                break
+    return "\n".join(result_list)
 
 
 class CTheolog(prototype.CPrototype):
@@ -166,17 +188,17 @@ class CTheolog(prototype.CPrototype):
             for line in book_file:
 
                 # *** Ищем в файле заданный идентификатор строки
-                regexp = f"^{pline_id}:"
-                if re.search(regexp, line) is not None:
+                # regexp = f"^{pline_id}:"
+                if re.search(f"^{pline_id}:", line) is not None:
 
                     if ":" in line:
 
                         chapter_position = line.index(":")
-                        chapter = line[:chapter_position]
+                        # chapter = line[:chapter_position]
                         line_position = line.index(":", chapter_position + 1)
                         line_number = line[chapter_position + 1:line_position]
                         text = line[line_position:]
-                        message = f"{pbook} {chapter}:{line_number} {text}"
+                        message = f"{pbook} {line[:chapter_position]}:{line_number} {text}"
                     if pline_count == 1:
 
                         break
@@ -262,24 +284,6 @@ class CTheolog(prototype.CPrototype):
     def reload(self):
         pass
 
-    def search_in_book(self, pbook_file: str, pbook_title: str, pphrase: str):
-        """Ищет заданную строку в заданном файле."""
-        result_list: list = []
-        with open(pbook_file, "r", encoding="utf-8") as book_file:
-
-            for line in book_file:
-
-                lower_line = line.lower()
-                parsed_line = re.split(r':', lower_line, maxsplit=2)
-                joined_line: str = " ".join(parsed_line[2:])
-                if pphrase in joined_line:
-
-                    parsed_line = re.split(r':', line, maxsplit=2)
-                    # print(parsed_line, pbook_title)
-                    result_line: str = " ".join(parsed_line[2:])
-                    result_list.append(f"{pbook_title} глава {parsed_line[0]} стих "
-                                       f"{parsed_line[1]}: {result_line}")
-        return "\n".join(result_list)
 
     def theolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Обрабатывает запросы теолога."""
@@ -293,15 +297,12 @@ class CTheolog(prototype.CPrototype):
         chapter: str
 
         if self.can_process(pchat_title, pmessage_text):
-            # print("* ", pmessage_text)
             # *** Если есть один параметр, то запрос помощи должен быть это
-            if param_count == 1:
+            if (param_count == 1) and word_list[COMMAND_ARG] in THEOLOG_HINT:
 
-                if word_list[COMMAND_ARG] in THEOLOG_HINT:
-
-                    return self.get_help(pchat_title)
+                return self.get_help(pchat_title)
             # *** Если есть два параметра, то это книга и глава/стих.
-            elif param_count > 1:
+            if param_count > 1:
 
                 # *** Передали книгу и главу - или команду поиска
                 if word_list[0].lower() in [NEW_TESTAMENT, OLD_TESTAMENT]:
@@ -324,21 +325,21 @@ class CTheolog(prototype.CPrototype):
                     if book_index >= 0:
 
                         book_file = f"{self.data_path}/{book_index+1}.txt"
-                        answer = self.search_in_book(book_file, BIBLE_BOOKS[book_index][2],
+                        answer = search_in_book(book_file, BIBLE_BOOKS[book_index][2],
                                                      " ".join(word_list[2:]))
                 else:
                     # *** Книгу и главу
                     book_name = word_list[0]
                     chapter = word_list[1]
                     # *** Есть третий параметр, то это количество строк
-                    if param_count > 2:
+                    if (param_count > 2) and word_list[2].isdigit():
 
                         # *** И это число?
-                        if word_list[2].isdigit():
+                        # if word_list[2].isdigit():
 
-                            # *** Значит, это количество выводимых строк
-                            line_count = int(word_list[2])
-                            line_count = 5 if line_count > 5 else line_count
+                        # *** Значит, это количество выводимых строк
+                        line_count = int(word_list[2])
+                        line_count = 5 if line_count > 5 else line_count
                     answer = self.execute_quote(chapter, book_name, line_count)
             if len(answer) > 0:
 
@@ -346,4 +347,4 @@ class CTheolog(prototype.CPrototype):
             else:
 
                 answer = "Ничего не нашёл."
-        return answer
+        return answer[:1024]

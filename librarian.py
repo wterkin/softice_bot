@@ -215,7 +215,7 @@ class CLibrarian(prototype.CPrototype):
             else:
 
                 # *** ... но не тут-то было...
-                print(f"* Librarian: Запрос на удаление цитаты от "
+                print(f"> Librarian: Запрос на удаление цитаты от "
                       f"нелегитимного лица {puser_title}.")
                 answer = (f"Извини, {puser_title}, "
                           f"только {self.config['master_name']} может удалять цитаты")
@@ -262,7 +262,7 @@ class CLibrarian(prototype.CPrototype):
 
             return True, ""
         # *** Низзя
-        print(f"* Librarian: Запрос на удаление цитаты от нелегитимного лица {puser_title}.")
+        print(f"> Librarian: Запрос на удаление цитаты от нелегитимного лица {puser_title}.")
         return False, f"У вас нет на это прав, {puser_title}."
 
     def librarian(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
@@ -290,7 +290,7 @@ class CLibrarian(prototype.CPrototype):
                 else:
 
                     # *** ... но не тут-то было...
-                    print(f"* Librarian: Запрос на перегрузку цитат от "
+                    print(f"> Librarian: Запрос на перегрузку цитат от "
                           f"нелегитимного лица {puser_title}.")
                     answer = (f"Извини, {puser_title}, "
                               f"только {self.config['master_name']} может перегружать цитаты!")
@@ -305,7 +305,7 @@ class CLibrarian(prototype.CPrototype):
                 else:
 
                     # *** ... но не тут-то было...
-                    print(f"* Librarian: Запрос на сохранение цитат от "
+                    print(f"> Librarian: Запрос на сохранение цитат от "
                           f"нелегитимного лица {puser_title}.")
                     answer = (f"Извини, {puser_title}, "
                               f"только {self.config['master_name']} может сохранять цитаты!")
