@@ -15,12 +15,11 @@ class CTestSoftIceBot(TestCase):
 
     def test_is_this_chat_enabled(self):
         self.assertEqual(self.bot.is_this_chat_enabled('superchat'), True)
-        self.assertEqual(self.bot.is_this_chat_enabled('Test'), False)
+        self.assertEqual(self.bot.is_this_chat_enabled('supermegachat'), False)
 
     def test_process_command(self):
         self.assertEqual(self.bot.process_command("config", -583831606, "superchat",
                                                   {"name": "username", "title": "usertitle"}), True)
-        print('User')
         self.assertEqual(self.bot.process_command("config", -583831606, "superchat",
                                                   {"name": "MegaUser", "title": "Юзер"}), False)
         self.assertEqual(self.bot.process_command("help", -583831606, "superchat",

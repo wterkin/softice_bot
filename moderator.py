@@ -159,4 +159,3 @@ class CModerator(prototype.CPrototype):
 
     def administration(self):
         """Выводит список пользователей для модерирования."""
-

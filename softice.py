@@ -35,11 +35,13 @@ CONFIG_FILE_NAME: str = "config.json"
 CONFIG_COMMANDS: list = ["конфиг", "config"]  # !
 EXIT_COMMANDS: list = ["прощай", "bye", "!!"]  # !
 HELP_COMMANDS: list = ["помощь", "help"]  # !
+RESTART_COMMAND: list = ["перезапуск", "restart", "``"]
 HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие группы команд: \n"
 NON_STOP: bool = True
 POLL_INTERVAL: int = 0
 CONTINUE_RUNNING: int = 0
 QUIT_BY_DEMAND: int = 1
+RESTART_BY_DEMAND: int = 2
 TOKEN_KEY: str = "token"
 BOT_STATUS: int = CONTINUE_RUNNING
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
@@ -54,6 +56,14 @@ class CQuitByDemand(Exception):
 
     def __init__(self):
         self.message: str = "* Выход по требованию."
+        super().__init__(self.message)
+
+
+class CRestartByDemand(Exception):
+    """Исключение выхода."""
+
+    def __init__(self):
+        self.message: str = "* Перезапуск по требованию."
         super().__init__(self.message)
 
 
@@ -210,7 +220,7 @@ class CSoftIceBot:
         """Проверяет, хозяин ли отдал команду."""
         return puser_name == self.config["master"]
 
-    def is_this_chat_enabled(self, pchat_title: str):
+    def is_this_chat_enabled(self, pchat_title: str) -> object:
         """Проверяет, находится ли данный чат в списке разрешенных."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
@@ -240,6 +250,10 @@ class CSoftIceBot:
             if answer:
 
                 self.robot.send_message(pchat_id, answer)
+            result = True
+        elif pcommand in RESTART_COMMAND:
+
+            self.restart(pchat_id, puser["name"], puser["title"])
             result = True
         return result
 
@@ -356,6 +370,20 @@ class CSoftIceBot:
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
 
+    def restart(self, pchat_id: int, puser_name: str, puser_title: str):
+        """Проверка, вдруг была команда рестарта."""
+        assert pchat_id is not None, \
+            "Assert: [softice.is_quit_command_queried] " \
+            "Пропущен параметр <pchat_id> !"
+        assert puser_title is not None, \
+            "Assert: [softice.is_quit_command_queried] " \
+            "Пропущен параметр <puser_title> !"
+        if self.is_master(puser_name):
+
+            self.robot.send_message(pchat_id, "Щасвирнус.")
+            raise CRestartByDemand()
+        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
+
     def poll_forever(self):
         """Функция опроса ботом телеграмма."""
         while self.bot_status == CONTINUE_RUNNING:
@@ -369,36 +397,42 @@ class CSoftIceBot:
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(0)
+            except CRestartByDemand as exception:
+
+                print(exception.message)
+                self.bot_status = RESTART_BY_DEMAND
+                self.robot.stop_polling()
+                sys.exit(1)
             except ConnectionError:
 
                 print("# Соединение прервано. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
-                sys.exit(1)
+                sys.exit(2)
             except ReadTimeout:  # as ex:
 
                 print("# Превышен интервал ожидания ответа. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
-                sys.exit(2)
+                sys.exit(3)
             except telebot.apihelper.ApiTelegramException:
 
                 print("# Telegram отказал в соединении. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
-                sys.exit(3)
+                sys.exit(4)
             except urllib3.exceptions.MaxRetryError:
 
                 print("# Слишком много попыток соединения. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
-                sys.exit(3)
+                sys.exit(5)
             except ConnectTimeout:
 
                 print("# Превышен интервал времени для соединения. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
-                sys.exit(4)
+                sys.exit(6)
             except urllib3.exceptions.ProtocolError:
 
                 print("# Соединение разорвано. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
-                sys.exit(5)
+                sys.exit(7)
             # except ConnectionResetError:
             #
             #     print("# Ошибка переустановления соединения. Выход.")
