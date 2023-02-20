@@ -88,7 +88,7 @@ class CSoftIceBot:
         super().__init__()
         self.config: dict = {}
         # self.config_name: str = CONFIG_FILE_NAME
-        self.load_config()
+        self.load_config(CONFIG_FILE_NAME)
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
 
@@ -214,9 +214,9 @@ class CSoftIceBot:
         """Проверяет, находится ли данный чат в списке разрешенных."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def load_config(self):
+    def load_config(self, pconfig_name: str):
         """Загружает конфигурацию из JSON."""
-        with open(CONFIG_FILE_NAME, "r", encoding="utf-8") as json_file:
+        with open(pconfig_name, "r", encoding="utf-8") as json_file:
 
             self.config = json.load(json_file)
 
@@ -313,7 +313,7 @@ class CSoftIceBot:
         if self.is_master(puser_name):
 
             self.robot.send_message(pchat_id, "Обновляю конфигурацию.")
-            self.load_config()
+            self.load_config(CONFIG_FILE_NAME)
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
             return True
         print(f"* Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")

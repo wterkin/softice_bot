@@ -5,6 +5,8 @@ import softice
 class CTestSoftIceBot(TestCase):
     def setUp(self) -> None:
         self.bot = softice.CSoftIceBot()
+        # global CONFIG_FILE_NAME
+        # CONFIG_FILE_NAME = "config.sample.json"
         self.bot.load_config("config.sample.json")
 
     def test_is_master(self):
@@ -29,7 +31,7 @@ class CTestSoftIceBot(TestCase):
     def test_process_modules(self):
         self.bot.message_text = "!Экспекто патронум"
         self.assertEqual(self.bot.process_modules(-583831606, "Ботовка", "Pet_Rovich", "Петрович"),
-                         "Ничего не нашел.")
+                         ("", False))
 
     def test_reload_config(self):
         # pchat_id: int, puser_name: str, puser_title: str

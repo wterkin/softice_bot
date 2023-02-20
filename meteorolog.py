@@ -64,14 +64,12 @@ def parse_weather(pdata, preq_date):
     min_wind_angle: int = 360
     max_wind_angle: int = 0
     weather: list = []
-    # weather_line: str = ""
 
     for item in pdata['list']:
 
         # 1. Выбираем данные за заданную дату
         if pdate.datetime.fromtimestamp(item['dt']).date() == preq_date:
 
-            # main = item['main']
             # *** Температура
             min_temperature = min(item['main']["temp"], min_temperature)
             max_temperature = max(item['main']["temp"], max_temperature)
@@ -103,7 +101,6 @@ def parse_weather(pdata, preq_date):
 
                 # *** Приводим к 9
                 icon = "09d"
-            # print(icon, weather)
             if icon not in weather:
 
                 weather.append(icon)

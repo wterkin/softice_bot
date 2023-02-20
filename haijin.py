@@ -226,8 +226,8 @@ class CHaijin(prototype.CPrototype):
             if command == ASK_HOKKU_CMD:
 
                 # *** Пользователь хочет хокку....
-                answer, result = librarian.quote(self.hokku, pcommand)
-                if result > 0:
+                answer = librarian.quote(self.hokku, pcommand)
+                if answer:
                     unformatted_answer = answer
                     answer = self.format_hokku(unformatted_answer)
                     # print(unformatted_answer)

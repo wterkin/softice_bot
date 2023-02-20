@@ -100,7 +100,7 @@ def quote(pbook: list, pword_list: list) -> str:
     assert pword_list is not None, \
         "Assert: [librarian.quote] " \
         "Пропущен параметр <pword_list> !"
-
+    answer: str
     if len(pword_list) > 1:
 
         # *** ... с заданным номером.
