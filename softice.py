@@ -26,27 +26,31 @@ import statistic
 import stargazer
 import theolog
 
+# *** Местоположение данных бота
 LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
 WINDOWS_DATA_FOLDER_KEY: str = "windows_data_folder"
-ENABLED_IN_CHATS_KEY: str = "allowed_chats"
-BOT_NAME: str = "SoftIceBot"
-COMMAND_SIGN: str = "!"
+
 CONFIG_FILE_NAME: str = "config.json"
-CONFIG_COMMANDS: list = ["конфиг", "config"]  # !
-EXIT_COMMANDS: list = ["прощай", "bye", "!!"]  # !
-HELP_COMMANDS: list = ["помощь", "help"]  # !
-RESTART_COMMAND: list = ["перезапуск", "restart", "``"]
+BOT_NAME: str = "SoftIceBot"
+
+ENABLED_IN_CHATS_KEY: str = "allowed_chats"
+COMMAND_SIGN: str = "!"
 HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие группы команд: \n"
+TOKEN_KEY: str = "token"
+EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
+RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
+RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
+
+CONFIG_COMMANDS: list = ["конфиг", "config"]
+EXIT_COMMANDS: list = ["прощай", "bye", "!!"]
+HELP_COMMANDS: list = ["помощь", "help"]
+RESTART_COMMAND: list = ["перезапуск", "restart", "22"]
 NON_STOP: bool = True
 POLL_INTERVAL: int = 0
 CONTINUE_RUNNING: int = 0
 QUIT_BY_DEMAND: int = 1
 RESTART_BY_DEMAND: int = 2
-TOKEN_KEY: str = "token"
 BOT_STATUS: int = CONTINUE_RUNNING
-EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
-RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
-RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
 RUNNING_FLAG: str = "running.flg"
 SLEEP_BEFORE_EXIT_BY_ERROR: int = 10
 
@@ -89,7 +93,7 @@ def is_foreign_command(pcommand: str) -> bool:
     return result
 
 
-# pylint: disable=too-many-instance-attributes # а что еще делать???
+# int: disable=too-many-instance-attributes # а что еще делать???
 class CSoftIceBot:
     """Универсальный бот для Телеграмма."""
 
@@ -97,7 +101,6 @@ class CSoftIceBot:
         """Конструктор класса."""
         super().__init__()
         self.config: dict = {}
-        # self.config_name: str = CONFIG_FILE_NAME
         self.load_config(CONFIG_FILE_NAME)
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
@@ -106,8 +109,6 @@ class CSoftIceBot:
         # *** Создаём собственно бота.
         self.robot: telebot.TeleBot = telebot.TeleBot(self.config[TOKEN_KEY])
         self.bot_status: int = CONTINUE_RUNNING
-        # self.exiting: bool = False
-        self.message_text: str = ""
         self.running_flag: str = os.getcwd() + "/" + RUNNING_FLAG
         if os.path.exists(self.running_flag):
 
@@ -117,6 +118,7 @@ class CSoftIceBot:
             with open(self.running_flag, 'tw', encoding='utf-8'):
 
                 pass
+        self.message_text: str = ""
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -179,27 +181,32 @@ class CSoftIceBot:
                     if not is_foreign_command(pmessage.text):
 
                         answer: str = ""
-                        # ***  Боту дали команду?
-                        if self.message_text[0:1] == COMMAND_SIGN:
+                        # *** А нет ли тут мата?
+                        answer = self.moderator.control_talking(chat_id, chat_title, user_title, self.message_text)
+                        if not answer:
 
-                            # *** Это системная команда?
-                            if not self.process_command(command, chat_id, chat_title,
-                                                        {"name": user_name, "title": user_title}):
+                            # ***  Боту дали команду?
+                            if self.message_text[0:1] == COMMAND_SIGN:
 
-                                # *** Нет. Ну и пусть модули разбираются....
-                                answer, do_not_screen = self.process_modules(chat_id, chat_title,
-                                                                             user_name,
-                                                                             user_title)
-                                # *** Разобрались?
-                        else:
+                                # *** Это системная команда?
+                                if not self.process_command(command, chat_id, chat_title,
+                                                            {"name": user_name, "title": user_title}):
 
-                            # *** Нет. В этом чате статистик разрешен?
-                            if self.statistic.is_enabled(chat_title):
+                                    # *** Нет. Ну и пусть модули разбираются....
+                                    answer, do_not_screen = self.process_modules(chat_id, chat_title,
+                                                                                 user_name,
+                                                                                 user_title)
+                                    # *** Разобрались?
+                            else:
 
-                                # *** Проапдейтим базу статистика
-                                self.statistic.save_all_type_of_messages(pmessage)
-                            # *** Болтуну есть что ответить?
-                            answer = self.babbler.talk(chat_title, self.message_text)
+                                # *** Нет. В этом чате статистик разрешен?
+                                if self.statistic.is_enabled(chat_title):
+
+                                    # *** Проапдейтим базу статистика
+                                    self.statistic.save_all_type_of_messages(pmessage)
+
+                                # *** Болтуну есть что ответить?
+                                answer = self.babbler.talk(chat_title, self.message_text)
                         # *** Модули сработали?
                         if answer:
 

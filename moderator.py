@@ -2,7 +2,7 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Погодный модуль для бота."""
 from time import time
-
+import re
 import functions as func
 import prototype
 import m_names
@@ -34,9 +34,32 @@ MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
 
 ADMINISTRATION_CMD: list = ["admin", "adm"]
 
+BAD_WORDS_LANG: list = ["^\s*[б,м,п]л[яR][д,т]*[ьъb]*$",
+                        "^.*[х,п]у[и,й].*$",
+                        "^.*п[е,и][с,з][д,т]а.*$"
+                        ]
+BADWORDS_MUTE_TIME = 300
+
+
+def check_bad_words(pmessage) -> bool:
+    """Проверяет сообщение на наличие мата."""
+    result: bool = False
+    for word in BAD_WORDS_LANG:
+
+        # print(word, pmessage)
+        # print(re.search(word, pmessage))
+        result = re.match(word, pmessage) is not None
+        # print(result)
+        if result:
+
+            # print("Агааа!")
+            break
+
+    return result
+
 
 class CModerator(prototype.CPrototype):
-    """Класс бармена."""
+    """Класс модератора."""
 
     def __init__(self, pbot, pconfig, pdatabase):
 
@@ -51,6 +74,25 @@ class CModerator(prototype.CPrototype):
         return self.is_enabled(pchat_title) and \
             (word_list[0] in MUTE_COMMANDS or word_list[0] in ADMINISTRATION_CMD)
 
+    def control_talking(self, pchat_id, pchat_title: str, puser_title: str, pmessage_text: str):
+        """Следит за матершинниками."""
+        answer: str = ""
+        # print(pmessage_text)
+        if self.is_enabled(pchat_title):
+
+            # print("!!!", check_bad_words(pmessage_text))
+            if check_bad_words(pmessage_text):
+
+                user_id = self.find_user_id(puser_title)
+                if user_id is not None:
+
+                    self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + BADWORDS_MUTE_TIME)
+                    answer = f"{puser_title}, мат тут запрещен, отдохни {BADWORDS_MUTE_TIME} секунд."
+                else:
+                    answer = f"@{self.config['master']} У меня в базе нет такого пользователя"
+                print(f"!!! Юзер {puser_title} матерился, редиска такая!")
+        return answer
+
     def find_user_id(self, puser_title: str):
         """Ищет в базе ID пользователя по его нику."""
         session = self.database.get_session()
@@ -59,7 +101,6 @@ class CModerator(prototype.CPrototype):
         query = query.join(m_users.CUser, m_users.CUser.id == m_names.CName.fuserid)
         data = query.first()
         if data is not None:
-
             return data[1].ftguserid
         return None
 
@@ -138,13 +179,12 @@ class CModerator(prototype.CPrototype):
             user = item.user
             user_name = user.first_name
             if user.last_name is not None:
-
                 user_name += " " + user.last_name
             if user_name == puser_title:
-
                 found = True
                 break
         return found
+
     #
     # or entity in message.entities:  # Пройдёмся по всем entities в поисках ссылок
     # # url - обычная ссылка, text_link - ссылка, скрытая под текстом
