@@ -46,13 +46,9 @@ def check_bad_words(pmessage) -> bool:
     result: bool = False
     for word in BAD_WORDS_LANG:
 
-        # print(word, pmessage)
-        # print(re.search(word, pmessage))
         result = re.match(word, pmessage) is not None
-        # print(result)
         if result:
 
-            # print("Агааа!")
             break
 
     return result
@@ -74,22 +70,26 @@ class CModerator(prototype.CPrototype):
         return self.is_enabled(pchat_title) and \
             (word_list[0] in MUTE_COMMANDS or word_list[0] in ADMINISTRATION_CMD)
 
-    def control_talking(self, pchat_id, pchat_title: str, puser_title: str, pmessage_text: str):
+    def control_talking(self, pchat_id, pchat_title: str, puser_title: str, pmessage):
         """Следит за матершинниками."""
         answer: str = ""
-        # print(pmessage_text)
         if self.is_enabled(pchat_title):
 
-            # print("!!!", check_bad_words(pmessage_text))
-            if check_bad_words(pmessage_text):
+            if check_bad_words(pmessage.text):
 
-                user_id = self.find_user_id(puser_title)
-                if user_id is not None:
+                # user_id = self.find_user_id(puser_title)
+                # if user_id is not None:
 
-                    self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + BADWORDS_MUTE_TIME)
-                    answer = f"{puser_title}, мат тут запрещен, отдохни {BADWORDS_MUTE_TIME} секунд."
-                else:
-                    answer = f"@{self.config['master']} У меня в базе нет такого пользователя"
+                # self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + BADWORDS_MUTE_TIME)
+                # answer = f"{puser_title}, мат тут запрещен, отдохни {BADWORDS_MUTE_TIME} секунд."
+                self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
+                # self.bot.edit_message_text("\*\*\* censored \*\*\*", pmessage.chat.id, pmessage.message_id)
+
+                # bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text="тру-ту-ту",
+                answer = f"А ну, не матерись тут, {puser_title}!! "
+                # answer = "[censored]"
+                # else:
+                #     answer = f"@{self.config['master']} У меня в базе нет такого пользователя."
                 print(f"!!! Юзер {puser_title} матерился, редиска такая!")
         return answer
 

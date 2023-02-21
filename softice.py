@@ -180,9 +180,9 @@ class CSoftIceBot:
                     # *** Если сообщение адресовано другому боту - пропускаем
                     if not is_foreign_command(pmessage.text):
 
-                        answer: str = ""
+                        answer: str
                         # *** А нет ли тут мата?
-                        answer = self.moderator.control_talking(chat_id, chat_title, user_title, self.message_text)
+                        answer = self.moderator.control_talking(chat_id, chat_title, user_title, pmessage)
                         if not answer:
 
                             # ***  Боту дали команду?
@@ -459,3 +459,8 @@ if __name__ == "__main__":
 #
 #     mafiozo_process(BOT_CONFIG, call.message.chat.id, call.message.chat.title,
 #                     call.from_user.id, call.from_user.username, call.data)
+
+# @bot.message_handler(content_types=["new_chat_members"])
+# def new_member(message):
+#     name = message.new_chat_members[0].first_name
+#     bot.send_message(message.chat.id, f"Добро пожаловать, {name}! \nВот наши правила:...")
