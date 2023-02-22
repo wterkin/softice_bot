@@ -36,7 +36,12 @@ ADMINISTRATION_CMD: list = ["admin", "adm"]
 
 BAD_WORDS_LANG: list = ["^\s*[б,м,п]л[яR][д,т]*[ьъb]*$",
                         "^.*[х,п]у[и,й].*$",
-                        "^.*п[е,и][с,з][д,т]а.*$"
+                        "^.*п[е,и][с,з][д,т]а.*$",
+                        "^\w*п+[и,е]*[с,з]+[д,т]+[ц,тс]+$",
+                        "^\w*[x,х]+[у,y]+[й,и]*$",
+                        "^\w*[й,и]*[у,y]+[x,х]+$",
+                        "^\w*ппц$",
+                        "^\w*[x,х][e,е][p,р].*"
                         ]
 BADWORDS_MUTE_TIME = 300
 
@@ -46,7 +51,7 @@ def check_bad_words(pmessage) -> bool:
     result: bool = False
     for word in BAD_WORDS_LANG:
 
-        result = re.match(word, pmessage) is not None
+        result = re.match(word, pmessage.lower()) is not None
         if result:
 
             break
@@ -79,7 +84,7 @@ class CModerator(prototype.CPrototype):
 
                 # user_id = self.find_user_id(puser_title)
                 # if user_id is not None:
-
+                # message.from_user.id
                 # self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + BADWORDS_MUTE_TIME)
                 # answer = f"{puser_title}, мат тут запрещен, отдохни {BADWORDS_MUTE_TIME} секунд."
                 self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
