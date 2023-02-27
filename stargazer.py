@@ -73,6 +73,18 @@ class CStarGazer(prototype.CPrototype):
         self.config = pconfig
         self.data_path = pdata_path + STARGAZER_FOLDER
 
+    def additional_info(self, pnow_date):
+        """Возвращает дополнительные сведения об указанном дне."""
+        answer: str = ""
+        easter_date = calculate_easter(pnow_date.year)
+        if easter_date > pnow_date:
+
+            pass
+        else:
+
+            pass
+        return answer
+
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         assert pchat_title is not None, \
@@ -177,8 +189,14 @@ class CStarGazer(prototype.CPrototype):
 
                 today = f"{now_date.day:02}/{now_date.month:02}"
                 answer = self.search_in_calendar(CHURCH_CALENDAR, today)
-                easter_date = calculate_easter(now_date.year)
-
+                answer += self.additional_info(now_date)
+                # easter_date = calculate_easter(now_date.year)
+                # if easter_date > today:
+                #
+                #     pass
+                # else:
+                #
+                #     pass
         if answer:
 
             print(f"Stargazer answers: {answer[:func.OUT_MSG_LOG_LEN]}")
