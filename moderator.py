@@ -34,7 +34,7 @@ MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
 
 ADMINISTRATION_CMD: list = ["admin", "adm"]
 
-BAD_WORDS_LANG: list = ["^\s*[б,м,п]л[яR][д,т]*[ьъb]*$",
+BAD_WORDS_LANG: list = ["^\s*[б,м,п]л[я,R,@][д,т]*[ь,ъ,b]*$",
                         "^\s+[х,п][y,у][и,й].*$",
                         "^.*п[е,и][с,з][д,т]а.*$",
                         "^\s*п[и,е]*[с,з]+[д,т]+е*[ц,тс]+$",
