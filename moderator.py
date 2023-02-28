@@ -10,6 +10,7 @@ from pathlib import Path
 # import m_users
 import random
 
+RELOAD_BAD_WORDS: list = ["bwreload", "bwrl"]
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
 DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
@@ -41,8 +42,9 @@ BADWORDS_MUTE_TIME = 300
 BAD_WORDS_MESSAGES: list = [f"А ну, не матерись тут!!",
                             "[** censored **]",
                             "[** Бип. Бип. Бииииип! **]",
-                            "[** beep **]"
-                           ]
+                            "[** beep **]",
+                            "[** Мат вырезан. **]"
+                            ]
 
 
 class CModerator(prototype.CPrototype):
@@ -61,8 +63,8 @@ class CModerator(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         word_list: list = func.parse_input(pmessage_text)
-        return self.is_enabled(pchat_title) and \
-            (word_list[0] in MUTE_COMMANDS or word_list[0] in ADMINISTRATION_CMD)
+        return self.is_enabled(pchat_title) and word_list[0] in RELOAD_BAD_WORDS
+        # (word_list[0] in MUTE_COMMANDS or word_list[0] in ADMINISTRATION_CMD)
 
     def check_bad_words(self, pmessage) -> bool:
         """Проверяет сообщение на наличие мата."""
@@ -113,10 +115,41 @@ class CModerator(prototype.CPrototype):
         """Возвращает True, если на этом канале этот модуль разрешен."""
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
-    def moderator(self, pchat_id: int, pchat_title: str,
-                  puser_title: str, pmessage_text: str) -> str:
+    def is_master(self, puser_name, puser_title):
+        """Проверяет, является ли пользователь хозяином бота."""
+
+        if puser_name == self.config["master"]:
+
+            return True, ""
+        # *** Низзя
+        print(f"> Moderator: Запрос на перезагрузку регэкспов матерных выражений от нелегитимного лица {puser_title}.")
+        return False, f"У вас нет на это прав, {puser_title}."
+
+    def moderator(self, pmessage) -> str:
         """Процедура разбора запроса пользователя."""
         answer: str = ""
+        command: int
+        answer: str = ""
+        word_list: list = func.parse_input(pmessage.text)
+        if self.can_process(pmessage.chat.title, pmessage.text):
+
+            # *** Возможно, запросили перезагрузку.
+            if word_list[0] in RELOAD_BAD_WORDS:
+
+                # *** Пользователь хочет перезагрузить библиотеку
+                can_reload, answer = self.is_master(pmessage.from_user.username, pmessage.from_user.first_name)
+                if can_reload:
+
+                    self.reload()
+                    answer = "Словарь мата обновлен"
+                else:
+
+                    # *** ... но не тут-то было...
+                    print(f"> Librarian: Запрос на перегрузку цитат от "
+                          f"нелегитимного лица {pmessage.from_user.first_name}.")
+                    answer = (f"Извини, {pmessage.from_user.first_name}, "
+                              f"только {self.config['master_name']} может перегружать цитаты!")
+        return answer
         """
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):

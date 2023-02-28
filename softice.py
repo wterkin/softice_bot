@@ -194,8 +194,8 @@ class CSoftIceBot:
 
                                     # *** Нет. Ну и пусть модули разбираются....
                                     answer, do_not_screen = self.process_modules(chat_id, chat_title,
-                                                                                 user_name,
-                                                                                 user_title)
+                                                                                 user_name, user_title,
+                                                                                 pmessage)
                                     # *** Разобрались?
                             else:
 
@@ -265,7 +265,7 @@ class CSoftIceBot:
         return result
 
     def process_modules(self, pchat_id: int, pchat_title: str,
-                        puser_name: str, puser_title: str):
+                        puser_name: str, puser_title: str, pmessage):
         """Пытается обработать команду различными модулями."""
         assert pchat_title is not None, \
             "Assert: [softice.process_modules] Пропущен параметр <pchat_title> !"
@@ -297,7 +297,8 @@ class CSoftIceBot:
         if not answer:
 
             # *** ... или у модератора...
-            answer = self.moderator.moderator(pchat_id, pchat_title, puser_title, self.message_text)
+            # answer = self.moderator.moderator(pchat_id, pchat_title, puser_name, puser_title, self.message_text)
+            answer = self.moderator.moderator(pmessage)
         if not answer:
 
             # *** ... или у статистика...
