@@ -8,6 +8,7 @@ import prototype
 from pathlib import Path
 # import m_names
 # import m_users
+import random
 
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
 DATA_FOLDER: str = "moderator"
@@ -37,6 +38,11 @@ MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
 
 ADMINISTRATION_CMD: list = ["admin", "adm"]
 BADWORDS_MUTE_TIME = 300
+BAD_WORDS_MESSAGES: list = [f"А ну, не матерись тут!!",
+                            "[** censored **]",
+                            "[** Бип. Бип. Бииииип! **]",
+                            "[** beep **]"
+                           ]
 
 
 class CModerator(prototype.CPrototype):
@@ -65,6 +71,8 @@ class CModerator(prototype.CPrototype):
 
             result = re.match(word, pmessage.lower()) is not None
             if result:
+
+                print(pmessage.lower())
                 break
 
         return result
@@ -76,19 +84,8 @@ class CModerator(prototype.CPrototype):
 
             if self.check_bad_words(pmessage.text):
 
-                # user_id = self.find_user_id(puser_title)
-                # if user_id is not None:
-                # message.from_user.id
-                # self.bot.restrict_chat_member(pchat_id, user_id, until_date=time() + BADWORDS_MUTE_TIME)
-                # answer = f"{puser_title}, мат тут запрещен, отдохни {BADWORDS_MUTE_TIME} секунд."
                 self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
-                # self.bot.edit_message_text("\*\*\* censored \*\*\*", pmessage.chat.id, pmessage.message_id)
-
-                # bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text="тру-ту-ту",
-                answer = f"А ну, не матерись тут, {puser_title}!! "
-                # answer = "[censored]"
-                # else:
-                #     answer = f"@{self.config['master']} У меня в базе нет такого пользователя."
+                answer = random.choice(BAD_WORDS_MESSAGES)
                 print(f"!!! Юзер {puser_title} в чате '{pchat_title}' матерился, редиска такая!")
         return answer
 
