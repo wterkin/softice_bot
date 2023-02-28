@@ -127,7 +127,6 @@ class CModerator(prototype.CPrototype):
 
     def moderator(self, pmessage) -> str:
         """Процедура разбора запроса пользователя."""
-        answer: str = ""
         command: int
         answer: str = ""
         word_list: list = func.parse_input(pmessage.text)
@@ -149,42 +148,6 @@ class CModerator(prototype.CPrototype):
                           f"нелегитимного лица {pmessage.from_user.first_name}.")
                     answer = (f"Извини, {pmessage.from_user.first_name}, "
                               f"только {self.config['master_name']} может перегружать цитаты!")
-        return answer
-        """
-        word_list: list = func.parse_input(pmessage_text)
-        if self.can_process(pchat_title, pmessage_text):
-
-            if word_list[0] in MUTE_COMMANDS:
-
-                # *** Молчанка
-                period_index: int = MUTE_COMMANDS.index(word_list[0])
-                user_title: str = " ".join(word_list[1:])
-                mute_time = MUTE_PERIODS[period_index]
-                user_id = self.find_user_id(user_title)
-                if user_id is not None:
-
-                    if self.is_admin(pchat_id, puser_title):
-
-                        answer = self.mute_user(pchat_id, user_id, user_title,
-                                                mute_time, period_index)
-                    else:
-
-                        answer = f"Извини, {puser_title}, ты тут не админ..."
-                else:
-
-                    answer = f"Кто такой {user_title}? Не знаю его..."
-            else:
-
-                if word_list[0] in ADMINISTRATION_CMD:
-
-                    if self.is_admin(pchat_id, puser_title):
-
-                        answer = " ".join(MUTE_COMMANDS)
-                        self.administration()
-                    else:
-
-                        answer = f"Извини, {puser_title}, ты тут не админ..."
-        """
         return answer
 
     def mute_user(self, pchat_id: int, pmuted_user_id: int, pmuted_user_title: str,
