@@ -5,10 +5,13 @@ from time import time
 import re
 import functions as func
 import prototype
-import m_names
-import m_users
+from pathlib import Path
+# import m_names
+# import m_users
 
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
+DATA_FOLDER: str = "moderator"
+BAD_WORDS_FILE: str = "bad_words.txt"
 MUTE_COMMANDS: list = ["mute", "mt",
                        "mutehour", "mth",
                        "muteday", "mtd",
@@ -33,47 +36,21 @@ MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
                              "1 неделю", "1 неделю"]
 
 ADMINISTRATION_CMD: list = ["admin", "adm"]
-
-BAD_WORDS_LANG: list = ["^\s*[б,м,п]л[я,R,@][д,т]*[ь,ъ,b]*$",
-                        "^\s+[х,п][y,у][и,й].*$",
-                        "^.*п[е,и][с,з][д,т]а.*$",
-                        "^\s*п[и,е]*[с,з]+[д,т]+е*[ц,тс]+$",
-                        "^\s*[x,х]+[у,y]+[й,и]*$",
-                        "^\s*[й,и]*[у,y]+[x,х]+$",
-                        "^\s*ппц$",
-                        "^\s*[x,х][e,е][p,р].*",
-                        "^\s*[x,х][у,y]як$",
-                        "^\s*жоп[а,у,е,a,y,e]$",
-                        "^\s*(про)*[е,ё,e][п,б]$",
-                        "^\s*[е,e,и][п,б]ать$",
-                        "^\s*[е,и][п,б]ан(ут)*.*$",
-                        "^с*[с,ц,тс,c][у,y][к,k]+[а,о]$"
-                        ]
 BADWORDS_MUTE_TIME = 300
-
-
-def check_bad_words(pmessage) -> bool:
-    """Проверяет сообщение на наличие мата."""
-    result: bool = False
-    for word in BAD_WORDS_LANG:
-
-        result = re.match(word, pmessage.lower()) is not None
-        if result:
-
-            break
-
-    return result
 
 
 class CModerator(prototype.CPrototype):
     """Класс модератора."""
 
-    def __init__(self, pbot, pconfig, pdatabase):
+    def __init__(self, pbot, pconfig, pdata_path: str):
 
         super().__init__()
         self.config = pconfig
+        self.data_path: str = pdata_path + DATA_FOLDER
         self.bot = pbot
-        self.database = pdatabase
+        # self.database = pdatabase
+        self.bad_words: list = []
+        self.reload()
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
@@ -81,12 +58,23 @@ class CModerator(prototype.CPrototype):
         return self.is_enabled(pchat_title) and \
             (word_list[0] in MUTE_COMMANDS or word_list[0] in ADMINISTRATION_CMD)
 
-    def control_talking(self, pchat_id, pchat_title: str, puser_title: str, pmessage):
+    def check_bad_words(self, pmessage) -> bool:
+        """Проверяет сообщение на наличие мата."""
+        result: bool = False
+        for word in self.bad_words:
+
+            result = re.match(word, pmessage.lower()) is not None
+            if result:
+                break
+
+        return result
+
+    def control_talking(self, pchat_title: str, puser_title: str, pmessage):
         """Следит за матершинниками."""
         answer: str = ""
         if self.is_enabled(pchat_title):
 
-            if check_bad_words(pmessage.text):
+            if self.check_bad_words(pmessage.text):
 
                 # user_id = self.find_user_id(puser_title)
                 # if user_id is not None:
@@ -101,19 +89,19 @@ class CModerator(prototype.CPrototype):
                 # answer = "[censored]"
                 # else:
                 #     answer = f"@{self.config['master']} У меня в базе нет такого пользователя."
-                print(f"!!! Юзер {puser_title} матерился, редиска такая!")
+                print(f"!!! Юзер {puser_title} в чате '{pchat_title}' матерился, редиска такая!")
         return answer
 
     def find_user_id(self, puser_title: str):
         """Ищет в базе ID пользователя по его нику."""
-        session = self.database.get_session()
-        query = session.query(m_names.CName, m_users.CUser)
-        query = query.filter_by(fusername=puser_title)
-        query = query.join(m_users.CUser, m_users.CUser.id == m_names.CName.fuserid)
-        data = query.first()
-        if data is not None:
-            return data[1].ftguserid
-        return None
+        # session = self.database.get_session()
+        # query = session.query(m_names.CName, m_users.CUser)
+        # query = query.filter_by(fusername=puser_title)
+        # query = query.join(m_users.CUser, m_users.CUser.id == m_names.CName.fuserid)
+        # data = query.first()
+        # if data is not None:
+        #     return data[1].ftguserid
+        # return None
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
@@ -132,6 +120,7 @@ class CModerator(prototype.CPrototype):
                   puser_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""
         answer: str = ""
+        """
         word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
@@ -165,6 +154,7 @@ class CModerator(prototype.CPrototype):
                     else:
 
                         answer = f"Извини, {puser_title}, ты тут не админ..."
+        """
         return answer
 
     def mute_user(self, pchat_id: int, pmuted_user_id: int, pmuted_user_title: str,
@@ -206,7 +196,13 @@ class CModerator(prototype.CPrototype):
     #     return
 
     def reload(self):
-        """Вызывает перезагрузку внешних данных модуля."""
+        """Загружает тексты болтуна."""
+        # *** Собираем пути
+        assert Path(self.data_path).is_dir(), f"{DATA_FOLDER} must be folder"
+        data_path = Path(self.data_path) / BAD_WORDS_FILE
+        self.bad_words.clear()
+        self.bad_words = func.load_from_file(str(data_path))
+        print(f"> Moderator успешно (пере)загрузил {len(self.bad_words)} регэкспов матерных выражений.")
 
     def administration(self):
         """Выводит список пользователей для модерирования."""

@@ -141,7 +141,7 @@ class CSoftIceBot:
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
-                                                                    self.database)
+                                                                    self.data_path)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
@@ -182,7 +182,7 @@ class CSoftIceBot:
 
                         answer: str
                         # *** А нет ли тут мата?
-                        answer = self.moderator.control_talking(chat_id, chat_title, user_title, pmessage)
+                        answer = self.moderator.control_talking(chat_title, user_title, pmessage)
                         if not answer:
 
                             # ***  Боту дали команду?
