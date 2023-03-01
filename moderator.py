@@ -33,7 +33,13 @@ DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
 ADMINISTRATION_CMD: list = ["admin", "adm"]
 BADWORDS_MUTE_TIME = 300
-NEW_USER_RATING: int = 10
+NEW_USER_RATING: int = 15
+MINIMAL_TEXT_RATING: int = 10
+MINIMAL_STICKER_RATING: int = 20
+MINIMAL_PHOTO_RATING: int = 30
+MINIMAL_AUDIO_RATING: int = 40
+MINIMAL_VIDEO_RATING: int = 50
+
 DATABASE_NAME: str = "users.db"
 STATUS_ACTIVE: int = 1
 STATUS_INACTIVE: int = 0
@@ -126,9 +132,9 @@ class CModerator(prototype.CPrototype):
             print("* Создаем базу")
             Base.metadata.create_all()
 
-    def add_user(self, puser_id: int, chat_id: int):
+    def add_user(self, puser_id: int, pchat_id: int):
         """Добавляет в базу нового пользователя"""
-        user = CUser(puser_id, pchatid)
+        user = CUser(puser_id, pchat_id)
         self.session.add(user)
         self.session.commit()
         return user.id
@@ -162,6 +168,11 @@ class CModerator(prototype.CPrototype):
                 print(f"!!! Юзер {puser_title} в чате '{pchat_title}' матерился, редиска такая!")
                 print(f"!!! Он сказал '{pmessage.text}'")
         return answer
+
+    def delete_message(self, pmessage):
+        """Удаляет сообщение пользователя."""
+        self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
+        print(f"> Сообщение пользователя {pmessage.from_user.username} в чате '{pmessage.chat.title}' удалено.")
 
     def find_user_id(self, puser_title: str):
         """Ищет в базе ID пользователя по его нику."""
@@ -230,21 +241,6 @@ class CModerator(prototype.CPrototype):
                               f"только {self.config['master_name']} может перегружать цитаты!")
         return answer
 
-    """
-    def mute_user(self, pchat_id: int, pmuted_user_id: int, pmuted_user_title: str,
-                  pmute_time: int, pperiod_index: int):
-        ""Отобрать голос у пользователя.""
-        self.bot.restrict_chat_member(pchat_id, pmuted_user_id, until_date=time() + pmute_time)
-        if pmute_time == UNMUTE_PERIOD:
-
-            answer = f"{pmuted_user_title}, через {UNMUTE_PERIOD} секунд можете разговаривать."
-        else:
-
-            answer = f"{pmuted_user_title}, помолчите {MUTE_PERIODS_TITLES[pperiod_index]}, " \
-                     "подумайте..."
-        return answer
-        """
-
     def is_admin(self, pchat_id: int, puser_title: str):
         """Возвращает True, если пользователь является админом данного чата, иначе False."""
         found = False
@@ -269,6 +265,41 @@ class CModerator(prototype.CPrototype):
     #     bot.delete_message(message.chat.id, message.message_id)
     # else:
     #     return
+
+    def supervisor(self, pmessage):
+        """Контролирует поведение людей в чате."""
+        user: CUser = self.get_user(pmessage.user_id)
+
+        if user is not None:
+
+            if pmessage.content_type == "text":
+
+                if user.frating < MINIMAL_TEXT_RATING:
+
+                    self.delete_message(pmessage)
+            elif pmessage.content_type == "sticker":
+
+                if user.frating < MINIMAL_STICKER_RATING:
+
+                    self.delete_message(pmessage)
+            elif pmessage.content_type == "photo":
+
+                if user.frating < MINIMAL_PHOTO_RATING:
+
+                    self.delete_message(pmessage)
+            elif pmessage.content_type in ["voice", "audio"]:
+
+                if user.frating < MINIMAL_AUDIO_RATING:
+
+                    self.delete_message(pmessage)
+            elif pmessage.content_type in ["video", "video_note"]:
+
+                if user.frating < MINIMAL_VIDEO_RATING:
+
+                    self.delete_message(pmessage)
+        else:
+
+            self.add_user(pmessage.user_id, pmessage.chat.id)
 
     def reload(self):
         """Загружает тексты болтуна."""
