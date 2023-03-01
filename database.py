@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import m_ancestor
-import m_karma  # noqa
+# import m_karma  # noqa
 import m_chats  # noqa
 import m_names  # noqa
 import m_penalties  # noqa

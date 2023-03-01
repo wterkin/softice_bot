@@ -1,50 +1,80 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Погодный модуль для бота."""
-from time import time
+# from time import time
 import re
 import functions as func
 import prototype
 from pathlib import Path
-# import m_names
-# import m_users
 import random
+import m_ancestor
+from sqlalchemy import Column, Integer
 
 RELOAD_BAD_WORDS: list = ["bwreload", "bwrl"]
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
 DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
-MUTE_COMMANDS: list = ["mute", "mt",
-                       "mutehour", "mth",
-                       "muteday", "mtd",
-                       "muteweek", "mtw",
-                       "unmute", "unm"]
-MINUTE: int = 60
-QUART_OF_HOUR: int = MINUTE * 15
-HOUR: int = MINUTE * 60
-DAY: int = HOUR * 24
-WEEK: int = DAY * 7
-UNMUTE_PERIOD = 60
+# MUTE_COMMANDS: list = ["mute", "mt",
+#                        "mutehour", "mth",
+#                        "muteday", "mtd",
+#                        "muteweek", "mtw",
+#                        "unmute", "unm"]
+# MINUTE: int = 60
+# QUART_OF_HOUR: int = MINUTE * 15
+# HOUR: int = MINUTE * 60
+# DAY: int = HOUR * 24
+# WEEK: int = DAY * 7
+# UNMUTE_PERIOD = 60
+#
+# MUTE_PERIODS: list = [QUART_OF_HOUR, QUART_OF_HOUR,
+#                       HOUR, HOUR,
+#                       DAY, DAY,
+#                       WEEK, WEEK,
+#                       UNMUTE_PERIOD, UNMUTE_PERIOD]
 
-MUTE_PERIODS: list = [QUART_OF_HOUR, QUART_OF_HOUR,
-                      HOUR, HOUR,
-                      DAY, DAY,
-                      WEEK, WEEK,
-                      UNMUTE_PERIOD, UNMUTE_PERIOD]
-
-MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
-                             "1 час", "1 час",
-                             "1 день", "1 день",
-                             "1 неделю", "1 неделю"]
+# MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
+#                              "1 час", "1 час",
+#                              "1 день", "1 день",
+#                              "1 неделю", "1 неделю"]
 
 ADMINISTRATION_CMD: list = ["admin", "adm"]
 BADWORDS_MUTE_TIME = 300
 BAD_WORDS_MESSAGES: list = [f"А ну, не матерись тут!!",
-                            "[** censored **]",
-                            "[** Бип. Бип. Бииииип! **]",
-                            "[** beep **]",
-                            "[** Мат вырезан. **]"
+                            "\[\*\* censored \*\*\]",
+                            "\[\*\* Бип. Бип. Бииииип\! \*\*\]",
+                            "\[\*\* beep \*\*\]",
+                            "\[\*\* Мат вырезан. \*\*\]"
                             ]
+
+NEW_USER_RATING: int = 10
+
+
+class CUser(m_ancestor.CAncestor):
+    """Класс модели таблицы справочника ID пользователей телеграмма."""
+
+    __tablename__ = 'tbl_users'
+    fuserid = Column(Integer,
+                     nullable=False,
+                     unique=True,
+                     index=True)
+    fchatid = Column(Integer, default=0)
+    frating = Column(Integer, default=NEW_USER_RATING)
+
+    def __init__(self, puserid: int, pchatid: int):
+        """Конструктор"""
+        super().__init__()
+        self.fuserid = puserid
+        self.fchatid = pchatid
+
+    def __repr__(self):
+        ancestor_repr = super().__repr__()
+        return f"""{ancestor_repr},
+                   user ID :{self.fuserid}
+                   chat ID :{self.fchatid}
+                   user rating :{self.frating}"""
+
+    def null(self):
+        """Чтоб линтер был щаслиф."""
 
 
 class CModerator(prototype.CPrototype):
@@ -74,7 +104,7 @@ class CModerator(prototype.CPrototype):
             result = re.match(word, pmessage.lower()) is not None
             if result:
 
-                print(pmessage.lower())
+                # print(pmessage.lower())
                 break
 
         return result
@@ -89,6 +119,7 @@ class CModerator(prototype.CPrototype):
                 self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
                 answer = random.choice(BAD_WORDS_MESSAGES)
                 print(f"!!! Юзер {puser_title} в чате '{pchat_title}' матерился, редиска такая!")
+                print(f"!!! Он сказал '{pmessage.text}'")
         return answer
 
     def find_user_id(self, puser_title: str):
@@ -149,10 +180,10 @@ class CModerator(prototype.CPrototype):
                     answer = (f"Извини, {pmessage.from_user.first_name}, "
                               f"только {self.config['master_name']} может перегружать цитаты!")
         return answer
-
+    """
     def mute_user(self, pchat_id: int, pmuted_user_id: int, pmuted_user_title: str,
                   pmute_time: int, pperiod_index: int):
-        """Отобрать голос у пользователя."""
+        ""Отобрать голос у пользователя.""
         self.bot.restrict_chat_member(pchat_id, pmuted_user_id, until_date=time() + pmute_time)
         if pmute_time == UNMUTE_PERIOD:
 
@@ -162,6 +193,7 @@ class CModerator(prototype.CPrototype):
             answer = f"{pmuted_user_title}, помолчите {MUTE_PERIODS_TITLES[pperiod_index]}, " \
                      "подумайте..."
         return answer
+        """
 
     def is_admin(self, pchat_id: int, puser_title: str):
         """Возвращает True, если пользователь является админом данного чата, иначе False."""
