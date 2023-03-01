@@ -7,38 +7,36 @@ import functions as func
 import prototype
 from pathlib import Path
 import random
-import m_ancestor
-from sqlalchemy import Column, Integer
+# import m_ancestor
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, MetaData
+from sqlalchemy.ext.declarative import declarative_base
+
+# convention: Optional[Dict[str, str]] = {
+convention = {
+    "all_column_names": lambda constraint,
+    table: "_".join([
+        column.name for column in constraint.columns.values()
+    ]),
+    "ix": "ix__%(table_name)s__%(all_column_names)s",
+    "uq": "uq__%(table_name)s__%(all_column_names)s",
+    "cq": "cq__%(table_name)s__%(constraint_name)s",
+    "fk": ("fk__%(table_name)s__%(all_column_names)s__"
+           "%(referred_table_name)s"),
+    "pk": "pk__%(table_name)s"
+}
 
 RELOAD_BAD_WORDS: list = ["bwreload", "bwrl"]
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
 DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
-# MUTE_COMMANDS: list = ["mute", "mt",
-#                        "mutehour", "mth",
-#                        "muteday", "mtd",
-#                        "muteweek", "mtw",
-#                        "unmute", "unm"]
-# MINUTE: int = 60
-# QUART_OF_HOUR: int = MINUTE * 15
-# HOUR: int = MINUTE * 60
-# DAY: int = HOUR * 24
-# WEEK: int = DAY * 7
-# UNMUTE_PERIOD = 60
-#
-# MUTE_PERIODS: list = [QUART_OF_HOUR, QUART_OF_HOUR,
-#                       HOUR, HOUR,
-#                       DAY, DAY,
-#                       WEEK, WEEK,
-#                       UNMUTE_PERIOD, UNMUTE_PERIOD]
-
-# MUTE_PERIODS_TITLES: list = ["15 минут", "15 минут",
-#                              "1 час", "1 час",
-#                              "1 день", "1 день",
-#                              "1 неделю", "1 неделю"]
-
 ADMINISTRATION_CMD: list = ["admin", "adm"]
 BADWORDS_MUTE_TIME = 300
+NEW_USER_RATING: int = 10
+DATABASE_NAME: str = "users.db"
+STATUS_ACTIVE: int = 1
+STATUS_INACTIVE: int = 0
 BAD_WORDS_MESSAGES: list = [f"А ну, не матерись тут!!",
                             "\[\*\* censored \*\*\]",
                             "\[\*\* Бип. Бип. Бииииип\! \*\*\]",
@@ -46,10 +44,34 @@ BAD_WORDS_MESSAGES: list = [f"А ну, не матерись тут!!",
                             "\[\*\* Мат вырезан. \*\*\]"
                             ]
 
-NEW_USER_RATING: int = 10
+# анти-спам прикрутить!
+
+meta_data: MetaData = MetaData(naming_convention=convention)
+Base = declarative_base(metadata=meta_data)
 
 
-class CUser(m_ancestor.CAncestor):
+class CAncestor(Base):
+    """Класс-предок всех классов-моделей таблиц SQLAlchemy."""
+    __abstract__ = True
+    id = Column(Integer,
+                autoincrement=True,
+                nullable=False,
+                primary_key=True,
+                unique=True)
+    fstatus = Column(Integer,
+                     nullable=False,
+                     )
+
+    def __init__(self):
+        """Конструктор."""
+        self.fstatus = STATUS_ACTIVE
+
+    def __repr__(self):
+        return f"""ID:{self.id},
+                   Status:{self.fstatus}"""
+
+
+class CUser(CAncestor):
     """Класс модели таблицы справочника ID пользователей телеграмма."""
 
     __tablename__ = 'tbl_users'
@@ -84,11 +106,32 @@ class CModerator(prototype.CPrototype):
 
         super().__init__()
         self.config = pconfig
-        self.data_path: str = pdata_path + DATA_FOLDER
+        self.data_path: str = pdata_path + DATA_FOLDER + "/"
         self.bot = pbot
         # self.database = pdatabase
         self.bad_words: list = []
         self.reload()
+        # *** Коннектимся к базе
+        database_file_name = Path(self.data_path) / DATABASE_NAME
+        Session = sessionmaker()
+        self.engine = create_engine('sqlite:///' + str(database_file_name),
+                                    echo=False,
+                                    connect_args={'check_same_thread': False})
+        Session.configure(bind=self.engine)
+        self.session = Session()
+        Base.metadata.bind = self.engine
+        # *** Если базы нет - создаем
+        if not database_file_name.exists():
+
+            print("* Создаем базу")
+            Base.metadata.create_all()
+
+    def add_user(self, puser_id: int, chat_id: int):
+        """Добавляет в базу нового пользователя"""
+        user = CUser(puser_id, pchatid)
+        self.session.add(user)
+        self.session.commit()
+        return user.id
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
@@ -103,7 +146,6 @@ class CModerator(prototype.CPrototype):
 
             result = re.match(word, pmessage.lower()) is not None
             if result:
-
                 # print(pmessage.lower())
                 break
 
@@ -115,7 +157,6 @@ class CModerator(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             if self.check_bad_words(pmessage.text):
-
                 self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
                 answer = random.choice(BAD_WORDS_MESSAGES)
                 print(f"!!! Юзер {puser_title} в чате '{pchat_title}' матерился, редиска такая!")
@@ -137,6 +178,15 @@ class CModerator(prototype.CPrototype):
         """Возвращает список команд модуля, доступных пользователю."""
         return ""
 
+    def get_user(self, puser_id):
+        """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
+        query = self.session.query(CUser)
+        query = query.filter_by(fuserid=puser_id)
+        data = query.first()
+        if data is not None:
+            return data
+        return None
+
     def get_hint(self, pchat_title: str) -> str:
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
@@ -150,7 +200,6 @@ class CModerator(prototype.CPrototype):
         """Проверяет, является ли пользователь хозяином бота."""
 
         if puser_name == self.config["master"]:
-
             return True, ""
         # *** Низзя
         print(f"> Moderator: Запрос на перезагрузку регэкспов матерных выражений от нелегитимного лица {puser_title}.")
@@ -180,6 +229,7 @@ class CModerator(prototype.CPrototype):
                     answer = (f"Извини, {pmessage.from_user.first_name}, "
                               f"только {self.config['master_name']} может перегружать цитаты!")
         return answer
+
     """
     def mute_user(self, pchat_id: int, pmuted_user_id: int, pmuted_user_title: str,
                   pmute_time: int, pperiod_index: int):
