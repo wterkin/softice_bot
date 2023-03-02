@@ -120,7 +120,7 @@ class CSoftIceBot:
         self.running_flag: str = os.getcwd() + "/" + RUNNING_FLAG
         if os.path.exists(self.running_flag):
 
-            print("* Перезапуск после падения.")
+            print("* Перезапуск после падения либо по требованию.")
         else:
 
             with open(self.running_flag, 'tw', encoding='utf-8'):
@@ -181,7 +181,7 @@ class CSoftIceBot:
                     if not answer:
 
                         # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                        if pmessage.content_type == "text":
+                        if pmessage.content_type == "text" and self.message_text is not None:
 
                             # *** Если сообщение адресовано другому боту - пропускаем
                             if not is_foreign_command(pmessage.text):
