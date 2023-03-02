@@ -15,6 +15,7 @@ import urllib3.exceptions
 # *** Собственные модули
 import functions as func
 import database
+
 import babbler
 import barman
 import bellringer
@@ -24,6 +25,7 @@ import meteorolog
 import moderator
 import statistic
 import stargazer
+import supervisor
 import theolog
 
 # *** Местоположение данных бота
@@ -150,6 +152,8 @@ class CSoftIceBot:
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
                                                                     self.data_path)
+        self.supervisor: supervisor.CSupervisor = supervisor.CSupervisor(self.robot, self.config,
+                                                                         self.data_path)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
@@ -180,36 +184,39 @@ class CSoftIceBot:
                     answer = self.moderator.moderator(pmessage)
                     if not answer:
 
-                        # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                        if pmessage.content_type == "text" and self.message_text is not None:
+                        answer = self.supervisor.supervisor(pmessage)
+                        if not answer:
 
-                            # *** Если сообщение адресовано другому боту - пропускаем
-                            if not is_foreign_command(pmessage.text):
+                            # *** Если это текстовое сообщение - обрабатываем в этой ветке.
+                            if pmessage.content_type == "text" and self.message_text is not None:
 
-                                # ***  Боту дали команду?
-                                if self.message_text[0:1] == COMMAND_SIGN:
+                                # *** Если сообщение адресовано другому боту - пропускаем
+                                if not is_foreign_command(pmessage.text):
 
-                                    # *** Это системная команда?
-                                    if not self.process_command(command, chat_id, chat_title,
-                                                                {"name": user_name, "title": user_title}):
+                                    # ***  Боту дали команду?
+                                    if self.message_text[0:1] == COMMAND_SIGN:
 
-                                        # *** Нет. Ну и пусть модули разбираются....
-                                        answer, do_not_screen = self.process_modules(chat_id, chat_title,
-                                                                                     user_name, user_title,
-                                                                                     pmessage)
-                                else:
+                                        # *** Это системная команда?
+                                        if not self.process_command(command, chat_id, chat_title,
+                                                                    {"name": user_name, "title": user_title}):
 
-                                    # *** Нет. В этом чате статистик разрешен?
-                                    if self.statistic.is_enabled(chat_title):
+                                            # *** Нет. Ну и пусть модули разбираются....
+                                            answer, do_not_screen = self.process_modules(chat_id, chat_title,
+                                                                                         user_name, user_title,
+                                                                                         pmessage)
+                                    else:
 
-                                        # *** Проапдейтим базу статистика
-                                        self.statistic.save_all_type_of_messages(pmessage)
+                                        # *** Нет. В этом чате статистик разрешен?
+                                        if self.statistic.is_enabled(chat_title):
 
-                                    # *** Болтуну есть что ответить?
-                                    answer = self.babbler.talk(chat_title, self.message_text)
-                        elif pmessage.content_type in EVENTS:
+                                            # *** Проапдейтим базу статистика
+                                            self.statistic.save_all_type_of_messages(pmessage)
 
-                            self.statistic.save_all_type_of_messages(pmessage)
+                                        # *** Болтуну есть что ответить?
+                                        answer = self.babbler.talk(chat_title, self.message_text)
+                            elif pmessage.content_type in EVENTS:
+
+                                self.statistic.save_all_type_of_messages(pmessage)
 
                 # *** Ответ имеется?
                 if answer:

@@ -149,6 +149,7 @@ class CSupervisor(prototype.CPrototype):
         query = query.filter_by(fuserid=puser_id)
         data = query.first()
         if data is not None:
+
             return data
         return None
 
@@ -176,6 +177,7 @@ class CSupervisor(prototype.CPrototype):
         """Проверяет, является ли пользователь хозяином бота."""
 
         if puser_name == self.config["master"]:
+
             return True, ""
         # *** Низзя
         print(f"> Moderator: Запрос на перезагрузку регэкспов матерных выражений от нелегитимного лица {puser_title}.")
@@ -188,34 +190,40 @@ class CSupervisor(prototype.CPrototype):
         """Контролирует поведение людей в чате."""
         answer: str = ""
         if self.is_enabled(pmessage.chat.title):
+
             user: CUser = self.get_user(pmessage.from_user.id)
             if user is not None:
 
                 if pmessage.content_type == "text":
 
                     if user.frating < MINIMAL_TEXT_RATING:
+
                         self.delete_message(pmessage)
                 elif pmessage.content_type == "sticker":
 
                     if user.frating < MINIMAL_STICKER_RATING:
+
                         self.delete_message(pmessage)
                 elif pmessage.content_type == "photo":
 
                     if user.frating < MINIMAL_PHOTO_RATING:
+
                         self.delete_message(pmessage)
                 elif pmessage.content_type in ["voice", "audio"]:
 
                     if user.frating < MINIMAL_AUDIO_RATING:
+
                         self.delete_message(pmessage)
                 elif pmessage.content_type in ["video", "video_note"]:
 
                     if user.frating < MINIMAL_VIDEO_RATING:
+
                         self.delete_message(pmessage)
             else:
 
                 name: str = pmessage.from_user.first_name + " "
                 if pmessage.from_user.last_name is not None:
+
                     name += pmessage.from_user.last_name
                 self.add_user(pmessage.from_user.id, name, pmessage.chat.id, pmessage.chat.title)
         return answer
-
