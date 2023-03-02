@@ -85,23 +85,26 @@ class CUser(CAncestor):
                      nullable=False,
                      unique=True,
                      index=True)
-    fchatid = Column(Integer, default=0)
-    frating = Column(Integer, default=NEW_USER_RATING)
     fusername = Column(String)
+    fchatid = Column(Integer, default=0)
+    fchatname = Column(String)
+    frating = Column(Integer, default=NEW_USER_RATING)
 
-    def __init__(self, puserid: int, pusername: str, pchatid: int):
+    def __init__(self, puserid: int, pusername: str, pchatid: int, pchatname: str):
         """Конструктор"""
         super().__init__()
         self.fuserid = puserid
-        self.fchatid = pchatid
         self.fusername = pusername
-
+        self.fchatid = pchatid
+        self.fchatname = pchatname
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
                    user ID :{self.fuserid}
+                   user name :{self.fchatname}
                    chat ID :{self.fchatid}
+                   chat ID :{self.fchatname}
                    user rating :{self.frating}"""
 
     def null(self):
@@ -135,9 +138,9 @@ class CModerator(prototype.CPrototype):
             print("* Создаем базу")
             Base.metadata.create_all()
 
-    def add_user(self, puser_id: int, puser_name: str, pchat_id: int):
+    def add_user(self, puser_id: int, puser_name: str, pchat_id: int, pchat_title: str):
         """Добавляет в базу нового пользователя"""
-        user = CUser(puser_id, puser_name, pchat_id)
+        user = CUser(puser_id, puser_name, pchat_id, pchat_title)
         self.session.add(user)
         self.session.commit()
         return user.id
@@ -317,8 +320,11 @@ class CModerator(prototype.CPrototype):
                     self.delete_message(pmessage)
         else:
 
-            name: str = pmessage.from_user.first_name + " " + pmessage.from_user.last_name
-            self.add_user(pmessage.from_user.id, name, pmessage.chat.id)
+            name: str = pmessage.from_user.first_name + " "
+            if pmessage.from_user.last_name is not None:
+
+                name += pmessage.from_user.last_name
+            self.add_user(pmessage.from_user.id, name, pmessage.chat.id, pmessage.chat.title)
         if not answer:
 
             # *** Проверим, не матерился ли кто.

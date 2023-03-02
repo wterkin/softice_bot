@@ -73,13 +73,14 @@ class CRestartByDemand(Exception):
 
 def decode_message(pmessage):
     """Возвращает куски сообщения, $#^^^!!!! """
-    text: str
+    text: str = ""
     if pmessage.text is not None:
 
         text = pmessage.text
     else:
+        if pmessage.caption is not None:
 
-        text = pmessage.caption
+            text = pmessage.caption
     return text, \
         text[1:].lower(), \
         pmessage.chat.id, \
