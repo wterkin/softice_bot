@@ -157,22 +157,33 @@ class CModerator(prototype.CPrototype):
 
         return result
 
-    def control_talking(self, pchat_title: str, puser_title: str, pmessage):
+    def control_talking(self, pmessage):
         """Следит за матершинниками."""
         answer: str = ""
-        if self.is_enabled(pchat_title):
+        text: str
+        if pmessage.content_type == "text":
 
-            if self.check_bad_words(pmessage.text):
+            text = pmessage.text
+        else:
+
+            text = pmessage.caption
+        # pmessage.from_user.first_name, pmessage.from_user.first_name,
+        if self.is_enabled(pmessage.chat.title):
+
+            if self.check_bad_words(text):
+
                 self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
                 answer = random.choice(BAD_WORDS_MESSAGES)
-                print(f"!!! Юзер {puser_title} в чате '{pchat_title}' матерился, редиска такая!")
-                print(f"!!! Он сказал '{pmessage.text}'")
+                print(f"!!! Юзер {pmessage.from_user.first_name} в чате '{pmessage.chat.title}' матерился, редиска "
+                      f"такая!")
+                print(f"!!! Он сказал '{text}'")
+
         return answer
 
     def delete_message(self, pmessage):
         """Удаляет сообщение пользователя."""
-        self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
-        print(f"> Сообщение пользователя {pmessage.from_user.username} в чате '{pmessage.chat.title}' удалено.")
+        # self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
+        # print(f"> Сообщение пользователя {pmessage.from_user.username} в чате '{pmessage.chat.title}' удалено.")
 
     def find_user_id(self, puser_title: str):
         """Ищет в базе ID пользователя по его нику."""
@@ -220,25 +231,34 @@ class CModerator(prototype.CPrototype):
         """Процедура разбора запроса пользователя."""
         command: int
         answer: str = ""
+        self.supervisor(pmessage)
         word_list: list = func.parse_input(pmessage.text)
         if self.can_process(pmessage.chat.title, pmessage.text):
 
-            # *** Возможно, запросили перезагрузку.
-            if word_list[0] in RELOAD_BAD_WORDS:
+            # *** Проверим, всё ли в порядке в чате
+            answer = self.supervisor(pmessage)
+            if not answer:
 
-                # *** Пользователь хочет перезагрузить библиотеку
-                can_reload, answer = self.is_master(pmessage.from_user.username, pmessage.from_user.first_name)
-                if can_reload:
+                # *** Возможно, запросили перезагрузку.
+                if word_list[0] in RELOAD_BAD_WORDS:
 
-                    self.reload()
-                    answer = "Словарь мата обновлен"
+                    # *** Пользователь хочет перезагрузить библиотеку
+                    can_reload, answer = self.is_master(pmessage.from_user.username, pmessage.from_user.first_name)
+                    if can_reload:
+
+                        self.reload()
+                        answer = "Словарь мата обновлен"
+                    else:
+
+                        # *** ... но не тут-то было...
+                        print(f"> Librarian: Запрос на перегрузку цитат от "
+                              f"нелегитимного лица {pmessage.from_user.first_name}.")
+                        answer = (f"Извини, {pmessage.from_user.first_name}, "
+                                  f"только {self.config['master_name']} может перегружать цитаты!")
                 else:
 
-                    # *** ... но не тут-то было...
-                    print(f"> Librarian: Запрос на перегрузку цитат от "
-                          f"нелегитимного лица {pmessage.from_user.first_name}.")
-                    answer = (f"Извини, {pmessage.from_user.first_name}, "
-                              f"только {self.config['master_name']} может перегружать цитаты!")
+                    answer = self.control_talking(pmessage)
+
         return answer
 
     def is_admin(self, pchat_id: int, puser_title: str):
@@ -268,8 +288,12 @@ class CModerator(prototype.CPrototype):
 
     def supervisor(self, pmessage):
         """Контролирует поведение людей в чате."""
-        user: CUser = self.get_user(pmessage.user_id)
-
+        user: CUser = self.get_user(pmessage.from_user.id)
+        answer: str = ""
+        # print(pmessage.chat.title)
+        # if pmessage.chat.title == "Ботовка":
+        #
+        #     print(pmessage)
         if user is not None:
 
             if pmessage.content_type == "text":
@@ -299,7 +323,8 @@ class CModerator(prototype.CPrototype):
                     self.delete_message(pmessage)
         else:
 
-            self.add_user(pmessage.user_id, pmessage.chat.id)
+            self.add_user(pmessage.from_user.id, pmessage.chat.id)
+        return answer
 
     def reload(self):
         """Загружает тексты болтуна."""
