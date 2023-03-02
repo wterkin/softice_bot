@@ -10,7 +10,7 @@ import random
 # import m_ancestor
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, MetaData
+from sqlalchemy import Column, Integer, MetaData, String
 from sqlalchemy.ext.declarative import declarative_base
 
 # convention: Optional[Dict[str, str]] = {
@@ -87,12 +87,15 @@ class CUser(CAncestor):
                      index=True)
     fchatid = Column(Integer, default=0)
     frating = Column(Integer, default=NEW_USER_RATING)
+    fusername = Column(String)
 
-    def __init__(self, puserid: int, pchatid: int):
+    def __init__(self, puserid: int, pusername: str, pchatid: int):
         """Конструктор"""
         super().__init__()
         self.fuserid = puserid
         self.fchatid = pchatid
+        self.fusername = pusername
+
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
@@ -132,9 +135,9 @@ class CModerator(prototype.CPrototype):
             print("* Создаем базу")
             Base.metadata.create_all()
 
-    def add_user(self, puser_id: int, pchat_id: int):
+    def add_user(self, puser_id: int, puser_name: str, pchat_id: int):
         """Добавляет в базу нового пользователя"""
-        user = CUser(puser_id, pchat_id)
+        user = CUser(puser_id, puser_name, pchat_id)
         self.session.add(user)
         self.session.commit()
         return user.id
@@ -230,19 +233,18 @@ class CModerator(prototype.CPrototype):
     def moderator(self, pmessage) -> str:
         """Процедура разбора запроса пользователя."""
         command: int
-        answer: str = ""
-        self.supervisor(pmessage)
-        word_list: list = func.parse_input(pmessage.text)
-        if self.can_process(pmessage.chat.title, pmessage.text):
+        # *** Проверим, всё ли в порядке в чате
+        answer: str = self.supervisor(pmessage)
+        if not answer:
 
-            # *** Проверим, всё ли в порядке в чате
-            answer = self.supervisor(pmessage)
-            if not answer:
+            # *** Порядок. Возможно, запрошена команда. Мы ее умеем?
+            if self.can_process(pmessage.chat.title, pmessage.text):
 
-                # *** Возможно, запросили перезагрузку.
+                # *** Да. Возможно, запросили перезагрузку.
+                word_list: list = func.parse_input(pmessage.text)
                 if word_list[0] in RELOAD_BAD_WORDS:
 
-                    # *** Пользователь хочет перезагрузить библиотеку
+                    # *** Пользователь хочет перезагрузить словарь мата.
                     can_reload, answer = self.is_master(pmessage.from_user.username, pmessage.from_user.first_name)
                     if can_reload:
 
@@ -255,10 +257,6 @@ class CModerator(prototype.CPrototype):
                               f"нелегитимного лица {pmessage.from_user.first_name}.")
                         answer = (f"Извини, {pmessage.from_user.first_name}, "
                                   f"только {self.config['master_name']} может перегружать цитаты!")
-                else:
-
-                    answer = self.control_talking(pmessage)
-
         return answer
 
     def is_admin(self, pchat_id: int, puser_title: str):
@@ -290,10 +288,6 @@ class CModerator(prototype.CPrototype):
         """Контролирует поведение людей в чате."""
         user: CUser = self.get_user(pmessage.from_user.id)
         answer: str = ""
-        # print(pmessage.chat.title)
-        # if pmessage.chat.title == "Ботовка":
-        #
-        #     print(pmessage)
         if user is not None:
 
             if pmessage.content_type == "text":
@@ -323,7 +317,12 @@ class CModerator(prototype.CPrototype):
                     self.delete_message(pmessage)
         else:
 
-            self.add_user(pmessage.from_user.id, pmessage.chat.id)
+            name: str = pmessage.from_user.first_name + " " + pmessage.from_user.last_name
+            self.add_user(pmessage.from_user.id, name, pmessage.chat.id)
+        if not answer:
+
+            # *** Проверим, не матерился ли кто.
+            answer = self.control_talking(pmessage)
         return answer
 
     def reload(self):

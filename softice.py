@@ -81,7 +81,7 @@ def decode_message(pmessage):
 
         text = pmessage.caption
     return text, \
-        pmessage.text[1:].lower(), \
+        text[1:].lower(), \
         pmessage.chat.id, \
         pmessage.chat.title, \
         pmessage.from_user.username, \
@@ -171,51 +171,44 @@ class CSoftIceBot:
                 print(f"* Попытка нелегитимного использования бота в чате {chat_title}.")
             else:
 
-                # *** Да, вполне легитимный. Защита от привата - в привате бот работать не будет
-                if chat_title is None:
+                # *** Сообщение не протухло?
+                message_date = pmessage.date
+                if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
-                    answer = "Слова дёшевы, а виски стоит денег."
-                    print("* Обращение к боту в привате.")
-                else:
+                    # *** Модератор должен следить за порядком в чате
+                    answer = self.moderator.moderator(pmessage)
+                    if not answer:
 
-                    # *** Сообщение не протухло?
-                    message_date = pmessage.date
-                    if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
+                        # *** Если это текстовое сообщение - обрабатываем в этой ветке.
+                        if pmessage.content_type == "text":
 
-                        # *** Проверим, не матерился ли кто-нибудь
-                        answer = self.moderator.moderator(pmessage)
-                        if not answer:
+                            # *** Если сообщение адресовано другому боту - пропускаем
+                            if not is_foreign_command(pmessage.text):
 
-                            # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                            if pmessage.content_type == "text":
+                                # ***  Боту дали команду?
+                                if self.message_text[0:1] == COMMAND_SIGN:
 
-                                # *** Если сообщение адресовано другому боту - пропускаем
-                                if not is_foreign_command(pmessage.text):
+                                    # *** Это системная команда?
+                                    if not self.process_command(command, chat_id, chat_title,
+                                                                {"name": user_name, "title": user_title}):
 
-                                    # ***  Боту дали команду?
-                                    if self.message_text[0:1] == COMMAND_SIGN:
+                                        # *** Нет. Ну и пусть модули разбираются....
+                                        answer, do_not_screen = self.process_modules(chat_id, chat_title,
+                                                                                     user_name, user_title,
+                                                                                     pmessage)
+                                else:
 
-                                        # *** Это системная команда?
-                                        if not self.process_command(command, chat_id, chat_title,
-                                                                    {"name": user_name, "title": user_title}):
+                                    # *** Нет. В этом чате статистик разрешен?
+                                    if self.statistic.is_enabled(chat_title):
 
-                                            # *** Нет. Ну и пусть модули разбираются....
-                                            answer, do_not_screen = self.process_modules(chat_id, chat_title,
-                                                                                         user_name, user_title,
-                                                                                         pmessage)
-                                    else:
+                                        # *** Проапдейтим базу статистика
+                                        self.statistic.save_all_type_of_messages(pmessage)
 
-                                        # *** Нет. В этом чате статистик разрешен?
-                                        if self.statistic.is_enabled(chat_title):
+                                    # *** Болтуну есть что ответить?
+                                    answer = self.babbler.talk(chat_title, self.message_text)
+                        elif pmessage.content_type in EVENTS:
 
-                                            # *** Проапдейтим базу статистика
-                                            self.statistic.save_all_type_of_messages(pmessage)
-
-                                        # *** Болтуну есть что ответить?
-                                        answer = self.babbler.talk(chat_title, self.message_text)
-                            elif pmessage.content_type in EVENTS:
-
-                                self.statistic.save_all_type_of_messages(pmessage)
+                            self.statistic.save_all_type_of_messages(pmessage)
 
                 # *** Ответ имеется?
                 if answer:
