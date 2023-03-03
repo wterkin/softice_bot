@@ -106,15 +106,16 @@ class CSupervisor(prototype.CPrototype):
         self.bot = pbot
         # *** Коннектимся к базе
         database_file_name = Path(self.data_path) / DATABASE_NAME
-        Session = sessionmaker()  # noqa
         self.engine = create_engine('sqlite:///' + str(database_file_name),
-                                    echo=False,
+                                    echo=True,
                                     connect_args={'check_same_thread': False})
+        Session = sessionmaker()  # noqa
         Session.configure(bind=self.engine)
         self.session = Session()
         Base.metadata.bind = self.engine
         # *** Если базы нет - создаем
         if not database_file_name.exists():
+
             print("* БД модератора создана.")
             Base.metadata.create_all()
 
@@ -225,5 +226,6 @@ class CSupervisor(prototype.CPrototype):
                 if pmessage.from_user.last_name is not None:
 
                     name += pmessage.from_user.last_name
+                    print(f"! {name}")
                 self.add_user(pmessage.from_user.id, name, pmessage.chat.id, pmessage.chat.title)
         return answer
