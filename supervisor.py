@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль для контроля над чатом."""
-# import functions as func
+import functions as func
 import prototype
 from pathlib import Path
 
@@ -33,8 +33,9 @@ MINIMAL_STICKER_RATING: int = 3
 MINIMAL_PHOTO_RATING: int = 4
 MINIMAL_AUDIO_RATING: int = 5
 MINIMAL_VIDEO_RATING: int = 6
-KARMA_UPPER_LIMIT: int = 100
+KARMA_UPPER_LIMIT: int = 50
 ENABLED_IN_CHATS_KEY: str = "supervisor_chats"
+COMMANDS: list = ["svon", "svoff", "rt+", "rt-", "setrt"]
 
 meta_data: MetaData = MetaData(naming_convention=convention)
 Base = declarative_base(metadata=meta_data)
@@ -103,11 +104,13 @@ class CSupervisor(prototype.CPrototype):
         super().__init__()
         self.config = pconfig
         self.data_path: str = pdata_path + DATA_FOLDER + "/"
+        self.busy: bool = False
         self.bot = pbot
+        self.state = False
         # *** Коннектимся к базе
         database_file_name = Path(self.data_path) / DATABASE_NAME
         self.engine = create_engine('sqlite:///' + str(database_file_name),
-                                    echo=True,
+                                    echo=False,
                                     connect_args={'check_same_thread': False})
         Session = sessionmaker()  # noqa
         Session.configure(bind=self.engine)
@@ -122,8 +125,16 @@ class CSupervisor(prototype.CPrototype):
     def add_user(self, puser_id: int, puser_name: str, pchat_id: int, pchat_title: str):
         """Добавляет в базу нового пользователя"""
         user = CUser(puser_id, puser_name, pchat_id, pchat_title)
+        # *** Если кто-то уже залочил базу, подождём
+        while self.busy:
+            pass
+        # *** Лочим запись в базу и пишем сами
+        self.busy = True
+        # *** Пишем
         self.session.add(user)
         self.session.commit()
+        # *** Запись окончена, разлочиваем базу
+        self.busy = False
         return user.id
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -134,6 +145,22 @@ class CSupervisor(prototype.CPrototype):
         """Удаляет сообщение пользователя."""
         # self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
         # print(f"> Сообщение пользователя {pmessage.from_user.username} в чате '{pmessage.chat.title}' удалено.")
+
+    def get_command(self, pword: str) -> int:  # noqa
+        """Распознает команду и возвращает её код, в случае неудачи - None."""
+        assert pword is not None, \
+            "Assert: [librarian.get_command] " \
+            "No <pword> parameter specified!"
+        result: int = -1
+        for command_idx, command in enumerate(COMMANDS):
+
+            if pword in command:
+                result = command_idx
+
+        if result > (len(COMMANDS) // 2) - 1:
+            result = result - len(COMMANDS) // 2
+
+        return result
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
@@ -153,6 +180,28 @@ class CSupervisor(prototype.CPrototype):
 
             return data
         return None
+
+    def increment_karma(self, pmessage):
+        """Увеличивает счётчик кармы на 1, если карма переполнится - увеличивает рейтинг."""
+        user: CUser = self.get_user(pmessage.from_user.id)
+        if user.fkarma < (KARMA_UPPER_LIMIT * user.frating):
+
+            user.fkarma += 1
+        else:
+
+            user.frating += 1
+            user.fkarma = 0
+        # *** Если кто-то уже залочил базу, подождём
+        while self.busy:
+
+            pass
+        # *** Лочим запись в базу и пишем сами
+        self.busy = True
+        # *** Пишем
+        self.session.add(user)
+        self.session.commit()
+        # *** Запись окончена, разлочиваем базу
+        self.busy = False
 
     def is_admin(self, pchat_id: int, puser_title: str):
         """Возвращает True, если пользователь является админом данного чата, иначе False."""
@@ -190,42 +239,95 @@ class CSupervisor(prototype.CPrototype):
     def supervisor(self, pmessage):
         """Контролирует поведение людей в чате."""
         answer: str = ""
-        if self.is_enabled(pmessage.chat.title):
+        # print("-"*20)
+        # print(pmessage.reply_to_message.json.from.id)
+        # print(pmessage.reply_to_message.json.from.first_name)
+        # print("-"*20)
+        if pmessage.content_type == "text":
 
-            user: CUser = self.get_user(pmessage.from_user.id)
-            if user is not None:
+            word_list: list = func.parse_input(pmessage.text)
+            if self.can_process(pmessage.chat.title, pmessage.text):
 
-                if pmessage.content_type == "text":
+                # *** Получим код команды
+                command = self.get_command(word_list[0])
+                if command == 0:
 
-                    if user.frating < MINIMAL_TEXT_RATING:
+                    # *** Включить супервизор
+                    # Только для админа !!!
+                    if not self.state:
 
-                        self.delete_message(pmessage)
-                elif pmessage.content_type == "sticker":
+                        self.state = True
+                        print("* Супервизор включён.")
+                elif command == 1:
+                    # *** Выключить супервизор
+                    # Только для админа !!!
+                    if self.state:
 
-                    if user.frating < MINIMAL_STICKER_RATING:
+                        self.state = True
+                        print("* Супервизор выключен.")
+                elif command == 2:
+                    # *** Увеличить рейтинг на 1
+                    # reply_to_message
+                    pass
+                elif command == 3:
+                    # *** Уменьшить рейтинг на 1
+                    pass
+                elif command == 4:
+                    # *** Установить рейтинг
+                    pass
 
-                        self.delete_message(pmessage)
-                elif pmessage.content_type == "photo":
+        if self.state:
+            if self.is_enabled(pmessage.chat.title):
 
-                    if user.frating < MINIMAL_PHOTO_RATING:
+                user: CUser = self.get_user(pmessage.from_user.id)
+                if user is not None:
 
-                        self.delete_message(pmessage)
-                elif pmessage.content_type in ["voice", "audio"]:
+                    if pmessage.content_type == "text":
 
-                    if user.frating < MINIMAL_AUDIO_RATING:
+                        if user.frating < MINIMAL_TEXT_RATING:
 
-                        self.delete_message(pmessage)
-                elif pmessage.content_type in ["video", "video_note"]:
+                            self.delete_message(pmessage)
+                        else:
 
-                    if user.frating < MINIMAL_VIDEO_RATING:
+                            self.increment_karma(pmessage)
+                    elif pmessage.content_type == "sticker":
 
-                        self.delete_message(pmessage)
-            else:
+                        if user.frating < MINIMAL_STICKER_RATING:
 
-                name: str = pmessage.from_user.first_name + " "
-                if pmessage.from_user.last_name is not None:
+                            self.delete_message(pmessage)
+                        else:
 
-                    name += pmessage.from_user.last_name
-                    print(f"! {name}")
-                self.add_user(pmessage.from_user.id, name, pmessage.chat.id, pmessage.chat.title)
+                            self.increment_karma(pmessage)
+                    elif pmessage.content_type == "photo":
+
+                        if user.frating < MINIMAL_PHOTO_RATING:
+
+                            self.delete_message(pmessage)
+                        else:
+
+                            self.increment_karma(pmessage)
+                    elif pmessage.content_type in ["voice", "audio"]:
+
+                        if user.frating < MINIMAL_AUDIO_RATING:
+
+                            self.delete_message(pmessage)
+                        else:
+
+                            self.increment_karma(pmessage)
+                    elif pmessage.content_type in ["video", "video_note"]:
+
+                        if user.frating < MINIMAL_VIDEO_RATING:
+
+                            self.delete_message(pmessage)
+                        else:
+
+                            self.increment_karma(pmessage)
+                else:
+
+                    name: str = pmessage.from_user.first_name + " "
+                    if pmessage.from_user.last_name is not None:
+
+                        name += pmessage.from_user.last_name
+                        print(f"! {name}")
+                    self.add_user(pmessage.from_user.id, name, pmessage.chat.id, pmessage.chat.title)
         return answer
