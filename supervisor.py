@@ -7,9 +7,10 @@ from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, MetaData, String
+from sqlalchemy import Column, Integer, MetaData, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
+# import threading
 # convention: Optional[Dict[str, str]] = {
 convention = {
     "all_column_names": lambda constraint, table: "_".join([
@@ -35,7 +36,7 @@ MINIMAL_AUDIO_RATING: int = 5
 MINIMAL_VIDEO_RATING: int = 6
 KARMA_UPPER_LIMIT: int = 50
 ENABLED_IN_CHATS_KEY: str = "supervisor_chats"
-COMMANDS: list = ["svon", "svoff", "rt+", "rt-", "setrt"]
+COMMANDS: list = ["svon", "svoff", "rt+", "rt-", "rt="]
 
 meta_data: MetaData = MetaData(naming_convention=convention)
 Base = declarative_base(metadata=meta_data)
@@ -68,13 +69,14 @@ class CUser(CAncestor):
     __tablename__ = 'tbl_users'
     fuserid = Column(Integer,
                      nullable=False,
-                     unique=True,
+                     unique=False,
                      index=True)
     fusername = Column(String)
     fchatid = Column(Integer)
     fchatname = Column(String)
     frating = Column(Integer, default=NEW_USER_RATING)
     fkarma = Column(Integer, default=0)
+    fadmin = Column(Boolean, default=False)
 
     def __init__(self, puserid: int, pusername: str, pchatid: int, pchatname: str):
         """Конструктор"""
@@ -107,6 +109,8 @@ class CSupervisor(prototype.CPrototype):
         self.busy: bool = False
         self.bot = pbot
         self.state = False
+        self.admins: dict = {}
+        self.create_admin_list()
         # *** Коннектимся к базе
         database_file_name = Path(self.data_path) / DATABASE_NAME
         self.engine = create_engine('sqlite:///' + str(database_file_name),
@@ -119,8 +123,8 @@ class CSupervisor(prototype.CPrototype):
         # *** Если базы нет - создаем
         if not database_file_name.exists():
 
-            print("* БД модератора создана.")
             Base.metadata.create_all()
+            print("* БД супервизора создана.")
 
     def add_user(self, puser_id: int, puser_name: str, pchat_id: int, pchat_title: str):
         """Добавляет в базу нового пользователя"""
@@ -141,10 +145,21 @@ class CSupervisor(prototype.CPrototype):
         """Возвращает True, если модуль может обработать команду."""
         return self.is_enabled(pchat_title)
 
+    def create_admin_list(self):
+        """Создаёт двумерный список админов чатов."""
+
+        for chat_name in self.config[ENABLED_IN_CHATS_KEY]:
+
+            self.admins[chat_name] = list()
+
     def delete_message(self, pmessage):
         """Удаляет сообщение пользователя."""
         # self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
         # print(f"> Сообщение пользователя {pmessage.from_user.username} в чате '{pmessage.chat.title}' удалено.")
+
+    def get_chat_admin_list(self, pchat_id):
+        """Возвращает список админов указанного чата."""
+        return self.bot.get_chat_administrators(pchat_id)
 
     def get_command(self, pword: str) -> int:  # noqa
         """Распознает команду и возвращает её код, в случае неудачи - None."""
@@ -171,10 +186,10 @@ class CSupervisor(prototype.CPrototype):
            модуль возвращает полный список команд, доступных пользователю."""
         return ""  # , ".join(HINT)
 
-    def get_user(self, puser_id):
+    def get_user(self, pchat_id: int, puser_id: int):
         """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
         query = self.session.query(CUser)
-        query = query.filter_by(fuserid=puser_id)
+        query = query.filter_by(fchat_id=pchat_id, fuserid=puser_id)
         data = query.first()
         if data is not None:
 
@@ -203,21 +218,12 @@ class CSupervisor(prototype.CPrototype):
         # *** Запись окончена, разлочиваем базу
         self.busy = False
 
-    def is_admin(self, pchat_id: int, puser_title: str):
+    def is_admin(self, pchat_id: int, puser_id: str):
         """Возвращает True, если пользователь является админом данного чата, иначе False."""
-        found = False
-        data = self.bot.get_chat_administrators(pchat_id)
 
-        for item in data:
-
-            user = item.user
-            user_name = user.first_name
-            if user.last_name is not None:
-                user_name += " " + user.last_name
-            if user_name == puser_title:
-                found = True
-                break
-        return found
+        # member = self.bot.get_chat_member(pchat_id, puser_id)
+        # return member.is_chat_admin()
+        pass
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
@@ -239,10 +245,15 @@ class CSupervisor(prototype.CPrototype):
     def supervisor(self, pmessage):
         """Контролирует поведение людей в чате."""
         answer: str = ""
-        # print("-"*20)
-        # print(pmessage.reply_to_message.json.from.id)
-        # print(pmessage.reply_to_message.json.from.first_name)
-        # print("-"*20)
+        user_id: int
+        # print(self.is_admin(pmessage.chat.id, pmessage.from_user.id))
+        # # *** Если это ответ на сообщение..
+        if pmessage.reply_to_message is not None:
+
+            # from_part = pmessage.reply_to_message.json["from"]
+            # *** ..получим ID пользователя, отправившего оригинальное сообщение
+            user_id = pmessage.reply_to_message.json["from"]["id"]
+            # print(user_id)
         if pmessage.content_type == "text":
 
             word_list: list = func.parse_input(pmessage.text)
@@ -253,18 +264,22 @@ class CSupervisor(prototype.CPrototype):
                 if command == 0:
 
                     # *** Включить супервизор
-                    # Только для админа !!!
-                    if not self.state:
+                    if self.is_master(pmessage.from_user.username, pmessage.from_user.first_name):
 
-                        self.state = True
-                        print("* Супервизор включён.")
+                        if not self.state:
+
+                            self.state = True
+                            print("* Супервизор активирован.")
+                            answer = "Супервизор активирован."
                 elif command == 1:
                     # *** Выключить супервизор
-                    # Только для админа !!!
-                    if self.state:
+                    if self.is_master(pmessage.from_user.username, pmessage.from_user.first_name):
 
-                        self.state = True
-                        print("* Супервизор выключен.")
+                        if self.state:
+
+                            self.state = True
+                            print("* Супервизор деактивирован.")
+                            answer = "Супервизор деактивирован."
                 elif command == 2:
                     # *** Увеличить рейтинг на 1
                     # reply_to_message
@@ -277,6 +292,8 @@ class CSupervisor(prototype.CPrototype):
                     pass
 
         if self.state:
+
+            # print(pmessage)
             if self.is_enabled(pmessage.chat.title):
 
                 user: CUser = self.get_user(pmessage.from_user.id)
