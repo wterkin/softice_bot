@@ -52,8 +52,9 @@ def get_command(pword: str) -> int:
     for command_idx, command in enumerate(HAIJIN_COMMANDS):
 
         if pword in command:
-            result = command_idx
-
+    
+             result = command_idx
+             break
     return result
 
 
@@ -127,7 +128,7 @@ class CHaijin(prototype.CPrototype):
     def get_help(self, pchat_title: str) -> str:
         """Пользователь запросил список команд."""
         assert pchat_title is not None, \
-            "Assert: [librarian.get_help] " \
+            "Assert: [haijin.get_help] " \
             "Пропущен параметр <pchat_title> !"
         command_list: str = ""
         if self.is_enabled(pchat_title):
@@ -143,7 +144,7 @@ class CHaijin(prototype.CPrototype):
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """
         assert pchat_title is not None, \
-            "Assert: [barman.get_hint] " \
+            "Assert: [haijin.get_hint] " \
             "Пропущен параметр <pchat_title> !"
         if self.is_enabled(pchat_title):
 
@@ -200,7 +201,7 @@ class CHaijin(prototype.CPrototype):
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если библиотекарь разрешен на этом канале."""
         assert pchat_title is not None, \
-            "Assert: [librarian.is_enabled] " \
+            "Assert: [haijin.is_enabled] " \
             "Пропущен параметр <pchat_title> !"
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 

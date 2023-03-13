@@ -198,11 +198,14 @@ class CSoftIceBot:
 
                                         # *** Это системная команда?
                                         if not self.process_command(command, chat_id, chat_title,
-                                                                    {"name": user_name, "title": user_title}):
+                                                                    {"name": user_name,
+                                                                     "title": user_title}):
 
                                             # *** Нет. Ну и пусть модули разбираются....
-                                            answer, do_not_screen = self.process_modules(chat_id, chat_title,
-                                                                                         user_name, user_title,
+                                            answer, do_not_screen = self.process_modules(chat_id,
+                                                                                         chat_title,
+                                                                                         user_name,
+                                                                                         user_title,
                                                                                          pmessage)
                                     else:
 
@@ -304,7 +307,6 @@ class CSoftIceBot:
         if not answer:
 
             # *** ... или у модератора...
-            # answer = self.moderator.moderator(pchat_id, pchat_title, puser_name, puser_title, self.message_text)
             answer = self.moderator.moderator(pmessage)
         if not answer:
 

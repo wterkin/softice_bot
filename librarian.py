@@ -71,6 +71,7 @@ def get_command(pword: str) -> int:
         if pword in command:
 
             result = command_idx
+            break
     return result
 
 
@@ -241,7 +242,7 @@ class CLibrarian(prototype.CPrototype):
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """
         assert pchat_title is not None, \
-            "Assert: [barman.get_hint] " \
+            "Assert: [librarian.get_hint] " \
             "Пропущен параметр <pchat_title> !"
         if self.is_enabled(pchat_title):
 

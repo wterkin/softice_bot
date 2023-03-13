@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль для контроля над чатом."""
-import functions as func
-import prototype
 from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, MetaData, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
+import functions as func
+import prototype
 
 # import threading
 # convention: Optional[Dict[str, str]] = {
@@ -101,7 +101,7 @@ class CUser(CAncestor):
 
 
 class CSupervisor(prototype.CPrototype):
-
+    """ Класс смотрителя за чатом."""
     def __init__(self, pbot, pconfig, pdata_path: str):
         super().__init__()
         self.config = pconfig
@@ -113,8 +113,9 @@ class CSupervisor(prototype.CPrototype):
         self.create_admin_list()
         # *** Коннектимся к базе
         database_file_name = Path(self.data_path) / DATABASE_NAME
+        alchemy_echo: bool = self.config["alchemy_echo"] == "1"
         self.engine = create_engine('sqlite:///' + str(database_file_name),
-                                    echo=False,
+                                    echo=alchemy_echo,
                                     connect_args={'check_same_thread': False})
         Session = sessionmaker()  # noqa
         Session.configure(bind=self.engine)
@@ -150,32 +151,17 @@ class CSupervisor(prototype.CPrototype):
 
         for chat_name in self.config[ENABLED_IN_CHATS_KEY]:
 
-            self.admins[chat_name] = list()
+            self.admins[chat_name] = []
 
     def delete_message(self, pmessage):
         """Удаляет сообщение пользователя."""
         # self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
-        # print(f"> Сообщение пользователя {pmessage.from_user.username} в чате '{pmessage.chat.title}' удалено.")
+        # print(f"> Сообщение пользователя {pmessage.from_user.username} в чате "
+        # f"'{pmessage.chat.title}' удалено.")
 
     def get_chat_admin_list(self, pchat_id):
         """Возвращает список админов указанного чата."""
         return self.bot.get_chat_administrators(pchat_id)
-
-    def get_command(self, pword: str) -> int:  # noqa
-        """Распознает команду и возвращает её код, в случае неудачи - None."""
-        assert pword is not None, \
-            "Assert: [librarian.get_command] " \
-            "No <pword> parameter specified!"
-        result: int = -1
-        for command_idx, command in enumerate(COMMANDS):
-
-            if pword in command:
-                result = command_idx
-
-        if result > (len(COMMANDS) // 2) - 1:
-            result = result - len(COMMANDS) // 2
-
-        return result
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
@@ -198,7 +184,7 @@ class CSupervisor(prototype.CPrototype):
 
     def increment_karma(self, pmessage):
         """Увеличивает счётчик кармы на 1, если карма переполнится - увеличивает рейтинг."""
-        user: CUser = self.get_user(pmessage.from_user.id)
+        user: CUser = self.get_user(pmessage.chat.id, pmessage.from_user.id)
         if user.fkarma < (KARMA_UPPER_LIMIT * user.frating):
 
             user.fkarma += 1
@@ -223,7 +209,7 @@ class CSupervisor(prototype.CPrototype):
 
         # member = self.bot.get_chat_member(pchat_id, puser_id)
         # return member.is_chat_admin()
-        pass
+        # pass
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
@@ -235,32 +221,31 @@ class CSupervisor(prototype.CPrototype):
         if puser_name == self.config["master"]:
 
             return True, ""
-        # *** Низзя
-        print(f"> Moderator: Запрос на перезагрузку регэкспов матерных выражений от нелегитимного лица {puser_title}.")
         return False, f"У вас нет на это прав, {puser_title}."
 
     def reload(self):
-        """ """
+        """ Заглушка. """
 
     def supervisor(self, pmessage):
         """Контролирует поведение людей в чате."""
         answer: str = ""
-        user_id: int
+        # user_id: int
         # print(self.is_admin(pmessage.chat.id, pmessage.from_user.id))
         # # *** Если это ответ на сообщение..
         if pmessage.reply_to_message is not None:
 
             # from_part = pmessage.reply_to_message.json["from"]
             # *** ..получим ID пользователя, отправившего оригинальное сообщение
-            user_id = pmessage.reply_to_message.json["from"]["id"]
+            # user_id = pmessage.reply_to_message.json["from"]["id"]
             # print(user_id)
+            pass
         if pmessage.content_type == "text":
 
             word_list: list = func.parse_input(pmessage.text)
             if self.can_process(pmessage.chat.title, pmessage.text):
 
                 # *** Получим код команды
-                command = self.get_command(word_list[0])
+                command = func.get_command(word_list[0], COMMANDS)
                 if command == 0:
 
                     # *** Включить супервизор
@@ -296,7 +281,7 @@ class CSupervisor(prototype.CPrototype):
             # print(pmessage)
             if self.is_enabled(pmessage.chat.title):
 
-                user: CUser = self.get_user(pmessage.from_user.id)
+                user: CUser = self.get_user(pmessage.chat.id, pmessage.from_user.id)
                 if user is not None:
 
                     if pmessage.content_type == "text":
@@ -346,5 +331,7 @@ class CSupervisor(prototype.CPrototype):
 
                         name += pmessage.from_user.last_name
                         print(f"! {name}")
-                    self.add_user(pmessage.from_user.id, name, pmessage.chat.id, pmessage.chat.title)
+                    self.add_user(pmessage.from_user.id, name,
+                                  pmessage.chat.id,
+                                  pmessage.chat.title)
         return answer

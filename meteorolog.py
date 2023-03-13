@@ -171,7 +171,7 @@ class CMeteorolog(prototype.CPrototype):
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
         """Возвращает список команд, поддерживаемых модулем.  """
         assert pchat_title is not None, \
-            "Assert: [barman.get_hint] " \
+            "Assert: [meteorolog.get_hint] " \
             "No <pchat_title> parameter specified!"
 
         if self.is_enabled(pchat_title):

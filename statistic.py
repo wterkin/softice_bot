@@ -39,17 +39,15 @@ def decode_stat(pstat: m_stat.CStat):
 def get_command(pword: str) -> int:  # noqa
     """Распознает команду и возвращает её код, в случае неудачи - None."""
     assert pword is not None, \
-        "Assert: [librarian.get_command] " \
+        "Assert: [statistic.get_command] " \
         "No <pword> parameter specified!"
     result: int = -1
     for command_idx, command in enumerate(COMMANDS):
 
         if pword in command:
+
             result = command_idx
-
-    if result > (len(COMMANDS) // 2) - 1:
-        result = result - len(COMMANDS) // 2
-
+            break
     return result
 
 

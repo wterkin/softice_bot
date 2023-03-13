@@ -13,6 +13,24 @@ def parse_input(pmessage_text: str) -> list:
         return pmessage_text[1:].strip().split(" ")
 
 
+def get_command(pword: str, pcommands : list) -> int:  # noqa
+    """Распознает команду и возвращает её код, в случае неудачи - None."""
+    assert pword is not None, \
+        "Assert: [function.get_command] " \
+        "No <pword> parameter specified!"
+    assert pcommands is not None, \
+        "Assert: [function.get_command] " \
+        "No <pcommands> parameter specified!"
+    result: int = -1
+    for command_idx, command in enumerate(pcommands):
+
+        if pword in command:
+
+            result = command_idx
+            break
+
+    return result
+
 
 def load_from_file(pfile_name: str) -> list:
     """Загружает файл в список

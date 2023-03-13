@@ -3,118 +3,23 @@
 """Модуль антимата для бота."""
 # from time import time
 import re
-import functions as func
-import prototype
 from pathlib import Path
 import random
-# import m_ancestor
-# ---
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-# from sqlalchemy import Column, Integer, MetaData, String
-# from sqlalchemy.ext.declarative import declarative_base
+import functions as func
+import prototype
 
-# convention: Optional[Dict[str, str]] = {
-"""
-convention = {
-    "all_column_names": lambda constraint, table: "_".join([
-                                                column.name for column in constraint.columns.values()
-                                                ]),
-    "ix": "ix__%(table_name)s__%(all_column_names)s",
-    "uq": "uq__%(table_name)s__%(all_column_names)s",
-    "cq": "cq__%(table_name)s__%(constraint_name)s",
-    "fk": ("fk__%(table_name)s__%(all_column_names)s__"
-           "%(referred_table_name)s"),
-    "pk": "pk__%(table_name)s"
-}"""
-# --
 RELOAD_BAD_WORDS: list = ["bwreload", "bwrl"]
 HINT = ["адм", "adm"]
 ENABLED_IN_CHATS_KEY: str = "moderator_chats"
 DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
-BAD_WORDS_MESSAGES: list = [f"А ну, не матерись тут!!",
-                            "\[\*\* censored \*\*\]",
-                            "\[\*\* Бип. Бип. Бииииип\! \*\*\]",
-                            "\[\*\* beep \*\*\]",
-                            "\[\*\* Мат вырезан. \*\*\]"
+CENSOR_PREFIX = r"\[\*\*"
+CENSOR_POSTFIX = r"\*\*\]"
+BAD_WORDS_MESSAGES: list = [" censored ",
+                            " Бип. Бип. Бииииип. ",
+                            " beep. ",
+                            " Мат вырезан. "
                             ]
-# --
-"""
-NEW_USER_RATING: int = 2
-MINIMAL_TEXT_RATING: int = 2
-MINIMAL_STICKER_RATING: int = 3
-MINIMAL_PHOTO_RATING: int = 4
-MINIMAL_AUDIO_RATING: int = 5
-MINIMAL_VIDEO_RATING: int = 6
-KARMA_UPPER_LIMIT: int = 100
-DATABASE_NAME: str = "users.db"
-STATUS_ACTIVE: int = 1
-STATUS_INACTIVE: int = 0
-# --
-
-# анти-спам прикрутить!
-# --
-meta_data: MetaData = MetaData(naming_convention=convention)
-Base = declarative_base(metadata=meta_data)
-"""
-
-# class CAncestor(Base):
-#     """Класс-предок всех классов-моделей таблиц SQLAlchemy."""
-#     __abstract__ = True
-#     id = Column(Integer,
-#                 autoincrement=True,
-#                 nullable=False,
-#                 primary_key=True,
-#                 unique=True)
-#     fstatus = Column(Integer,
-#                      nullable=False,
-#                      )
-#
-#     def __init__(self):
-#         """Конструктор."""
-#         self.fstatus = STATUS_ACTIVE
-#
-#     def __repr__(self):
-#         return f"""ID:{self.id},
-#                    Status:{self.fstatus}"""
-#
-#
-# class CUser(CAncestor):
-#     """Класс модели таблицы справочника ID пользователей телеграмма."""
-#
-#     __tablename__ = 'tbl_users'
-#     fuserid = Column(Integer,
-#                      nullable=False,
-#                      unique=True,
-#                      index=True)
-#     fusername = Column(String)
-#     fchatid = Column(Integer)
-#     fchatname = Column(String)
-#     frating = Column(Integer, default=NEW_USER_RATING)
-#     fkarma = Column(Integer, default=0)
-#
-#     def __init__(self, puserid: int, pusername: str, pchatid: int, pchatname: str):
-#         """Конструктор"""
-#         super().__init__()
-#         self.fuserid = puserid
-#         self.fusername = pusername
-#         self.fchatid = pchatid
-#         self.fchatname = pchatname
-#
-#     def __repr__(self):
-#         ancestor_repr = super().__repr__()
-#         return f"""{ancestor_repr},
-#                    user ID :{self.fuserid}
-#                    user name :{self.fchatname}
-#                    chat ID :{self.fchatid}
-#                    chat ID :{self.fchatname}
-#                    user rating :{self.frating}
-#                    user karma: {self.fkarma} """
-#
-#     def null(self):
-#         """Чтоб линтер был щаслиф."""
-# --
 
 
 class CModerator(prototype.CPrototype):
@@ -128,26 +33,6 @@ class CModerator(prototype.CPrototype):
         self.bot = pbot
         self.bad_words: list = []
         self.reload()
-        # *** Коннектимся к базе
-        # database_file_name = Path(self.data_path) / DATABASE_NAME
-        # Session = sessionmaker()  # noqa
-        # self.engine = create_engine('sqlite:///' + str(database_file_name),
-        #                             echo=False,
-        #                             connect_args={'check_same_thread': False})
-        # Session.configure(bind=self.engine)
-        # self.session = Session()
-        # Base.metadata.bind = self.engine
-        # # *** Если базы нет - создаем
-        # if not database_file_name.exists():
-        #     print("* БД модератора создана.")
-        #     Base.metadata.create_all()
-
-    # def add_user(self, puser_id: int, puser_name: str, pchat_id: int, pchat_title: str):
-    #     """Добавляет в базу нового пользователя"""
-    #     user = CUser(puser_id, puser_name, pchat_id, pchat_title)
-    #     self.session.add(user)
-    #     self.session.commit()
-    #     return user.id
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
@@ -182,8 +67,10 @@ class CModerator(prototype.CPrototype):
 
             if self.check_bad_words(text):
                 self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
-                answer = random.choice(BAD_WORDS_MESSAGES)
-                print(f"!!! Юзер {pmessage.from_user.first_name} в чате '{pmessage.chat.title}' матерился, редиска "
+                # answer = random.choice(BAD_WORDS_MESSAGES)
+                answer = f"{CENSOR_PREFIX}{random.choice(BAD_WORDS_MESSAGES)}{CENSOR_POSTFIX}"
+                print(f"!!! Юзер {pmessage.from_user.first_name} в чате "
+                      f"'{pmessage.chat.title}' матерился, редиска "
                       f"такая!")
                 print(f"!!! Он сказал '{text}'")
 
@@ -192,7 +79,8 @@ class CModerator(prototype.CPrototype):
     def delete_message(self, pmessage):
         """Удаляет сообщение пользователя."""
         # self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
-        # print(f"> Сообщение пользователя {pmessage.from_user.username} в чате '{pmessage.chat.title}' удалено.")
+        # print(f"> Сообщение пользователя {pmessage.from_user.username} в чате "
+        # "'{pmessage.chat.title}' удалено.")
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
@@ -202,33 +90,6 @@ class CModerator(prototype.CPrototype):
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
         return ", ".join(HINT)
-
-    # def get_user(self, puser_id):
-    #     """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
-    #     query = self.session.query(CUser)
-    #     query = query.filter_by(fuserid=puser_id)
-    #     data = query.first()
-    #     if data is not None:
-    #         return data
-    #     return None
-
-    # def is_admin(self, pchat_id: int, puser_title: str):
-    #     """Возвращает True, если пользователь является админом данного чата, иначе False."""
-    #     found = False
-    #     data = self.bot.get_chat_administrators(pchat_id)
-    #
-    #     for item in data:
-    #
-    #         user = item.user
-    #         user_name = user.first_name
-    #         if user.last_name is not None:
-    #
-    #             user_name += " " + user.last_name
-    #         if user_name == puser_title:
-    #
-    #             found = True
-    #             break
-    #     return found
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
@@ -240,12 +101,13 @@ class CModerator(prototype.CPrototype):
         if puser_name == self.config["master"]:
             return True, ""
         # *** Низзя
-        print(f"> Moderator: Запрос на перезагрузку регэкспов матерных выражений от нелегитимного лица {puser_title}.")
+        print("> Moderator: Запрос на перезагрузку регэкспов "
+              f"матерных выражений от нелегитимного лица {puser_title}.")
         return False, f"У вас нет на это прав, {puser_title}."
 
     def moderator(self, pmessage) -> str:
         """Процедура разбора запроса пользователя."""
-        command: int
+        # command: int
         # *** Проверим, всё ли в порядке в чате
         answer: str = self.control_talking(pmessage)
         if answer:
@@ -260,7 +122,8 @@ class CModerator(prototype.CPrototype):
                     if word_list[0] in RELOAD_BAD_WORDS:
 
                         # *** Пользователь хочет перезагрузить словарь мата.
-                        can_reload, answer = self.is_master(pmessage.from_user.username, pmessage.from_user.first_name)
+                        can_reload, answer = self.is_master(pmessage.from_user.username,
+                                                            pmessage.from_user.first_name)
                         if can_reload:
 
                             self.reload()
@@ -268,10 +131,11 @@ class CModerator(prototype.CPrototype):
                         else:
 
                             # *** ... но не тут-то было...
-                            print(f"> Librarian: Запрос на перегрузку цитат от "
+                            print(f"> Moderator: Запрос на перегрузку словаря мата от "
                                   f"нелегитимного лица {pmessage.from_user.first_name}.")
                             answer = (f"Извини, {pmessage.from_user.first_name}, "
-                                      f"только {self.config['master_name']} может перегружать цитаты!")
+                                      f"только {self.config['master_name']} может "
+                                      "перегружать словарь мата!")
         return answer
 
     def reload(self):
@@ -281,42 +145,5 @@ class CModerator(prototype.CPrototype):
         data_path = Path(self.data_path) / BAD_WORDS_FILE
         self.bad_words.clear()
         self.bad_words = func.load_from_file(str(data_path))
-        print(f"> Moderator успешно (пере)загрузил {len(self.bad_words)} регэкспов матерных выражений.")
-
-    # def supervisor(self, pmessage):
-    #     """Контролирует поведение людей в чате."""
-    #     answer: str = ""
-    #     if self.is_enabled(pmessage.chat.title):
-    #         user: CUser = self.get_user(pmessage.from_user.id)
-    #         if user is not None:
-    #
-    #             if pmessage.content_type == "text":
-    #
-    #                 if user.frating < MINIMAL_TEXT_RATING:
-    #                     self.delete_message(pmessage)
-    #             elif pmessage.content_type == "sticker":
-    #
-    #                 if user.frating < MINIMAL_STICKER_RATING:
-    #                     self.delete_message(pmessage)
-    #             elif pmessage.content_type == "photo":
-    #
-    #                 if user.frating < MINIMAL_PHOTO_RATING:
-    #                     self.delete_message(pmessage)
-    #             elif pmessage.content_type in ["voice", "audio"]:
-    #
-    #                 if user.frating < MINIMAL_AUDIO_RATING:
-    #                     self.delete_message(pmessage)
-    #             elif pmessage.content_type in ["video", "video_note"]:
-    #
-    #                 if user.frating < MINIMAL_VIDEO_RATING:
-    #                     self.delete_message(pmessage)
-    #         else:
-    #
-    #             name: str = pmessage.from_user.first_name + " "
-    #             if pmessage.from_user.last_name is not None:
-    #                 name += pmessage.from_user.last_name
-    #             self.add_user(pmessage.from_user.id, name, pmessage.chat.id, pmessage.chat.title)
-    #         if not answer:
-    #             # *** Проверим, не матерился ли кто.
-    #             answer = self.control_talking(pmessage)
-    #     return answer
+        print(f"> Moderator успешно (пере)загрузил {len(self.bad_words)} "
+              "регэкспов матерных выражений.")
