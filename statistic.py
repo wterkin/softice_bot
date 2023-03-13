@@ -265,34 +265,41 @@ class CStatistic(prototype.CPrototype):
             user_stat = self.get_user_stat(chat_id, user_id)
             if user_stat is not None:
 
-                fstatfields = user_stat.get_all_fields()  # !!! тут
+                statfields = user_stat.get_all_fields()  # !!! тут
                 letters, words, phrases, stickers, pictures, audios, videos = decode_stat(user_stat)
-                letters = 0 if letters is None else letters
-                words = 0 if words is None else words
-                phrases = 0 if phrases is None else phrases
-                stickers = 0 if stickers is None else stickers
-                pictures = 0 if pictures is None else pictures
-                audios = 0 if audios is None else audios
-                videos = 0 if videos is None else videos
+                # letters = 0 if letters is None else letters
+                # words = 0 if words is None else words
+                # phrases = 0 if phrases is None else phrases
+                # stickers = 0 if stickers is None else stickers
+                # pictures = 0 if pictures is None else pictures
+                # audios = 0 if audios is None else audios
+                # videos = 0 if videos is None else videos
             # *** Изменяем статистику юзера в зависимости от типа сообщения
             if pmessage.content_type in ["video", "video_note"]:
 
                 videos += 1
+                statfields[m_stat.STATVIDEOS]
             elif pmessage.content_type in ["audio", "voice"]:
 
                 audios += 1
+                statfields[m_stat.STATAUDIOS]
             elif pmessage.content_type == "photo":
 
                 pictures += 1
+                statfields[m_stat.STATPICTURES]
             elif pmessage.content_type == "sticker":
 
                 stickers += 1
+                statfields[m_stat.STATSTICKERS]
             elif pmessage.content_type == "text":
 
                 if message_text[0] != "!":
                     letters += len(message_text)
+                    statfields[m_stat.STATLETTERS] += len(message_text)
                     words += len(message_text.split(" "))
+                    statfields[m_stat.STATWORDS] += len(message_text.split(" "))
                     phrases += 1
+                    statfields[m_stat.STATPHRASES] += 1
 
             if user_stat is None:
 

@@ -11,6 +11,7 @@ STATUSERID: str = "userid"
 STATLETTERS: str = "letters"
 STATWORDS: str = "words"
 STATPHRASES: str = "phrases"
+STATPICTURES: str = "pictures"
 STATSTICKERS: str = "stickers"
 STATAUDIOS: str = "audios"
 STATVIDEOS: str = "videos"
@@ -58,7 +59,18 @@ class CStat(m_ancestor.CAncestor):
 
     def get_all_fields(self):
         """Возвращает словарь с данными класса."""
-        fields_dict: dict = {STATUSERID: self.fuserid, STATLETTERS: self.fletters, STATWORDS: self.fwords,
-                             STATPHRASES: self.fphrases, STATSTICKERS: self.fstickers, STATAUDIOS: self.faudios,
-                             STATVIDEOS: self.fvideos}
+        fields_dict: dict = {STATUSERID: self.fuserid, STATLETTERS: self.fletters,
+                             STATWORDS: self.fwords, STATPHRASES: self.fphrases,
+                             STATPICTURES: self.fpictures, STATSTICKERS: self.fstickers,
+                             STATAUDIOS: self.faudios,  STATVIDEOS: self.fvideos}
         return fields_dict
+
+    def set_all_fields(self, pdata_dict):
+        """Присваивает полям записи данные из словаря."""
+        self.fletters = pdata_dict[STATLETTERS]
+        self.fwords = pdata_dict[STATWORDS]
+        self.fphrases = pdata_dict[STATPHRASES]
+        self.fstickers = pdata_dict[STATSTICKERS]
+        self.fpictures = pdata_dict[STATPICTURES]
+        self.faudios = pdata_dict[STATAUDIOS]
+        self.fvideos = pdata_dict[STATVIDEOS]
