@@ -37,6 +37,7 @@ class CModerator(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         word_list: list = func.parse_input(pmessage_text)
+        # print("***", word_list[0], RELOAD_BAD_WORDS)
         return self.is_enabled(pchat_title) and ((word_list[0] in RELOAD_BAD_WORDS)
                                                  or (word_list[0] in HINT))
         # or word_list[0] in ADMINISTRATION_CMD
@@ -110,7 +111,7 @@ class CModerator(prototype.CPrototype):
         # command: int
         # *** Проверим, всё ли в порядке в чате
         answer: str = self.control_talking(pmessage)
-        if answer:
+        if not answer:
 
             if pmessage.text is not None:
 

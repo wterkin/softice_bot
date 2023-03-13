@@ -5,21 +5,16 @@
 # from pathlib import Path
 import m_names
 import prototype
-import functions
 import database
 import m_chats
 import m_users
 import m_stat
+import functions as func
 
-# from sys import platform
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-
-# import m_ancestor
-TOP_10_COMMAND = 0
-TOP_25_COMMAND = 1
-TOP_50_COMMAND = 2
-PERS_COMMAND = 3
+TOP_10_COMMAND = [0, 4]
+TOP_25_COMMAND = [1, 5]
+TOP_50_COMMAND = [2, 6]
+PERS_COMMAND = [3, 7]
 
 HINT = ["стат", "stat"]
 COMMANDS = ["топ10", "топ25", "топ50", "перс", "top10", "top25", "top50", "pers"]
@@ -36,19 +31,19 @@ def decode_stat(pstat: m_stat.CStat):
         pstat.fpictures, pstat.faudios, pstat.fvideos
 
 
-def get_command(pword: str) -> int:  # noqa
-    """Распознает команду и возвращает её код, в случае неудачи - None."""
-    assert pword is not None, \
-        "Assert: [statistic.get_command] " \
-        "No <pword> parameter specified!"
-    result: int = -1
-    for command_idx, command in enumerate(COMMANDS):
-
-        if pword in command:
-
-            result = command_idx
-            break
-    return result
+# def get_command(pword: str) -> int:  # noqa
+#     """Распознает команду и возвращает её код, в случае неудачи - None."""
+#     assert pword is not None, \
+#         "Assert: [statistic.get_command] " \
+#         "No <pword> parameter specified!"
+#     result: int = -1
+#     for command_idx, command in enumerate(COMMANDS):
+#
+#         if pword in command:
+#
+#             result = command_idx
+#             break
+#     return result
 
 
 class CStatistic(prototype.CPrototype):
@@ -93,7 +88,7 @@ class CStatistic(prototype.CPrototype):
         """Возвращает True, если модуль может обработать команду, иначе False."""
         if self.is_enabled(pchat_title):
 
-            word_list: list = functions.parse_input(pmessage_text)
+            word_list: list = func.parse_input(pmessage_text)
             return word_list[0] in COMMANDS or word_list[0] in HINT
         return False
 
@@ -194,7 +189,12 @@ class CStatistic(prototype.CPrototype):
                       f"{0 if item[1].fpictures is None else item[1].fpictures} фоток, " \
                       f"{0 if item[1].faudios is None else item[1].faudios} звук. и " \
                       f"{0 if item[1].fvideos is None else item[1].fvideos} вид. \n"
-        answer += f"Отсортировано по количеству {SORTED_BY[porder_by-1]}. \n"
+        # print('-'*50)
+        # print(porder_by)
+        # print(SORTED_BY)
+        # print(SORTED_BY[porder_by-1])
+        # print('-'*50)
+        answer += f"Отсортировано по количеству {SORTED_BY[porder_by]}. \n"
         return answer
 
     def get_user_id(self, ptg_user_id):
@@ -218,98 +218,6 @@ class CStatistic(prototype.CPrototype):
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
-
-    # def save_message(self, pmessage):
-    #     """Сохраняет фразу, произнесенную пользователем, в базе."""
-    #     session = self.database.get_session()
-    #     message_text: str = pmessage.text
-    #     tg_chat_id: int = pmessage.chat.id
-    #     tg_chat_title: str = pmessage.chat.title
-    #     tg_user_title: str = ""
-    #     tg_user_id: int = pmessage.from_user.id
-    #     tg_user_name: str = pmessage.from_user.username
-    #     if pmessage.from_user.first_name is not None:
-    #
-    #         tg_user_title: str = pmessage.from_user.first_name
-    #     if pmessage.from_user.last_name is not None:
-    #
-    #         tg_user_title += " " + pmessage.from_user.last_name
-    #     # tg_user_title: str = first_name + last_name
-    #     # print("> ", tg_user_title)
-    #     if message_text[0] != "!":
-    #
-    #         if tg_user_name != "TrueMafiaBot" and \
-    #                 tg_user_name != "MafiaWarBot":
-    #
-    #             # *** Если кто-то уже залочил базу, подождём
-    #             while self.busy:
-    #                 pass
-    #
-    #             # *** Лочим запись в базу и пишем сами
-    #             self.busy = True
-    #             # проверить, нет ли чата в таблице чатов
-    #             # chat_id: int = -1
-    #             query = session.query(m_chats.CChat)
-    #             query = query.filter_by(fchatid=tg_chat_id)
-    #             data = query.first()
-    #             if data is None:
-    #
-    #                 # если нет - добавить, и получить id
-    #                 chat = m_chats.CChat(tg_chat_id, tg_chat_title)
-    #                 session.add(chat)
-    #                 session.commit()
-    #                 chat_id = chat.id
-    #             else:
-    #
-    #                 chat_id = data.id
-    #             # print("STT:SM:CHAT ID: ", chat_id)
-    #             # *** проверить, нет ли юзера в таблице тг юзеров, если нет -
-    #             добавить и получить id
-    #             query = session.query(m_users.CUser)
-    #             query = query.filter_by(ftguserid=tg_user_id)
-    #             data = query.first()
-    #             if data is None:
-    #
-    #                 # *** если нет - добавить, и получить id
-    #                 user = m_users.CUser(tg_user_id)
-    #                 session.add(user)
-    #                 session.commit()
-    #                 user_id = user.id
-    #                 # *** заодно сохраним имя пользователя
-    #                 user_name = m_names.CName(user_id, tg_user_title)
-    #                 session.add(user_name)
-    #                 session.commit()
-    #                 # print(f"STT:SM:USR NAME: {user_name.id}")
-    #             else:
-    #
-    #                 user_id = data.id
-    #             # print("STT:SM:USER NAME: ", tg_user_name)
-    #             # print("STT:SM:USER ID: ", user_id)
-    #             # *** Проанализируем фразу
-    #             letters = len(message_text)
-    #             words = len(message_text.split(" "))
-    #             # *** Есть ли запись об этом человеке в таблице статистики?
-    #             # если есть - получить id
-    #             query = session.query(m_stat.CStat)
-    #             query = query.filter_by(fuserid=user_id, fchatid=chat_id)
-    #             data = query.first()
-    #             if data is None:
-    #
-    #                 pass
-    #                 # *** Добавляем информацию в базу
-    #                 # stat_object = m_stat.CStat(user_id, chat_id, letters, words, 1)
-    #                 # session.add(stat_object)
-    #
-    #             else:
-    #
-    #                 # *** Изменяем информацию в базе
-    #                 query.update({m_stat.CStat.fletters: data.fletters + letters,
-    #                               m_stat.CStat.fwords: data.fwords + words,
-    #                               m_stat.CStat.fphrases: data.fphrases + 1},
-    #                               synchronize_session=False)
-    #             session.commit()
-    #             # *** Запись окончена, разлочиваем базу
-    #             self.busy = False
 
     def save_all_type_of_messages(self, pmessage):
         """Учитывает стикеры, видео, аудиосообщения."""
@@ -399,7 +307,7 @@ class CStatistic(prototype.CPrototype):
         command: int
         answer: str = ""
         order_by: int = 0
-        word_list: list = functions.parse_input(pmessage_text)
+        word_list: list = func.parse_input(pmessage_text)
         if self.can_process(pchat_title, pmessage_text):
 
             if word_list[0] in HINT:
@@ -407,7 +315,7 @@ class CStatistic(prototype.CPrototype):
                 answer = self.get_help(pchat_title)
             else:
                 # *** Получим код команды
-                command = get_command(word_list[0])
+                command = func.get_command(word_list[0], COMMANDS)
                 # print(word_list[0], command)
                 if command >= 0:
 
@@ -417,16 +325,16 @@ class CStatistic(prototype.CPrototype):
                         if order_by < 1 or order_by > 6:
 
                             order_by = 1
-                    if command == TOP_10_COMMAND:
+                    if command in TOP_10_COMMAND:
 
                         answer = self.get_statistic(pchat_id, 10, order_by)
-                    elif command == TOP_25_COMMAND:
+                    elif command in TOP_25_COMMAND:
 
                         answer = self.get_statistic(pchat_id, 25, order_by)
-                    elif command == TOP_50_COMMAND:
+                    elif command in TOP_50_COMMAND:
 
                         answer = self.get_statistic(pchat_id, 50, order_by)
-                    elif command == PERS_COMMAND:
+                    elif command in PERS_COMMAND:
 
                         answer = self.get_personal_information(pchat_id, puser_title)
         return answer

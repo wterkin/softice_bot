@@ -52,9 +52,9 @@ def get_command(pword: str) -> int:
     for command_idx, command in enumerate(HAIJIN_COMMANDS):
 
         if pword in command:
-    
-             result = command_idx
-             break
+
+            result = command_idx
+            break
     return result
 
 
@@ -254,7 +254,8 @@ class CHaijin(prototype.CPrototype):
                 else:
 
                     # *** ... но не тут-то было...
-                    print(f"> Haijin: Запрос на удаление хокку от нелегитимного лица {puser_title}.")
+                    print("> Haijin: Запрос на удаление хокку от "
+                          f"нелегитимного лица {puser_title}.")
                     answer = (f"Извини, {puser_title}, "
                               f"только {self.config['master_name']} может удалять хокку")
         return answer, unformatted_answer

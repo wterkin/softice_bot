@@ -1,12 +1,12 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль класса модели таблицы проскрипций."""
 
+from datetime import datetime
 from sqlalchemy import Date, Column, Integer, ForeignKey
 
 import m_ancestor
 import m_chats
 import m_users
-from datetime import datetime
 
 MUTE_PENALTY = 1
 BAN_PENALTY = 2

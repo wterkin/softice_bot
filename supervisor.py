@@ -62,6 +62,9 @@ class CAncestor(Base):
         return f"""ID:{self.id},
                    Status:{self.fstatus}"""
 
+    def null(self):
+        """Чтоб линтер был щаслиф."""
+
 
 class CUser(CAncestor):
     """Класс модели таблицы справочника ID пользователей телеграмма."""
@@ -112,20 +115,8 @@ class CSupervisor(prototype.CPrototype):
         self.admins: dict = {}
         self.create_admin_list()
         # *** Коннектимся к базе
-        database_file_name = Path(self.data_path) / DATABASE_NAME
-        alchemy_echo: bool = self.config["alchemy_echo"] == "1"
-        self.engine = create_engine('sqlite:///' + str(database_file_name),
-                                    echo=alchemy_echo,
-                                    connect_args={'check_same_thread': False})
-        Session = sessionmaker()  # noqa
-        Session.configure(bind=self.engine)
-        self.session = Session()
-        Base.metadata.bind = self.engine
-        # *** Если базы нет - создаем
-        if not database_file_name.exists():
-
-            Base.metadata.create_all()
-            print("* БД супервизора создана.")
+        self.connect_database()
+        self.session = None
 
     def add_user(self, puser_id: int, puser_name: str, pchat_id: int, pchat_title: str):
         """Добавляет в базу нового пользователя"""
@@ -145,6 +136,22 @@ class CSupervisor(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         return self.is_enabled(pchat_title)
+
+    def connect_database(self):
+        """Процедура, осуществляющее соединение с БД."""
+        database_file_name = Path(self.data_path) / DATABASE_NAME
+        alchemy_echo: bool = self.config["alchemy_echo"] == "1"
+        engine = create_engine('sqlite:///' + str(database_file_name),
+                               echo=alchemy_echo,
+                               connect_args={'check_same_thread': False})
+        Session = sessionmaker()  # noqa
+        Session.configure(bind=engine)
+        self.session = Session()
+        Base.metadata.bind = engine
+        # *** Если базы нет - создаем
+        if not database_file_name.exists():
+            Base.metadata.create_all()
+            print("* БД супервизора создана.")
 
     def create_admin_list(self):
         """Создаёт двумерный список админов чатов."""
@@ -226,6 +233,43 @@ class CSupervisor(prototype.CPrototype):
     def reload(self):
         """ Заглушка. """
 
+    def process_commands(self, pmessage):
+        """Обрабатывает команды пользователя."""
+        answer: str = ""
+        word_list: list = func.parse_input(pmessage.text)
+        if self.can_process(pmessage.chat.title, pmessage.text):
+
+            # *** Получим код команды
+            command = func.get_command(word_list[0], COMMANDS)
+            if command == 0:
+
+                # *** Включить супервизор
+                if self.is_master(pmessage.from_user.username, pmessage.from_user.first_name):
+
+                    if not self.state:
+                        self.state = True
+                        print("* Супервизор активирован.")
+                        answer = "Супервизор активирован."
+            elif command == 1:
+                # *** Выключить супервизор
+                if self.is_master(pmessage.from_user.username, pmessage.from_user.first_name):
+
+                    if self.state:
+                        self.state = True
+                        print("* Супервизор деактивирован.")
+                        answer = "Супервизор деактивирован."
+            elif command == 2:
+                # *** Увеличить рейтинг на 1
+                # reply_to_message
+                pass
+            elif command == 3:
+                # *** Уменьшить рейтинг на 1
+                pass
+            elif command == 4:
+                # *** Установить рейтинг
+                pass
+        return answer
+
     def supervisor(self, pmessage):
         """Контролирует поведение людей в чате."""
         answer: str = ""
@@ -241,41 +285,7 @@ class CSupervisor(prototype.CPrototype):
             pass
         if pmessage.content_type == "text":
 
-            word_list: list = func.parse_input(pmessage.text)
-            if self.can_process(pmessage.chat.title, pmessage.text):
-
-                # *** Получим код команды
-                command = func.get_command(word_list[0], COMMANDS)
-                if command == 0:
-
-                    # *** Включить супервизор
-                    if self.is_master(pmessage.from_user.username, pmessage.from_user.first_name):
-
-                        if not self.state:
-
-                            self.state = True
-                            print("* Супервизор активирован.")
-                            answer = "Супервизор активирован."
-                elif command == 1:
-                    # *** Выключить супервизор
-                    if self.is_master(pmessage.from_user.username, pmessage.from_user.first_name):
-
-                        if self.state:
-
-                            self.state = True
-                            print("* Супервизор деактивирован.")
-                            answer = "Супервизор деактивирован."
-                elif command == 2:
-                    # *** Увеличить рейтинг на 1
-                    # reply_to_message
-                    pass
-                elif command == 3:
-                    # *** Уменьшить рейтинг на 1
-                    pass
-                elif command == 4:
-                    # *** Установить рейтинг
-                    pass
-
+            answer = self.process_commands(pmessage)
         if self.state:
 
             # print(pmessage)

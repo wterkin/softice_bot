@@ -46,3 +46,6 @@ class CAncestor(Base):
     def __repr__(self):
         return f"""ID:{self.id},
                    Status:{self.fstatus}"""
+
+    def null(self):
+        """Чтоб линтер был щаслиф."""

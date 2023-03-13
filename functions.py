@@ -8,9 +8,11 @@ OUT_MSG_LOG_LEN = 60
 
 def parse_input(pmessage_text: str) -> list:
     """Разбивает введённую строку на отдельные слова."""
+    answer: str = ""
     if pmessage_text is not None:
 
-        return pmessage_text[1:].strip().split(" ")
+        answer = pmessage_text[1:].strip().split(" ")
+    return answer
 
 
 def get_command(pword: str, pcommands : list) -> int:  # noqa
@@ -67,4 +69,5 @@ def screen_text(ptext: str) -> str:
     result_text = result_text.replace("(", f"{BACKSLASH}(")
     result_text = result_text.replace("+", f"{BACKSLASH}+")
     result_text = result_text.replace("_", f"{BACKSLASH}_")
+    result_text = result_text.replace("=", f"{BACKSLASH}=")
     return result_text
