@@ -7,6 +7,14 @@ import m_ancestor
 import m_chats
 import m_users
 
+STATUSERID: str = "userid"
+STATLETTERS: str = "letters"
+STATWORDS: str = "words"
+STATPHRASES: str = "phrases"
+STATSTICKERS: str = "stickers"
+STATAUDIOS: str = "audios"
+STATVIDEOS: str = "videos"
+
 
 class CStat(m_ancestor.CAncestor):
     """Класс статистики."""
@@ -47,3 +55,10 @@ class CStat(m_ancestor.CAncestor):
                    Pictures: {self.fpictures},
                    Audios: {self.faudios},
                    Videos: {self.fvideos}"""
+
+    def get_all_fields(self):
+        """Возвращает словарь с данными класса."""
+        fields_dict: dict = {STATUSERID: self.fuserid, STATLETTERS: self.fletters, STATWORDS: self.fwords,
+                             STATPHRASES: self.fphrases, STATSTICKERS: self.fstickers, STATAUDIOS: self.faudios,
+                             STATVIDEOS: self.fvideos}
+        return fields_dict

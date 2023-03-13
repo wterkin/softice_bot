@@ -27,6 +27,7 @@ SORTED_BY: tuple = ("предложений", "слов", "стикеров", "�
 
 def decode_stat(pstat: m_stat.CStat):
     """Декодирует запись статистики."""
+
     return pstat.fletters, pstat.fwords, pstat.fphrases, pstat.fstickers, \
         pstat.fpictures, pstat.faudios, pstat.fvideos
 
@@ -263,6 +264,8 @@ class CStatistic(prototype.CPrototype):
             # *** Имеется ли в БД статистика по этому пользователю?
             user_stat = self.get_user_stat(chat_id, user_id)
             if user_stat is not None:
+
+                fstatfields = user_stat.get_all_fields()  # !!! тут
                 letters, words, phrases, stickers, pictures, audios, videos = decode_stat(user_stat)
                 letters = 0 if letters is None else letters
                 words = 0 if words is None else words
