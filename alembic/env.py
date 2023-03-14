@@ -7,14 +7,7 @@ from sqlalchemy import pool
 from alembic import context
 
 path.insert(0, "D:/home/projects/-softice/")
-
-import m_ancestor
-import m_chats
-import m_karma
-import m_names
-import m_penalties
-import m_stat
-import m_users
+# path.insert(0, "D:/home/YandexDisk/Private/app_data/Softice/")
 import database
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -30,7 +23,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-target_metadata = m_ancestor.meta_data 
+target_metadata = database.meta_data 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
@@ -76,7 +69,8 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata,
+            render_as_batch=True
         )
 
         with context.begin_transaction():
