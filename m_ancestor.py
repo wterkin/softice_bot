@@ -9,7 +9,6 @@ from sqlalchemy.ext.declarative import declarative_base
 STATUS_ACTIVE: int = 1
 STATUS_INACTIVE: int = 0
 
-# convention: Optional[Dict[str, str]] = {
 convention = {
     "all_column_names": lambda constraint,
                                table: "_".join([

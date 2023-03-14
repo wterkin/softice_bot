@@ -61,7 +61,7 @@ def load_from_file(pfile_name: str) -> list:
 
 def screen_text(ptext: str) -> str:
     """Экранирует текст перед выводом в телеграм."""
-
+    # print(ptext)
     result_text: str = ptext.replace(".", f"{BACKSLASH}.")
     result_text = result_text.replace("-", f"{BACKSLASH}-")
     result_text = result_text.replace("!", f"{BACKSLASH}!")
@@ -70,4 +70,6 @@ def screen_text(ptext: str) -> str:
     result_text = result_text.replace("+", f"{BACKSLASH}+")
     result_text = result_text.replace("_", f"{BACKSLASH}_")
     result_text = result_text.replace("=", f"{BACKSLASH}=")
+    # print(result_text)
     return result_text
+

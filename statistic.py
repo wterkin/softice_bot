@@ -278,19 +278,19 @@ class CStatistic(prototype.CPrototype):
             if pmessage.content_type in ["video", "video_note"]:
 
                 videos += 1
-                statfields[m_stat.STATVIDEOS]
+                statfields[m_stat.STATVIDEOS] += 1
             elif pmessage.content_type in ["audio", "voice"]:
 
                 audios += 1
-                statfields[m_stat.STATAUDIOS]
+                statfields[m_stat.STATAUDIOS] += 1
             elif pmessage.content_type == "photo":
 
                 pictures += 1
-                statfields[m_stat.STATPICTURES]
+                statfields[m_stat.STATPICTURES] += 1
             elif pmessage.content_type == "sticker":
 
                 stickers += 1
-                statfields[m_stat.STATSTICKERS]
+                statfields[m_stat.STATSTICKERS] += 1
             elif pmessage.content_type == "text":
 
                 if message_text[0] != "!":

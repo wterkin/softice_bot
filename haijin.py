@@ -103,6 +103,7 @@ class CHaijin(prototype.CPrototype):
         """Форматирует хокку так, как нам хочется."""
         # *** Вырежем номер
         if "???" not in ptext:
+
             left_par: int = ptext.index(LEFT_BRACKET)
             right_par: int = ptext.index(RIGHT_BRACKET)
             number: str = ptext[left_par + 1:right_par].strip()
@@ -120,8 +121,9 @@ class CHaijin(prototype.CPrototype):
                 result_text += line.strip() + LF
             result_text = func.screen_text(result_text)
             result_text = f"{BOLD}{ITALIC}{result_text[:-1]}{ITALIC}{BOLD}{LF}" \
-                          f"{AUTHOR_INDENT}{author} {SPOILER}" + \
+                          f"{AUTHOR_INDENT}{func.screen_text(author)} {SPOILER}" + \
                           f"{DELIMITER} {number} {DELIMITER} {len(self.hokku)} {SPOILER}"
+            # print(result_text)
             return result_text
         return ptext
 
