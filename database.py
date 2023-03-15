@@ -46,9 +46,6 @@ meta_data: object = MetaData(naming_convention=convention)
 Base = declarative_base(metadata=meta_data)
 
 
-# def __init__(self, puserid: int, pchatid: int, pletters: int, pwords: int, pphrases: int,
-#              pstickers: int, ppictures: int, paudios: int, pvideos: int):
-
 class CAncestor(Base):
     """Класс-предок всех классов-моделей таблиц SQLAlchemy."""
     __abstract__ = True
@@ -106,16 +103,23 @@ class CUser(CAncestor):
                        nullable=False,
                        unique=True,
                        index=True)
+    fusername = Column(String,
+                       nullable=True,
+                       default="",
+                       index=True
+                       )
 
-    def __init__(self, ptguserid: int):
+    def __init__(self, ptguserid: int, pusername: str = ""):
         """Конструктор"""
         super().__init__()
         self.ftguserid = ptguserid
+        self.fusername = pusername
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
-                   TG user ID:{self.ftguserid}"""
+                   TG user ID:{self.ftguserid},
+                    User name:{self.fusername}"""
 
     def null(self):
         """Чтоб линтер был щаслив."""
@@ -163,13 +167,6 @@ class CStat(CAncestor):
         self.fuserid = puserid
         self.fchatid = pchatid
         self.set_all_fields(pdata_dict)
-        # self.fletters = pletters
-        # self.fwords = pwords
-        # self.fphrases = pphrases
-        # self.fstickers = pstickers
-        # self.fpictures = ppictures
-        # self.faudios = paudios
-        # self.fvideos = pvideos
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
@@ -208,7 +205,7 @@ class CPenalty(CAncestor):
     __tablename__ = 'tbl_penalties'
     fuserid = Column(Integer, ForeignKey(CUser.id))
     fchatid = Column(Integer, ForeignKey(CChat.id))
-    ftype: int = Column(Integer, default=0) # 1 - mute, 2 - ban
+    ftype: int = Column(Integer, default=0)  # 1 - mute, 2 - ban
     fendsat: datetime = Column(Date, nullable=False)
 
     def __init__(self, puser_id: int, pchat_id: int, ptype: int, pends_at: datetime):
@@ -282,3 +279,16 @@ class CDataBase:
     def get_session(self):
         """Возвращает экземпляр session."""
         return self.session
+
+    def transfer(self):
+        name_query = self.session.query(CName).all()
+        for user_name in name_query:
+
+            user: CUser = self.session.query(CUser).filter_by(id=user_name.fuserid).first()
+            user.fusername = user_name.fusername
+            self.session.add(user)
+            self.session.commit()
+
+
+
+
