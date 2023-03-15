@@ -60,12 +60,14 @@ class CStatistic(prototype.CPrototype):
         self.session.commit()
         return chat.id
 
-    def add_user_stat(self, puser_id: int, pchat_id: int, pletters: int, pwords: int,
-                      pphrases: int, pstickers: int, ppictures: int, paudios: int,
-                      pvideos: int):
+    # def add_user_stat(self, puser_id: int, pchat_id: int, pletters: int, pwords: int,
+    #                   pphrases: int, pstickers: int, ppictures: int, paudios: int,
+    #                   pvideos: int):
+    def add_user_stat(self, puser_id: int, pchat_id: int, pstatfields: dict):
         """Добавляет новую запись статистики по человеку."""
-        stat = db.CStat(puser_id, pchat_id, pletters, pwords, pphrases,
-                            pstickers, ppictures, paudios, pvideos)
+        # stat = db.CStat(puser_id, pchat_id, pletters, pwords, pphrases,
+        #                 pstickers, ppictures, paudios, pvideos)
+        stat = db.CStat(puser_id, pchat_id, pstatfields)
         self.session.add(stat)
         self.session.commit()
 
@@ -225,13 +227,21 @@ class CStatistic(prototype.CPrototype):
         tg_user_title: str = ""
         tg_user_id: int = pmessage.from_user.id
         tg_user_name: str = pmessage.from_user.username
-        letters: int = 0
-        words: int = 0
-        phrases: int = 0
-        stickers: int = 0
-        pictures: int = 0
-        audios: int = 0
-        videos: int = 0
+        # letters: int = 0
+        # words: int = 0
+        # phrases: int = 0
+        # stickers: int = 0
+        # pictures: int = 0
+        # audios: int = 0
+        # videos: int = 0
+        statfields: dict = {db.STATUSERID: 0,
+                            db.STATLETTERS: 0,
+                            db.STATWORDS: 0,
+                            db.STATPHRASES: 0,
+                            db.STATPICTURES: 0,
+                            db.STATSTICKERS: 0,
+                            db.STATAUDIOS: 0,
+                            db.STATVIDEOS: 0}
 
         # *** Если есть у юзера первое имя - берем.
         if pmessage.from_user.first_name is not None:
@@ -262,7 +272,8 @@ class CStatistic(prototype.CPrototype):
             if user_stat is not None:
 
                 statfields = user_stat.get_all_fields()  # !!! тут
-                letters, words, phrases, stickers, pictures, audios, videos = decode_stat(user_stat)
+                # letters, words, phrases, stickers, pictures,
+                # audios, videos = decode_stat(user_stat)
                 # letters = 0 if letters is None else letters
                 # words = 0 if words is None else words
                 # phrases = 0 if phrases is None else phrases
@@ -273,38 +284,41 @@ class CStatistic(prototype.CPrototype):
             # *** Изменяем статистику юзера в зависимости от типа сообщения
             if pmessage.content_type in ["video", "video_note"]:
 
-                videos += 1
+                # videos += 1
                 statfields[db.STATVIDEOS] += 1
             elif pmessage.content_type in ["audio", "voice"]:
 
-                audios += 1
+                # audios += 1
                 statfields[db.STATAUDIOS] += 1
             elif pmessage.content_type == "photo":
 
-                pictures += 1
+                # pictures += 1
                 statfields[db.STATPICTURES] += 1
             elif pmessage.content_type == "sticker":
 
-                stickers += 1
+                # stickers += 1
                 statfields[db.STATSTICKERS] += 1
             elif pmessage.content_type == "text":
 
                 if message_text[0] != "!":
-                    letters += len(message_text)
+                    # letters += len(message_text)
                     statfields[db.STATLETTERS] += len(message_text)
-                    words += len(message_text.split(" "))
+                    # words += len(message_text.split(" "))
                     statfields[db.STATWORDS] += len(message_text.split(" "))
-                    phrases += 1
+                    # phrases += 1
                     statfields[db.STATPHRASES] += 1
 
             if user_stat is None:
 
-                self.add_user_stat(user_id, chat_id, letters, words,
-                                   phrases, stickers, pictures, audios, videos)
+                # self.add_user_stat(user_id, chat_id, letters, words,
+                #                    phrases, stickers, pictures, audios, videos)
+                self.add_user_stat(user_id, chat_id, statfields)
+
             else:
 
-                self.update_user_stat(user_id, chat_id, letters, words,
-                                      phrases, stickers, pictures, audios, videos)
+                # self.update_user_stat(user_id, chat_id, letters, words,
+                #                       phrases, stickers, pictures, audios, videos)
+                self.update_user_stat(user_id, chat_id, statfields)
             # *** Запись окончена, разлочиваем базу
             self.busy = False
 
@@ -345,19 +359,23 @@ class CStatistic(prototype.CPrototype):
                         answer = self.get_personal_information(pchat_id, puser_title)
         return answer
 
-    def update_user_stat(self, puser_id: int, pchat_id: int, pletters: int, pwords: int,
-                         pphrases: int, pstickers: int, ppictures: int, paudios: int,
-                         pvideos: int):
+    # def update_user_stat(self, puser_id: int, pchat_id: int, pletters: int, pwords: int,
+    #                      pphrases: int, pstickers: int, ppictures: int, paudios: int,
+    #                      pvideos: int):
+    def update_user_stat(self, puser_id: int, pchat_id: int, pstatfields: dict):
         """Изменяет запись статистики по человеку."""
         query = self.session.query(db.CStat)
         query = query.filter_by(fuserid=puser_id)
         query = query.filter_by(fchatid=pchat_id)
-        query.update({db.CStat.fletters: pletters,
-                      db.CStat.fwords: pwords,
-                      db.CStat.fphrases: pphrases,
-                      db.CStat.fstickers: pstickers,
-                      db.CStat.fpictures: ppictures,
-                      db.CStat.faudios: paudios,
-                      db.CStat.fvideos: pvideos
-                      }, synchronize_session=False)
+        stat: db.CStat = query.first()
+        stat.set_all_fields(pstatfields)
+        # query.update({db.CStat.fletters: pletters,
+        #               db.CStat.fwords: pwords,
+        #               db.CStat.fphrases: pphrases,
+        #               db.CStat.fstickers: pstickers,
+        #               db.CStat.fpictures: ppictures,
+        #               db.CStat.faudios: paudios,
+        #               db.CStat.fvideos: pvideos
+        #               }, synchronize_session=False)
+        self.session.add(stat)
         self.session.commit()

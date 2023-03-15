@@ -46,6 +46,9 @@ meta_data: object = MetaData(naming_convention=convention)
 Base = declarative_base(metadata=meta_data)
 
 
+# def __init__(self, puserid: int, pchatid: int, pletters: int, pwords: int, pphrases: int,
+#              pstickers: int, ppictures: int, paudios: int, pvideos: int):
+
 class CAncestor(Base):
     """Класс-предок всех классов-моделей таблиц SQLAlchemy."""
     __abstract__ = True
@@ -154,19 +157,19 @@ class CStat(CAncestor):
     faudios = Column(Integer, default=0)
     fvideos = Column(Integer, default=0)
 
-    def __init__(self, puserid: int, pchatid: int, pletters: int, pwords: int, pphrases: int,
-                 pstickers: int, ppictures: int, paudios: int, pvideos: int):
+    def __init__(self, puserid: int, pchatid: int, pdata_dict: dict):
         """Конструктор"""
         super().__init__()
         self.fuserid = puserid
         self.fchatid = pchatid
-        self.fletters = pletters
-        self.fwords = pwords
-        self.fphrases = pphrases
-        self.fstickers = pstickers
-        self.fpictures = ppictures
-        self.faudios = paudios
-        self.fvideos = pvideos
+        self.set_all_fields(pdata_dict)
+        # self.fletters = pletters
+        # self.fwords = pwords
+        # self.fphrases = pphrases
+        # self.fstickers = pstickers
+        # self.fpictures = ppictures
+        # self.faudios = paudios
+        # self.fvideos = pvideos
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
