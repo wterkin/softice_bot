@@ -34,28 +34,23 @@ class CStatistic(prototype.CPrototype):
         super().__init__()
         self.config: dict = pconfig
         self.database: db.CDataBase = pdatabase
-        self.busy: bool = False
-        self.session = self.database.get_session()
 
     def add_chat_to_base(self, ptg_chat_id: int, ptg_chat_title: str):
         """Добавляет новый чат в БД и возвращает его ID."""
         chat = db.CChat(ptg_chat_id, ptg_chat_title)
-        self.session.add(chat)
-        self.session.commit()
+        self.database.commit_changes(chat)
         return chat.id
 
     def add_user_stat(self, puser_id: int, pchat_id: int, pstatfields: dict):
         """Добавляет новую запись статистики по человеку."""
         stat = db.CStat(puser_id, pchat_id, pstatfields)
-        self.session.add(stat)
-        self.session.commit()
+        self.database.commit_changes(stat)
 
     def add_user_to_base(self, ptg_user_id: int, ptg_user_title: str):
         """Добавляет нового пользователя в БД и возвращает его ID."""
 
         user = db.CUser(ptg_user_id, ptg_user_title)
-        self.session.add(user)
-        self.session.commit()
+        self.database.commit_changes(user)
         return user.id
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -68,17 +63,18 @@ class CStatistic(prototype.CPrototype):
 
     def get_chat_id(self, ptg_chat_id):
         """Если чат уже есть в базе, возвращает его ID, если нет - None."""
-        query = self.session.query(db.CChat)
+        query = self.database.query_data(db.CChat)
         query = query.filter_by(fchatid=ptg_chat_id)
-        data = query.first()
-        if data is not None:
+        chat = query.first()
+        if chat is not None:
 
-            return data.id
+            return chat.id
         return None
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд модуля, доступных пользователю."""
         if self.is_enabled(pchat_title):
+
             command_list: str = ", ".join(COMMANDS)
             command_list += "\n"
             return command_list
@@ -88,49 +84,46 @@ class CStatistic(prototype.CPrototype):
         """Возвращает команду верхнего уровня, в ответ на которую
            модуль возвращает полный список команд, доступных пользователю."""
         if self.is_enabled(pchat_title):
+
             return ", ".join(HINT)
         return ""
 
     def get_personal_information(self, ptg_chat_id: int, puser_title: str):
         """Возвращает информацию о пользователе"""
         answer: str = ""
-        session = self.database.get_session()
-        query = session.query(db.CUser)
+        query = self.database.query_data(db.CUser)
         query = query.filter_by(fusername=puser_title)
-        data = query.first()
-        if data is not None:
+        user = query.first()
+        if user is not None:
 
-            user_id: int = data.fuserid
             # *** Получим ID чата в базе
-            query = session.query(db.CChat)
+            query = self.database.query_data(db.CChat)
             query = query.filter_by(fchatid=ptg_chat_id)
-            data = query.first()
-            if data is not None:
+            chat = query.first()
+            if chat is not None:
 
-                chat_id: int = data.id
-                # print("*** STAT:GPI:СID ", user_id)
-                query = session.query(db.CStat)
-                query = query.filter_by(fuserid=user_id)
-                query = query.filter_by(fchatid=chat_id)
-                data = query.first()
-                if data is not None:
-                    answer = f"{puser_title} наболтал {data.fphrases} фраз, " \
-                             f"{data.fwords} слов, {data.fletters} букв, запостил " \
-                             f"{0 if data.fstickers is None else data.fstickers} стик., " \
-                             f"{0 if data.fpictures is None else data.fpictures} фоток, " \
-                             f"{0 if data.faudios is None else data.faudios} аудио и " \
-                             f"{0 if data.fvideos is None else data.fvideos} видео,"
+                query = self.database.query_data(db.CStat)
+                query = query.filter_by(fuserid=user.id)
+                query = query.filter_by(fchatid=chat.id)
+                stat = query.first()
+                if stat is not None:
+
+                    answer = f"{puser_title} наболтал {stat.fphrases} фраз, " \
+                             f"{stat.fwords} слов, {stat.fletters} букв, запостил " \
+                             f"{0 if stat.fstickers is None else stat.fstickers} стик., " \
+                             f"{0 if stat.fpictures is None else stat.fpictures} фоток, " \
+                             f"{0 if stat.faudios is None else stat.faudios} аудио и " \
+                             f"{0 if stat.fvideos is None else stat.fvideos} видео,"
 
         return answer
 
     def get_statistic(self, ptg_chat_id: int, pcount: int, porder_by: int):
         """Получает из базы статистику по самым говорливым юзерам."""
-        session = self.database.session
-        query = session.query(db.CChat, db.CStat, db.CUser)  # , db.CName
+        session = self.database.get_session()
+        query = session.query(db.CChat, db.CStat, db.CUser)
         query = query.filter_by(fchatid=ptg_chat_id)
         query = query.join(db.CStat, db.CStat.fchatid == db.CChat.id)
         query = query.join(db.CUser, db.CUser.id == db.CStat.fuserid)
-        # query = query.join(db.CName, db.CName.fuserid == db.CUser.id)
         if porder_by == 1:
 
             query = query.order_by(db.CStat.fphrases.desc())
@@ -152,37 +145,32 @@ class CStatistic(prototype.CPrototype):
         else:
 
             query = query.order_by(db.CStat.fphrases.desc())
-            print("Предл")
-        data = query.limit(pcount).all()
-        print(data)
+        stat = query.limit(pcount).all()
         answer = "Самые говорливые:\n"
-        for number, item in enumerate(data):
+        for number, item in enumerate(stat):
+
             answer += f"{number + 1} : {item[2].fusername} : {item[1].fphrases}" \
-                      f" предл., {item[1].fwords} слов, " \
+                      f" фраз, {item[1].fwords} слов, " \
                       f"{0 if item[1].fstickers is None else item[1].fstickers} стик., " \
                       f"{0 if item[1].fpictures is None else item[1].fpictures} фоток, " \
                       f"{0 if item[1].faudios is None else item[1].faudios} звук. и " \
                       f"{0 if item[1].fvideos is None else item[1].fvideos} вид. \n"
-        # print('-'*50)
-        # print(porder_by)
-        # print(SORTED_BY)
-        # print(SORTED_BY[porder_by-1])
-        # print('-'*50)
         answer += f"Отсортировано по количеству {SORTED_BY[porder_by]}. \n"
         return answer
 
     def get_user_id(self, ptg_user_id):
         """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
-        query = self.session.query(db.CUser)
+        query = self.database.query_data(db.CUser)
         query = query.filter_by(ftguserid=ptg_user_id)
-        data = query.first()
-        if data is not None:
-            return data.id
+        user = query.first()
+        if user is not None:
+
+            return user.id
         return None
 
     def get_user_stat(self, pchat_id: int, puser_id: int):
         """Получает из базы статистику пользователя и возвращает её."""
-        query = self.session.query(db.CStat)
+        query = self.database.query_data(db.CStat)
         query = query.filter_by(fuserid=puser_id, fchatid=pchat_id)
         return query.first()
 
@@ -212,27 +200,25 @@ class CStatistic(prototype.CPrototype):
 
         # *** Если есть у юзера первое имя - берем.
         if pmessage.from_user.first_name is not None:
+
             tg_user_title: str = pmessage.from_user.first_name
         # *** Если есть у юзера второе имя - тож берем.
         if pmessage.from_user.last_name is not None:
+
             tg_user_title += " " + pmessage.from_user.last_name
         # *** Это не бот написал? Чужой бот, не наш?
         if tg_user_name not in self.config[FOREIGN_BOTS]:
 
-            # *** Если кто-то уже залочил базу, подождём
-            while self.busy:
-
-                pass
-            # *** Лочим запись в базу и пишем сами
-            self.busy = True
             # Проверить, нет ли уже этого чата в таблице чатов
             chat_id = self.get_chat_id(tg_chat_id)
             if chat_id is None:
+
                 # Нету еще, новый чат - добавить, и получить id
                 chat_id = self.add_chat_to_base(tg_chat_id, tg_chat_title)
             # *** Проверить, нет ли юзера в таблице тг юзеров
             user_id = self.get_user_id(tg_user_id)
             if user_id is None:
+
                 # *** Нету, новый пользователь
                 user_id = self.add_user_to_base(tg_user_id, tg_user_title)
             # *** Имеется ли в БД статистика по этому пользователю?
@@ -268,8 +254,6 @@ class CStatistic(prototype.CPrototype):
             else:
 
                 self.update_user_stat(user_id, chat_id, statfields)
-            # *** Запись окончена, разлочиваем базу
-            self.busy = False
 
     def statistic(self, pchat_id: int, pchat_title: str, puser_title, pmessage_text: str):
         """Обработчик команд."""
@@ -285,7 +269,6 @@ class CStatistic(prototype.CPrototype):
             else:
                 # *** Получим код команды
                 command = func.get_command(word_list[0], COMMANDS)
-                # print(word_list[0], command)
                 if command >= 0:
 
                     if len(word_list) > 1 and word_list[1].isdigit():
@@ -310,10 +293,9 @@ class CStatistic(prototype.CPrototype):
 
     def update_user_stat(self, puser_id: int, pchat_id: int, pstatfields: dict):
         """Изменяет запись статистики по человеку."""
-        query = self.session.query(db.CStat)
+        query = self.database.query_data(db.CStat)
         query = query.filter_by(fuserid=puser_id)
         query = query.filter_by(fchatid=pchat_id)
         stat: db.CStat = query.first()
         stat.set_all_fields(pstatfields)
-        self.session.add(stat)
-        self.session.commit()
+        self.database.commit_changes(stat)

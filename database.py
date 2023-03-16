@@ -29,7 +29,6 @@ MUTE_PENALTY = 1
 BAN_PENALTY = 2
 RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
 
-
 convention = {
     "all_column_names": lambda constraint, table: "_".join([
         column.name for column in constraint.columns.values()
@@ -125,28 +124,6 @@ class CUser(CAncestor):
         """Чтоб линтер был щаслив."""
 
 
-class CName(CAncestor):
-    """Класс модели таблицы связки имен и ID пользователей."""
-
-    __tablename__ = 'tbl_names'
-    fuserid = Column(Integer, ForeignKey(CUser.id))
-    fusername = Column(String,
-                       nullable=False,
-                       )
-
-    def __init__(self, puserid: int, pusername: str):
-        """Конструктор"""
-        super().__init__()
-        self.fuserid = puserid
-        self.fusername = pusername
-
-    def __repr__(self):
-        ancestor_repr = super().__repr__()
-        return f"""{ancestor_repr},
-                   User ID:{self.fuserid}, 
-                   User name:{self.fusername}"""
-
-
 class CStat(CAncestor):
     """Класс статистики."""
 
@@ -185,7 +162,7 @@ class CStat(CAncestor):
         fields_dict: dict = {STATUSERID: self.fuserid, STATLETTERS: self.fletters,
                              STATWORDS: self.fwords, STATPHRASES: self.fphrases,
                              STATPICTURES: self.fpictures, STATSTICKERS: self.fstickers,
-                             STATAUDIOS: self.faudios,  STATVIDEOS: self.fvideos}
+                             STATAUDIOS: self.faudios, STATVIDEOS: self.fvideos}
         return fields_dict
 
     def set_all_fields(self, pdata_dict):
@@ -236,11 +213,23 @@ class CDataBase:
         self.data_path = pdata_path
         self.session = None
         self.engine = None
+        self.busy: bool = False
         self.database_name = pdatabase_name
         self.connect()
 
-    def check(self):
-        """Проверяет базу на соответствие ее структуры классам."""
+    def commit_changes(self, obj):
+        """Сохраняет изменения в БД."""
+        # *** Если база залочена - подождем.
+        while self.busy:
+
+            pass
+        # *** Теперь сами её залочим.
+        self.busy = True
+        # *** Сохраняем данные
+        self.session.add(obj)
+        self.session.commit()
+        # *** Разлочим базу
+        self.busy = False
 
     def connect(self):
         """Устанавливает соединение с БД."""
@@ -280,15 +269,26 @@ class CDataBase:
         """Возвращает экземпляр session."""
         return self.session
 
-    def transfer(self):
-        name_query = self.session.query(CName).all()
-        for user_name in name_query:
+    def query_data(self, cls):
+        """Возвращает выборку заданнного класса."""
+        return self.session.query(cls)
 
-            user: CUser = self.session.query(CUser).filter_by(id=user_name.fuserid).first()
-            user.fusername = user_name.fusername
-            self.session.add(user)
-            self.session.commit()
+    # def transfer(self):
+    #     name_query = self.session.query(CName).all()
+    #     for user_name in name_query:
+    #
+    #         user: CUser = self.session.query(CUser).filter_by(id=user_name.fuserid).first()
+    #         user.fusername = user_name.fusername
+    #         self.session.add(user)
+    #         self.session.commit()
+        # query = self.session.query(db.CStat)
+        # query = query.filter_by(fuserid=puser_id)
+        # query = query.filter_by(fchatid=pchat_id)
+        # stat: db.CStat = query.first()
+        # stat.set_all_fields(pstatfields)
+        # self.session.add(stat)
 
-
-
-
+        # user = db.CUser(ptg_user_id, ptg_user_title)
+        # self.session.add(user)
+        # self.session.commit()
+        # return user.id
