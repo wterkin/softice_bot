@@ -182,6 +182,7 @@ class CSupervisor(prototype.CPrototype):
     def get_user(self, pchat_id: int, puser_id: int):
         """Если пользователь уже есть в базе, возвращает его ID, если нет - None."""
         query = self.session.query(CUser)
+        # query = self.database
         query = query.filter_by(fchat_id=pchat_id, fuserid=puser_id)
         data = query.first()
         if data is not None:

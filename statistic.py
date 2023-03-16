@@ -63,9 +63,13 @@ class CStatistic(prototype.CPrototype):
 
     def get_chat_id(self, ptg_chat_id):
         """Если чат уже есть в базе, возвращает его ID, если нет - None."""
+        print(ptg_chat_id)
         query = self.database.query_data(db.CChat)
+        # print(query)
         query = query.filter_by(fchatid=ptg_chat_id)
+        print(query)
         chat = query.first()
+        print(chat)
         if chat is not None:
 
             return chat.id
@@ -184,6 +188,7 @@ class CStatistic(prototype.CPrototype):
     def save_all_type_of_messages(self, pmessage):
         """Учитывает стикеры, видео, аудиосообщения."""
         message_text: str = pmessage.text
+        print(f"*** STT:SATOM:{pmessage.chat.id}")
         tg_chat_id: int = pmessage.chat.id
         tg_chat_title: str = pmessage.chat.title
         tg_user_title: str = ""
