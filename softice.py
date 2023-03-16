@@ -170,10 +170,16 @@ class CSoftIceBot:
             # *** Проверим, легитимный ли этот чат
             if not self.is_this_chat_enabled(chat_title):
 
-                # *** Бота привели на чужой канал. Выходим.
-                self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                self.robot.leave_chat(chat_id)
-                print(f"* Попытка нелегитимного использования бота в чате {chat_title}.")
+                if chat_title is not None:
+
+                    # *** Бота привели на чужой канал. Выходим.
+                    self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
+                    self.robot.leave_chat(chat_id)
+                    print(f"* Попытка нелегитимного использования бота в чате {chat_title}.")
+                else:
+
+                    answer = "Я в приватах не работаю."
+
             else:
 
                 # *** Сообщение не протухло?
@@ -221,17 +227,17 @@ class CSoftIceBot:
 
                                 self.statistic.save_all_type_of_messages(pmessage)
 
-                # *** Ответ имеется?
-                if answer:
+            # *** Ответ имеется?
+            if answer:
 
-                    # *** Выводим ответ
-                    if do_not_screen:
+                # *** Выводим ответ
+                if do_not_screen:
 
-                        self.robot.send_message(pmessage.chat.id, answer, parse_mode="MarkdownV2")
-                    else:
+                    self.robot.send_message(pmessage.chat.id, answer, parse_mode="MarkdownV2")
+                else:
 
-                        self.robot.send_message(pmessage.chat.id, func.screen_text(answer),
-                                                parse_mode="MarkdownV2")
+                    self.robot.send_message(pmessage.chat.id, func.screen_text(answer),
+                                            parse_mode="MarkdownV2")
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""

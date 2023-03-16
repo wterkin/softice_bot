@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль функций, связанных с БД."""
-from datetime import datetime
+# from datetime import datetime
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, String, Date, MetaData, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, MetaData, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 # py lint: disable=C0301
@@ -41,7 +41,7 @@ convention = {
     "pk": "pk__%(table_name)s"
 }
 
-meta_data: object = MetaData(naming_convention=convention)
+meta_data = MetaData(naming_convention=convention)
 Base = declarative_base(metadata=meta_data)
 
 
@@ -176,30 +176,28 @@ class CStat(CAncestor):
         self.fvideos = pdata_dict[STATVIDEOS]
 
 
-class CPenalty(CAncestor):
-    """Класс модели таблицы проскрипций."""
+class CRights(CAncestor):
+    """Класс модели таблицы прав пользователей."""
 
-    __tablename__ = 'tbl_penalties'
+    __tablename__ = 'tbl_rights'
     fuserid = Column(Integer, ForeignKey(CUser.id))
     fchatid = Column(Integer, ForeignKey(CChat.id))
-    ftype: int = Column(Integer, default=0)  # 1 - mute, 2 - ban
-    fendsat: datetime = Column(Date, nullable=False)
+    fkarma = Column(Integer, default=1000)
+    fadmin = Column(Boolean, default=True)
 
-    def __init__(self, puser_id: int, pchat_id: int, ptype: int, pends_at: datetime):
+    def __init__(self, puser_id: int, pchat_id: int):
         """Конструктор"""
         super().__init__()
         self.fuserid = puser_id
         self.fchatid = pchat_id
-        self.ftype = ptype
-        self.fendsat = pends_at
 
     def __repr__(self):
         ancestor_repr = super().__repr__()
         return f"""{ancestor_repr},
                    User ID:{self.fuserid}
                    Chat ID:{self.fchatid}
-                   Penalty type:{self.ftype}
-                   Penalty ends at:{self.fendsat.strftime(RUSSIAN_DATETIME_FORMAT)}"""
+                   Karma:{self.fkarma}
+                   Is admin:{self.fadmin}"""
 
 
 class CDataBase:
@@ -226,10 +224,14 @@ class CDataBase:
         # *** Теперь сами её залочим.
         self.busy = True
         # *** Сохраняем данные
-        self.session.add(obj)
-        self.session.commit()
-        # *** Разлочим базу
-        self.busy = False
+        try:
+
+            self.session.add(obj)
+            self.session.commit()
+        finally:
+
+            # *** Разлочим базу
+            self.busy = False
 
     def connect(self):
         """Устанавливает соединение с БД."""

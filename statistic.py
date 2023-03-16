@@ -210,6 +210,7 @@ class CStatistic(prototype.CPrototype):
         if tg_user_name not in self.config[FOREIGN_BOTS]:
 
             # Проверить, нет ли уже этого чата в таблице чатов
+            # print("*"*10, tg_chat_id)
             chat_id = self.get_chat_id(tg_chat_id)
             if chat_id is None:
 
