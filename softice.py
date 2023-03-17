@@ -152,8 +152,8 @@ class CSoftIceBot:
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
                                                                     self.data_path)
-        self.supervisor: supervisor.CSupervisor = supervisor.CSupervisor(self.robot, self.config,
-                                                                         self.data_path)
+        # !!! self.supervisor: supervisor.CSupervisor = supervisor.CSupervisor(self.robot, self.config,
+        #                                                                  self.database)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
@@ -190,7 +190,7 @@ class CSoftIceBot:
                     answer = self.moderator.moderator(pmessage)
                     if not answer:
 
-                        answer = self.supervisor.supervisor(pmessage)
+                        # !!! answer = self.supervisor.supervisor(pmessage)
                         if not answer:
 
                             # *** Если это текстовое сообщение - обрабатываем в этой ветке.

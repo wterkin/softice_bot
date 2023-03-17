@@ -3,6 +3,8 @@
 """Модуль функций, связанных с БД."""
 # from datetime import datetime
 from pathlib import Path
+from time import sleep
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, Boolean, MetaData, ForeignKey
@@ -28,6 +30,7 @@ STATVIDEOS: str = "videos"
 MUTE_PENALTY = 1
 BAN_PENALTY = 2
 RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
+WAITING_TIME: float = 0.1
 
 convention = {
     "all_column_names": lambda constraint, table: "_".join([
@@ -220,7 +223,7 @@ class CDataBase:
         # *** Если база залочена - подождем.
         while self.busy:
 
-            pass
+            sleep(WAITING_TIME)
         # *** Теперь сами её залочим.
         self.busy = True
         # *** Сохраняем данные
@@ -273,7 +276,21 @@ class CDataBase:
 
     def query_data(self, cls):
         """Возвращает выборку заданнного класса."""
-        return self.session.query(cls)
+        # *** Если база залочена - подождем.
+        while self.busy:
+
+            sleep(WAITING_TIME)
+
+        try:
+
+            # *** Теперь сами её залочим.
+            self.busy = True
+            query = self.session.query(cls)
+        finally:
+
+            # *** Разлочим базу
+            self.busy = False
+        return query
 
     # def transfer(self):
     #     name_query = self.session.query(CName).all()
