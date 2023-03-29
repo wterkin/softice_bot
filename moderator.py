@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль антимата для бота."""
-# from time import time
 import re
 from pathlib import Path
-import random
+# import random
 import functions as func
 import prototype
 
@@ -15,11 +14,11 @@ DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
 CENSOR_PREFIX = r"\[\*\*"
 CENSOR_POSTFIX = r"\*\*\]"
-BAD_WORDS_MESSAGES: list = [" censored ",
-                            " Бип. Бип. Бииииип. ",
-                            " beep. ",
-                            " Мат вырезан. "
-                            ]
+# BAD_WORDS_MESSAGES: list = ["[ censored ]",
+#                             "[ Бип. Бип. Бииииип. ]",
+#                             "[ beep. ]",
+#                             "[ Мат вырезан. ]"
+#                             ]
 
 
 class CModerator(prototype.CPrototype):
@@ -37,10 +36,8 @@ class CModerator(prototype.CPrototype):
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
         """Возвращает True, если модуль может обработать команду."""
         word_list: list = func.parse_input(pmessage_text)
-        # print("***", word_list[0], RELOAD_BAD_WORDS)
         return self.is_enabled(pchat_title) and ((word_list[0] in RELOAD_BAD_WORDS)
                                                  or (word_list[0] in HINT))
-        # or word_list[0] in ADMINISTRATION_CMD
 
     def check_bad_words(self, pmessage) -> bool:
         """Проверяет сообщение на наличие мата."""
@@ -54,6 +51,35 @@ class CModerator(prototype.CPrototype):
                     break
         return result
 
+    def check_bad_words_ex(self, pmessage) -> str:
+        """Проверяет сообщение на наличие мата."""
+        answer: str = ""
+        detected: bool = False
+        if pmessage is not None:
+
+            text: str = pmessage.lower()
+            for index, bad_word in enumerate(self.bad_words):
+
+                result: bool = True
+                while result:
+
+                    result = re.match(bad_word, text) is not None
+                    if result:
+
+                        detected = True
+                        words: list = text.split(" ")
+                        for wordindex, word in enumerate(words):
+
+                            if re.match(bad_word, word) is not None:
+
+                                words[wordindex] = "*\[beep\]*"
+                        text = " ".join(words)
+            if detected:
+
+                answer = text
+
+        return answer
+
     def control_talking(self, pmessage):
         """Следит за матершинниками."""
         answer: str = ""
@@ -66,15 +92,15 @@ class CModerator(prototype.CPrototype):
             text = pmessage.caption
         if self.is_enabled(pmessage.chat.title):
 
-            if self.check_bad_words(text):
-                self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
-                # answer = random.choice(BAD_WORDS_MESSAGES)
-                answer = f"{CENSOR_PREFIX}{random.choice(BAD_WORDS_MESSAGES)}{CENSOR_POSTFIX}"
-                print(f"!!! Юзер {pmessage.from_user.first_name} в чате "
-                      f"'{pmessage.chat.title}' матерился, редиска "
-                      f"такая!")
-                print(f"!!! Он сказал '{text}'")
+            text = self.check_bad_words_ex(text)
+            if text:
 
+                self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
+                answer = pmessage.from_user.first_name
+                if pmessage.from_user.last_name:
+
+                    answer += pmessage.from_user.last_name
+                answer += f" хотел сказать \"{text}\""
         return answer
 
     def delete_message(self, pmessage):
@@ -94,6 +120,7 @@ class CModerator(prototype.CPrototype):
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
+        # print(pchat_title, self.config[ENABLED_IN_CHATS_KEY])
         return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name, puser_title):
@@ -108,7 +135,6 @@ class CModerator(prototype.CPrototype):
 
     def moderator(self, pmessage) -> str:
         """Процедура разбора запроса пользователя."""
-        # command: int
         # *** Проверим, всё ли в порядке в чате
         answer: str = self.control_talking(pmessage)
         if not answer:

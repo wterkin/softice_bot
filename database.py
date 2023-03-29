@@ -239,6 +239,7 @@ class CDataBase:
     def connect(self):
         """Устанавливает соединение с БД."""
         alchemy_echo: bool = self.config["alchemy_echo"] == "1"
+        # print(alchemy_echo, self.config["alchemy_echo"])
         self.engine = create_engine('sqlite:///' + self.data_path + self.database_name,
                                     echo=alchemy_echo,
                                     connect_args={'check_same_thread': False})
