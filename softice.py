@@ -15,7 +15,7 @@ import urllib3.exceptions
 # *** Собственные модули
 import functions as func
 import database
-
+import logging
 import babbler
 import barman
 import bellringer
@@ -25,20 +25,21 @@ import meteorolog
 import moderator
 import statistic
 import stargazer
-import supervisor
+# import supervisor
 import theolog
 
 # *** Местоположение данных бота
+ENABLED_IN_CHATS_KEY: str = "allowed_chats"
 LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
+LOGGING_KEY: str = "logging"
 WINDOWS_DATA_FOLDER_KEY: str = "windows_data_folder"
+TOKEN_KEY: str = "token"
+
 
 CONFIG_FILE_NAME: str = "config.json"
 BOT_NAME: str = "SoftIceBot"
-
-ENABLED_IN_CHATS_KEY: str = "allowed_chats"
 COMMAND_SIGN: str = "!"
 HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие группы команд: \n"
-TOKEN_KEY: str = "token"
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
 RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
 RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
@@ -123,6 +124,7 @@ class CSoftIceBot:
         if os.path.exists(self.running_flag):
 
             print("* Перезапуск после падения либо по требованию.")
+            logging.info("Перезапуск после падения либо по требованию.")
         else:
 
             with open(self.running_flag, 'tw', encoding='utf-8'):
@@ -142,6 +144,14 @@ class CSoftIceBot:
 
             # *** А нету ещё БД, создавать треба.
             self.database.create()
+        # name = self.data_path+'softice.log'
+        # print(name)
+        # print(int(self.config[LOGGING_KEY]))
+        logging.basicConfig(filename=self.data_path+'softice.log',
+                            format='%(asctime)s:%(levelname)s:%(message)s',
+                            datefmt='%d-%b-%y %H:%M:%S',
+                            level=int(self.config[LOGGING_KEY]))
+
         # *** Поехали создавать объекты модулей =)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
@@ -176,6 +186,7 @@ class CSoftIceBot:
                     self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
                     self.robot.leave_chat(chat_id)
                     print(f"* Попытка нелегитимного использования бота в чате {chat_title}.")
+                    logging.warning(f"Попытка нелегитимного использования бота в чате {chat_title}.")
                 else:
 
                     answer = "Я в приватах не работаю."
@@ -336,6 +347,7 @@ class CSoftIceBot:
 
             # *** Незнакомая команда.
             print(f"* Запрошена неподдерживаемая команда {self.message_text}.")
+            logging.info(f"* Запрошена неподдерживаемая команда {self.message_text} в чате {pchat_title}.")
         return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
@@ -354,6 +366,7 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
             return True
         print(f"* Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
+        logging.info(f"Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
         return False
 
@@ -417,43 +430,51 @@ class CSoftIceBot:
             except CQuitByDemand as exception:
 
                 print(exception.message)
+                logging.info(exception.message)
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(0)
             except CRestartByDemand as exception:
 
                 print(exception.message)
+                logging.info(exception.message)
                 self.bot_status = RESTART_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(1)
             except ConnectionError:
 
                 print("# Соединение прервано. Выход.")
+                logging.error("Соединение прервано. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(2)
-            except ReadTimeout:  # as ex:
+            except ReadTimeout:
 
                 print("# Превышен интервал ожидания ответа. Выход.")
+                logging.error("Превышен интервал ожидания ответа. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(3)
             except telebot.apihelper.ApiTelegramException:
 
                 print("# Telegram отказал в соединении. Выход.")
+                logging.error("Telegram отказал в соединении. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(4)
             except urllib3.exceptions.MaxRetryError:
 
                 print("# Слишком много попыток соединения. Выход.")
+                logging.error("Слишком много попыток соединения. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(5)
             except ConnectTimeout:
 
                 print("# Превышен интервал времени для соединения. Выход.")
+                logging.error("Превышен интервал времени для соединения. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(6)
             except urllib3.exceptions.ProtocolError:
 
                 print("# Соединение разорвано. Выход.")
+                logging.error("Соединение разорвано. Выход.")
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(7)
             # except ConnectionResetError:
@@ -466,6 +487,7 @@ class CSoftIceBot:
 if __name__ == "__main__":
 
     print(f"* SoftIce (пере)запущен {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
+    logging.info(f"SoftIce (пере)запущен {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
     SofticeBot: CSoftIceBot = CSoftIceBot()
     SofticeBot.poll_forever()
 
@@ -480,3 +502,14 @@ if __name__ == "__main__":
 # def new_member(message):
 #     name = message.new_chat_members[0].first_name
 #     bot.send_message(message.chat.id, f"Добро пожаловать, {name}! \nВот наши правила:...")
+
+"""
+logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S') 
+logging.basicConfig(filename='msg.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s') 
+logging.debug('The debug message is displaying') 
+logging.info('The info message is displaying') 
+logging.warning('The warning message is displaying') 
+logging.error('The error message is displaying') 
+logging.critical('The critical message is displaying') 
+Источник: https://pythonpip.ru/osnovy/logirovanie-python
+"""

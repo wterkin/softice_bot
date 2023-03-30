@@ -148,6 +148,7 @@ class CBabbler(prototype.CPrototype):
 
                     for block_item in block:
 
+                        # print(block_item, clean_word)
                         if clean_word.strip() in block_item:
 
                             answer = f"{random.choice(block[REACTIONS_INDEX])}"

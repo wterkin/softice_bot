@@ -1,0 +1,5 @@
+pytelegrambotapi
+sqlalchemy
+alembic
+urllib3
+requests

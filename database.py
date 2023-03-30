@@ -221,16 +221,26 @@ class CDataBase:
     def commit_changes(self, obj):
         """Сохраняет изменения в БД."""
         # *** Если база залочена - подождем.
+        delayed: int = 0
         while self.busy:
 
             sleep(WAITING_TIME)
+            delayed += 1
         # *** Теперь сами её залочим.
         self.busy = True
         # *** Сохраняем данные
         try:
 
+            # print("\n")
+            # # while self.is_session_dirty():
+            #
+            #     # sleep(WAITING_TIME)
+            #     # print("+", end=""
             self.session.add(obj)
             self.session.commit()
+            if delayed > 0:
+
+                print(f"* Commit paused for {delayed//10} second.")
         finally:
 
             # *** Разлочим базу
@@ -260,7 +270,7 @@ class CDataBase:
         # tag_object = c_tag.CTag(EMPTY_TAG)
         # print("DB:CR:tag ", tag_object)
         # self.session.add(tag_object)
-        self.session.commit()
+        # self.session.commit()
 
     def disconnect(self):
         """Разрывает соединение с БД."""
@@ -292,6 +302,12 @@ class CDataBase:
             # *** Разлочим базу
             self.busy = False
         return query
+
+    # def is_session_dirty(self):
+    #     return self.session.info.get('flushed', False) or self.session.is_modified(x)
+    #            # any(self.session.new) or any(self.session.deleted) \
+    #            # or any([x for x in self.session.dirty if self.session.is_modified(x)]) \
+    #            # or
 
     # def transfer(self):
     #     name_query = self.session.query(CName).all()

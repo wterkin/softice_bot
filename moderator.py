@@ -100,6 +100,8 @@ class CModerator(prototype.CPrototype):
                 if pmessage.from_user.last_name:
 
                     answer += pmessage.from_user.last_name
+                print(f"Пользователь {answer} матерился в чате {pmessage.chat.title}.")
+                print(f"Он сказал: {text}")
                 answer += f" хотел сказать \"{text}\""
         return answer
 
