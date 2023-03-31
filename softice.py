@@ -8,14 +8,15 @@ import time
 import sys
 from sys import platform
 import json
+import logging
 import telebot
-from requests import ReadTimeout, ConnectTimeout
 from telebot import apihelper
+from requests import ReadTimeout, ConnectTimeout
 import urllib3.exceptions
+
 # *** Собственные модули
 import functions as func
 import database
-import logging
 import babbler
 import barman
 import bellringer
@@ -144,13 +145,19 @@ class CSoftIceBot:
 
             # *** А нету ещё БД, создавать треба.
             self.database.create()
-        # name = self.data_path+'softice.log'
-        # print(name)
-        # print(int(self.config[LOGGING_KEY]))
-        logging.basicConfig(filename=self.data_path+'softice.log',
-                            format='%(asctime)s:%(levelname)s:%(message)s',
-                            datefmt='%d-%b-%y %H:%M:%S',
-                            level=int(self.config[LOGGING_KEY]))
+        log_name: str = self.data_path+'softice.log'
+        print(f"* Создаём файл журнала {log_name} с уровнем {self.config[LOGGING_KEY]}")
+        self.logger = logging.getLogger(__name__)
+        handler = logging.FileHandler(log_name)
+        handler.setLevel(int(self.config[LOGGING_KEY]))
+        formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        # logging.basicConfig(filename=log_name,
+        #                     filemode='a',
+        #                     format='%(asctime)s:%(levelname)s:%(message)s',
+        #                     datefmt='%d-%b-%y %H:%M:%S',
+        #                     level=int(self.config[LOGGING_KEY]))
 
         # *** Поехали создавать объекты модулей =)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
@@ -162,7 +169,8 @@ class CSoftIceBot:
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
                                                                     self.data_path)
-        # !!! self.supervisor: supervisor.CSupervisor = supervisor.CSupervisor(self.robot, self.config,
+        # !!! self.supervisor: supervisor.CSupervisor =
+        # supervisor.CSupervisor(self.robot, self.config,
         #                                                                  self.database)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
@@ -186,7 +194,8 @@ class CSoftIceBot:
                     self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
                     self.robot.leave_chat(chat_id)
                     print(f"* Попытка нелегитимного использования бота в чате {chat_title}.")
-                    logging.warning(f"Попытка нелегитимного использования бота в чате {chat_title}.")
+                    self.logger.warning("Попытка нелегитимного использования бота"
+                                        " в чате %s.", chat_title)
                 else:
 
                     answer = "Я в приватах не работаю."
@@ -347,7 +356,8 @@ class CSoftIceBot:
 
             # *** Незнакомая команда.
             print(f"* Запрошена неподдерживаемая команда {self.message_text}.")
-            logging.info(f"* Запрошена неподдерживаемая команда {self.message_text} в чате {pchat_title}.")
+            self.logger.info("* Запрошена неподдерживаемая команда %s"
+                             " в чате %s.", self.message_text, pchat_title)
         return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
@@ -366,7 +376,8 @@ class CSoftIceBot:
             self.robot.send_message(pchat_id, "Конфигурация обновлена.")
             return True
         print(f"* Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
-        logging.info(f"Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
+        self.logger.warning("Запрос на перезагрузку конфига от нелегитимного лица %s.",
+                            puser_title)
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
         return False
 
@@ -429,52 +440,53 @@ class CSoftIceBot:
                 self.robot.polling(interval=POLL_INTERVAL)
             except CQuitByDemand as exception:
 
-                print(exception.message)
-                logging.info(exception.message)
+                # print(exception.message)
+                self.logger.exception(exception.message, exc_info=True)
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(0)
             except CRestartByDemand as exception:
 
-                print(exception.message)
-                logging.info(exception.message)
+                # print(exception.message)
+                self.logger.exception(exception.message, exc_info=True)
                 self.bot_status = RESTART_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(1)
             except ConnectionError:
 
                 print("# Соединение прервано. Выход.")
-                logging.error("Соединение прервано. Выход.")
+                self.logger.exception("Соединение прервано. Выход.", exc_info=True)
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(2)
             except ReadTimeout:
 
                 print("# Превышен интервал ожидания ответа. Выход.")
-                logging.error("Превышен интервал ожидания ответа. Выход.")
+                self.logger.exception("Превышен интервал ожидания ответа. Выход.", exc_info=True)
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(3)
             except telebot.apihelper.ApiTelegramException:
 
                 print("# Telegram отказал в соединении. Выход.")
-                logging.error("Telegram отказал в соединении. Выход.")
+                self.logger.exception("Telegram отказал в соединении. Выход.", exc_info=True)
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(4)
             except urllib3.exceptions.MaxRetryError:
 
                 print("# Слишком много попыток соединения. Выход.")
-                logging.error("Слишком много попыток соединения. Выход.")
+                self.logger.exception("Слишком много попыток соединения. Выход.", exc_info=True)
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR*2)
                 sys.exit(5)
             except ConnectTimeout:
 
                 print("# Превышен интервал времени для соединения. Выход.")
-                logging.error("Превышен интервал времени для соединения. Выход.")
+                self.logger.exception("Превышен интервал времени для соединения. Выход.",
+                                      exc_info=True)
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(6)
             except urllib3.exceptions.ProtocolError:
 
                 print("# Соединение разорвано. Выход.")
-                logging.error("Соединение разорвано. Выход.")
+                self.logger.exception("Соединение разорвано. Выход.", exc_info=True)
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(7)
             # except ConnectionResetError:
@@ -487,8 +499,9 @@ class CSoftIceBot:
 if __name__ == "__main__":
 
     print(f"* SoftIce (пере)запущен {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
-    logging.info(f"SoftIce (пере)запущен {datetime.now().strftime(RUSSIAN_DATETIME_FORMAT)}")
     SofticeBot: CSoftIceBot = CSoftIceBot()
+    SofticeBot.logger.info("SoftIce (пере)запущен %s",
+                           datetime.now().strftime(RUSSIAN_DATETIME_FORMAT))
     SofticeBot.poll_forever()
 
 # @self.robot.callback_query_handler(func=lambda call: True)
