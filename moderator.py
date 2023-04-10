@@ -84,6 +84,7 @@ class CModerator(prototype.CPrototype):
         """Следит за матершинниками."""
         answer: str = ""
         text: str
+        
         if pmessage.content_type == "text":
 
             text = pmessage.text

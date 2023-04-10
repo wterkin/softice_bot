@@ -228,11 +228,7 @@ class CSoftIceBot:
                                                                      "title": user_title}):
 
                                             # *** Нет. Ну и пусть модули разбираются....
-                                            answer, do_not_screen = self.process_modules(chat_id,
-                                                                                         chat_title,
-                                                                                         user_name,
-                                                                                         user_title,
-                                                                                         pmessage)
+                                            answer, do_not_screen = self.process_modules(pmessage)
                                     else:
 
                                         # *** Нет. В этом чате статистик разрешен?
@@ -300,36 +296,37 @@ class CSoftIceBot:
             result = True
         return result
 
-    def process_modules(self, pchat_id: int, pchat_title: str,
-                        puser_name: str, puser_title: str, pmessage):
+    def process_modules(self, pmessage):
         """Пытается обработать команду различными модулями."""
-        assert pchat_title is not None, \
-            "Assert: [softice.process_modules] Пропущен параметр <pchat_title> !"
-        assert puser_title is not None, \
-            "Assert: [softice.process_modules] Пропущен параметр <puser_title> !"
         # *** Проверим, не запросил ли пользователь что-то у бармена...
-        answer: str = self.barman.barman(pchat_title, puser_name, puser_title,
+        answer: str = self.barman.barman(pmessage.chat.title,
+                                         pmessage.from_user.username,
+                                         pmessage.from_user.first_name,
                                          self.message_text).strip()
         do_not_screen: bool = False
         if not answer:
 
             # *** Или у звонаря
-            answer = self.bellringer.bellringer(pchat_title, self.message_text).strip()
+            answer = self.bellringer.bellringer(pmessage.chat.title, self.message_text).strip()
         if not answer:
 
             # *** ... или у хайдзина
-            answer = self.haijin.haijin(pchat_title, puser_name, puser_title, self.message_text)
+            answer = self.haijin.haijin(pmessage.chat.title,
+                                        pmessage.from_user.username,
+                                        pmessage.from_user.first_name, self.message_text)
             do_not_screen = True
         if not answer:
 
             do_not_screen = False
             # *** ... или у библиотекаря...
-            answer = self.librarian.librarian(pchat_title, puser_name,
-                                              puser_title, self.message_text).strip()
+            answer = self.librarian.librarian(pmessage.chat.title,
+                                              pmessage.from_user.username,
+                                              pmessage.from_user.first_name,
+                                              self.message_text).strip()
         if not answer:
 
             # *** ... или у метеоролога...
-            answer = self.meteorolog.meteorolog(pchat_title, self.message_text).strip()
+            answer = self.meteorolog.meteorolog(pmessage.chat.title, self.message_text).strip()
         if not answer:
 
             # *** ... или у модератора...
@@ -337,27 +334,30 @@ class CSoftIceBot:
         if not answer:
 
             # *** ... или у статистика...
-            answer = self.statistic.statistic(pchat_id, pchat_title,
-                                              puser_title, self.message_text).strip()
+            answer = self.statistic.statistic(pmessage.chat.id, pmessage.chat.title,
+                                              pmessage.from_user.first_name,
+                                              self.message_text).strip()
         if not answer:
 
             # *** ... или у звездочёта...
-            answer = self.stargazer.stargazer(pchat_title, self.message_text).strip()
+            answer = self.stargazer.stargazer(pmessage.chat.title, self.message_text).strip()
         if not answer:
 
             # *** ... или у теолога...
-            answer = self.theolog.theolog(pchat_title, self.message_text).strip()
+            answer = self.theolog.theolog(pmessage.chat.title, self.message_text).strip()
         if not answer:
 
             # *** ... может, у болтуна есть, что сказать?
-            answer = self.babbler.babbler(pchat_title, puser_name, puser_title,
+            answer = self.babbler.babbler(pmessage.chat.title,
+                                          pmessage.from_user.username,
+                                          pmessage.from_user.first_name,
                                           self.message_text).strip()
         if not answer:
 
             # *** Незнакомая команда.
             print(f"* Запрошена неподдерживаемая команда {self.message_text}.")
             self.logger.info("* Запрошена неподдерживаемая команда %s"
-                             " в чате %s.", self.message_text, pchat_title)
+                             " в чате %s.", self.message_text, pmessage.chat.title)
         return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
@@ -504,25 +504,11 @@ if __name__ == "__main__":
                            datetime.now().strftime(RUSSIAN_DATETIME_FORMAT))
     SofticeBot.poll_forever()
 
-# @self.robot.callback_query_handler(func=lambda call: True)
-# def callback_inline(call):
-#     """Процедура обработки кнопок мафии"""
-#
-#     mafiozo_process(BOT_CONFIG, call.message.chat.id, call.message.chat.title,
-#                     call.from_user.id, call.from_user.username, call.data)
-
-# @bot.message_handler(content_types=["new_chat_members"])
-# def new_member(message):
-#     name = message.new_chat_members[0].first_name
-#     bot.send_message(message.chat.id, f"Добро пожаловать, {name}! \nВот наши правила:...")
-
-"""
-logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S') 
-logging.basicConfig(filename='msg.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s') 
-logging.debug('The debug message is displaying') 
-logging.info('The info message is displaying') 
-logging.warning('The warning message is displaying') 
-logging.error('The error message is displaying') 
-logging.critical('The critical message is displaying') 
-Источник: https://pythonpip.ru/osnovy/logirovanie-python
-"""
+# logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+# logging.basicConfig(filename='msg.log', filemode='w',
+#   format='%(name)s - %(levelname)s - %(message)s')
+# logging.debug('The debug message is displaying')
+# logging.info('The info message is displaying')
+# logging.warning('The warning message is displaying')
+# logging.error('The error message is displaying')
+# logging.critical('The critical message is displaying')

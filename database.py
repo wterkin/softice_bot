@@ -302,29 +302,3 @@ class CDataBase:
             # *** Разлочим базу
             self.busy = False
         return query
-
-    # def is_session_dirty(self):
-    #     return self.session.info.get('flushed', False) or self.session.is_modified(x)
-    #            # any(self.session.new) or any(self.session.deleted) \
-    #            # or any([x for x in self.session.dirty if self.session.is_modified(x)]) \
-    #            # or
-
-    # def transfer(self):
-    #     name_query = self.session.query(CName).all()
-    #     for user_name in name_query:
-    #
-    #         user: CUser = self.session.query(CUser).filter_by(id=user_name.fuserid).first()
-    #         user.fusername = user_name.fusername
-    #         self.session.add(user)
-    #         self.session.commit()
-        # query = self.session.query(db.CStat)
-        # query = query.filter_by(fuserid=puser_id)
-        # query = query.filter_by(fchatid=pchat_id)
-        # stat: db.CStat = query.first()
-        # stat.set_all_fields(pstatfields)
-        # self.session.add(stat)
-
-        # user = db.CUser(ptg_user_id, ptg_user_title)
-        # self.session.add(user)
-        # self.session.commit()
-        # return user.id
