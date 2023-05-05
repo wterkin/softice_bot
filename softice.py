@@ -125,7 +125,7 @@ class CSoftIceBot:
         if os.path.exists(self.running_flag):
 
             print("* Перезапуск после падения либо по требованию.")
-            logging.info("Перезапуск после падения либо по требованию.")
+            # logging.info("Перезапуск после падения либо по требованию.")
         else:
 
             with open(self.running_flag, 'tw', encoding='utf-8'):
@@ -144,10 +144,11 @@ class CSoftIceBot:
         if not self.database.exists():
 
             # *** А нету ещё БД, создавать треба.
-            self.database.create()
+            database.create()
         log_name: str = self.data_path+'softice.log'
         print(f"* Создаём файл журнала {log_name} с уровнем {self.config[LOGGING_KEY]}")
         self.logger = logging.getLogger(__name__)
+        self.logger.propagate = False
         handler = logging.FileHandler(log_name)
         handler.setLevel(int(self.config[LOGGING_KEY]))
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
@@ -441,14 +442,14 @@ class CSoftIceBot:
             except CQuitByDemand as exception:
 
                 # print(exception.message)
-                self.logger.exception(exception.message, exc_info=True)
+                self.logger.exception(exception.message)
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(0)
             except CRestartByDemand as exception:
 
                 # print(exception.message)
-                self.logger.exception(exception.message, exc_info=True)
+                self.logger.exception(exception.message)
                 self.bot_status = RESTART_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(1)

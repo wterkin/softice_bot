@@ -203,6 +203,21 @@ class CRights(CAncestor):
                    Is admin:{self.fadmin}"""
 
 
+def create():
+    """Создает или изменяет БД в соответствии с описанной в классах структурой."""
+    Base.metadata.create_all()
+    # information = c_inform.CInformation(DATABASE_VERSION)
+    # self.session.add(information)
+    # for context in STANDARD_CONTEXTS:
+    #
+    #     context_object = c_context.CContext(context)
+    #     self.session.add(context_object)
+    # tag_object = c_tag.CTag(EMPTY_TAG)
+    # print("DB:CR:tag ", tag_object)
+    # self.session.add(tag_object)
+    # self.session.commit()
+
+
 class CDataBase:
     """Класс."""
 
@@ -253,24 +268,10 @@ class CDataBase:
         self.engine = create_engine('sqlite:///' + self.data_path + self.database_name,
                                     echo=alchemy_echo,
                                     connect_args={'check_same_thread': False})
-        Session = sessionmaker()
-        Session.configure(bind=self.engine)
-        self.session = Session()
+        session = sessionmaker()
+        session.configure(bind=self.engine)
+        self.session = session()
         Base.metadata.bind = self.engine
-
-    def create(self):
-        """Создает или изменяет БД в соответствии с описанной в классах структурой."""
-        Base.metadata.create_all()
-        # information = c_inform.CInformation(DATABASE_VERSION)
-        # self.session.add(information)
-        # for context in STANDARD_CONTEXTS:
-        #
-        #     context_object = c_context.CContext(context)
-        #     self.session.add(context_object)
-        # tag_object = c_tag.CTag(EMPTY_TAG)
-        # print("DB:CR:tag ", tag_object)
-        # self.session.add(tag_object)
-        # self.session.commit()
 
     def disconnect(self):
         """Разрывает соединение с БД."""

@@ -27,6 +27,20 @@ def decode_stat(pstat: db.CStat):
         pstat.fpictures, pstat.faudios, pstat.fvideos
 
 
+def extract_user_name(pmessage):
+    """Возвращает имя пользователя, при его наличии."""
+    tg_user_title: str = ""
+    # *** Если есть у юзера первое имя - берем.
+    if pmessage.from_user.first_name is not None:
+
+        tg_user_title: str = pmessage.from_user.first_name
+    # *** Если есть у юзера второе имя - тож берем.
+    if pmessage.from_user.last_name is not None:
+
+        tg_user_title += " " + pmessage.from_user.last_name
+    return tg_user_title
+
+
 class CStatistic(prototype.CPrototype):
     """Класс статистика."""
 
@@ -203,14 +217,7 @@ class CStatistic(prototype.CPrototype):
                             db.STATAUDIOS: 0,
                             db.STATVIDEOS: 0}
 
-        # *** Если есть у юзера первое имя - берем.
-        if pmessage.from_user.first_name is not None:
-
-            tg_user_title: str = pmessage.from_user.first_name
-        # *** Если есть у юзера второе имя - тож берем.
-        if pmessage.from_user.last_name is not None:
-
-            tg_user_title += " " + pmessage.from_user.last_name
+        tg_user_title = extract_user_name(pmessage)
         # *** Это не бот написал? Чужой бот, не наш?
         if tg_user_name not in self.config[FOREIGN_BOTS]:
 

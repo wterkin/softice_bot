@@ -14,11 +14,23 @@ DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
 CENSOR_PREFIX = r"\[\*\*"
 CENSOR_POSTFIX = r"\*\*\]"
+CENSORED: str = "*beep*"
 # BAD_WORDS_MESSAGES: list = ["[ censored ]",
 #                             "[ Бип. Бип. Бииииип. ]",
 #                             "[ beep. ]",
 #                             "[ Мат вырезан. ]"
 #                             ]
+
+
+def replace_bad_words(bad_word, text):
+    """Заменяет мат в строке на безобидное слово."""
+
+    words: list = text.split(" ")
+    for wordindex, word in enumerate(words):
+
+        if re.match(bad_word, word) is not None:
+            words[wordindex] = CENSORED
+    return " ".join(words)
 
 
 class CModerator(prototype.CPrototype):
@@ -46,6 +58,7 @@ class CModerator(prototype.CPrototype):
 
             for word in self.bad_words:
 
+                # print(word)
                 result = re.match(word, pmessage.lower()) is not None
                 if result:
                     break
@@ -58,22 +71,17 @@ class CModerator(prototype.CPrototype):
         if pmessage is not None:
 
             text: str = pmessage.lower()
-            for index, bad_word in enumerate(self.bad_words):
+            for bad_word in self.bad_words:
 
                 result: bool = True
                 while result:
 
+                    # print(bad_word)
                     result = re.match(bad_word, text) is not None
                     if result:
 
                         detected = True
-                        words: list = text.split(" ")
-                        for wordindex, word in enumerate(words):
-
-                            if re.match(bad_word, word) is not None:
-
-                                words[wordindex] = "*\[beep\]*"
-                        text = " ".join(words)
+                        text = replace_bad_words(bad_word, text)
             if detected:
 
                 answer = text
@@ -83,17 +91,20 @@ class CModerator(prototype.CPrototype):
     def control_talking(self, pmessage):
         """Следит за матершинниками."""
         answer: str = ""
+        source_text: str
         text: str
-        
+
         if pmessage.content_type == "text":
 
-            text = pmessage.text
+            source_text = pmessage.text
         else:
 
-            text = pmessage.caption
+            source_text = pmessage.caption
+        # print(text)
         if self.is_enabled(pmessage.chat.title):
 
-            text = self.check_bad_words_ex(text)
+            # print(text)
+            text = self.check_bad_words_ex(source_text)
             if text:
 
                 self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
@@ -102,7 +113,7 @@ class CModerator(prototype.CPrototype):
 
                     answer += pmessage.from_user.last_name
                 print(f"Пользователь {answer} матерился в чате {pmessage.chat.title}.")
-                print(f"Он сказал: {text}")
+                print(f"Он сказал: {source_text}")
                 answer += f" хотел сказать \"{text}\""
         return answer
 

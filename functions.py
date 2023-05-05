@@ -72,4 +72,3 @@ def screen_text(ptext: str) -> str:
     result_text = result_text.replace("=", f"{BACKSLASH}=")
     # print(result_text)
     return result_text
-

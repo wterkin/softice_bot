@@ -83,9 +83,11 @@ def parse_weather(pdata, preq_date):
             wind_speed = item["wind"]["speed"]
             wind_angle = item["wind"]["deg"]
             if wind_speed < min_wind_speed:
+
                 min_wind_speed = wind_speed
                 min_wind_angle = wind_angle
             if wind_speed > max_wind_speed:
+
                 max_wind_speed = wind_speed
                 max_wind_angle = wind_angle
             # *** Иконка погоды
