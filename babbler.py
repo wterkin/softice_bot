@@ -139,11 +139,14 @@ class CBabbler(prototype.CPrototype):
         """Процесс принятия решений =)"""
         word_list: list = pmessage_text.split(" ")
         answer: str = ""
+        # print("*1")
         for word in word_list:
 
             clean_word = word.rstrip(string.punctuation).lower()
-            if len(clean_word) > 2:
+            # print(f"*2 {clean_word} {word}")
+            if len(clean_word) > 1:
 
+                # print("*3")
                 for block in self.mind:
 
                     for block_item in block:

@@ -8,7 +8,7 @@ OUT_MSG_LOG_LEN = 60
 
 def parse_input(pmessage_text: str) -> list:
     """Разбивает введённую строку на отдельные слова."""
-    answer: str = ""
+    answer: list = []
     if pmessage_text is not None:
 
         answer = pmessage_text[1:].strip().split(" ")
