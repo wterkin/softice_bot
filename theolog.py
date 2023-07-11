@@ -98,7 +98,7 @@ FIND_IN_BOOK: str = "найти"
 OLD_TESTAMENT_BOOKS = range(1, 40)
 NEW_TESTAMENT_BOOKS = range(40, 67)
 
-THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMENT}", f"{FIND_IN_BOOK}"]
+THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT} [-f] [-cN]", f"{NEW_TESTAMENT} [-f] [-cN]", f"{FIND_IN_BOOK}"]
 MAX_SEARCH_RESULT: int = 4
 OUTPUT_COUNT = "-c"
 FULL_OUTPUT = "-f"
