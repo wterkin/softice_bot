@@ -21,6 +21,8 @@ MINIMAL_VIDEO_RATING: int = 150
 # KARMA_UPPER_LIMIT: int = 50
 ENABLED_IN_CHATS_KEY: str = "supervisor_chats"
 COMMANDS: list = ["svon", "svoff", "rt+", "rt-", "rt="]
+PARAMETER_COUNT = "-c"
+PARAMETER_FULL = "-f"
 
 
 class CSupervisor(prototype.CPrototype):

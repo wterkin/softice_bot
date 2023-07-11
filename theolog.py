@@ -4,7 +4,9 @@
 
 import re
 import random
-# import string
+
+# from setuptools._distutils.extension import read_setup_file
+
 import functions as func
 import prototype
 
@@ -98,6 +100,9 @@ NEW_TESTAMENT_BOOKS = range(40, 67)
 
 THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMENT}", f"{FIND_IN_BOOK}"]
 MAX_SEARCH_RESULT: int = 4
+OUTPUT_COUNT = "-c"
+FULL_OUTPUT = "-f"
+
 
 def search_in_book(pbook_file: str, pbook_title: str, pphrase: str):
     """Ищет заданную строку в заданном файле."""
@@ -240,7 +245,8 @@ class CTheolog(prototype.CPrototype):
             return ", ".join(THEOLOG_HINT)
         return ""
 
-    def global_search(self, ptestament: str, pphrase: str) -> str:  # noqa
+    def global_search(self, ptestament: str, pphrase: str,
+                      pfull_output: bool = False, poutput_count: int = 0) -> str:  # noqa
         """Ищет заданную строку по всем книгам заданного завета"""
         assert ptestament is not None, \
             "Assert: [theolog.global_search] No <ptestament> parameter specified!"
@@ -249,13 +255,12 @@ class CTheolog(prototype.CPrototype):
         result_list: list = []
         parsed_line: list
         answer: str = ""
-        book_name: str = ""
+        # book_name: str = ""
+        search_range = OLD_TESTAMENT_BOOKS
         if ptestament == NEW_TESTAMENT:
 
             search_range = NEW_TESTAMENT_BOOKS
-        elif ptestament == OLD_TESTAMENT:
-
-            search_range = OLD_TESTAMENT_BOOKS
+        # print("***", pphrase, "***")
         for book in search_range:
             # print("** ", pphrase)
             book_title: str = BIBLE_BOOKS[book-1][2]
@@ -272,7 +277,18 @@ class CTheolog(prototype.CPrototype):
                                            f" стих {parsed_line[1]} : {parsed_line[2]}")
         if len(result_list) > 0:
 
-            answer = random.choice(result_list)
+            if pfull_output:
+
+                answer = "\n".join(result_list)
+            elif poutput_count > 0:
+
+                if len(result_list) > poutput_count:
+
+                    poutput_count = len(result_list)
+                answer = "\n".join(result_list[:poutput_count])
+            else:
+
+                answer = random.choice(result_list)
         return answer
 
     def is_enabled(self, pchat_title: str) -> bool:
@@ -284,7 +300,6 @@ class CTheolog(prototype.CPrototype):
     def reload(self):
         pass
 
-
     def theolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Обрабатывает запросы теолога."""
         assert pchat_title is not None, \
@@ -295,8 +310,12 @@ class CTheolog(prototype.CPrototype):
         param_count = len(word_list)
         book_name: str
         chapter: str
+        full_result: bool = False
+        output_count: int = 1
 
+        # *** Можем обработать?
         if self.can_process(pchat_title, pmessage_text):
+
             # *** Если есть один параметр, то запрос помощи должен быть это
             if (param_count == 1) and word_list[COMMAND_ARG] in THEOLOG_HINT:
 
@@ -304,13 +323,31 @@ class CTheolog(prototype.CPrototype):
             # *** Если есть два параметра, то это книга и глава/стих.
             if param_count > 1:
 
-                # *** Передали книгу и главу - или команду поиска
+                # *** Если первый параметр - команда поиска...
                 if word_list[0].lower() in [NEW_TESTAMENT, OLD_TESTAMENT]:
 
-                    # *** Команду поиска.
+                    # *** ..получим команду.
                     testament = word_list[0]
+
                     phrase = " ".join(word_list[1:]).lower()
-                    answer = self.global_search(testament, phrase)
+                    # *** Нет ли там параметров выдачи?
+                    for word in word_list:
+
+                        full_result = FULL_OUTPUT in word
+                        if full_result:
+
+                            word_list.remove(word)
+                            break
+                        if OUTPUT_COUNT in word:
+
+                            output_count = int(word[2:])
+                            word_list.remove(word)
+                            print(output_count)
+                            break
+
+                    phrase = " ".join(word_list[1:]).lower()
+                    # print(phrase)
+                    answer = self.global_search(testament, phrase, full_result, output_count)
                 elif word_list[0].lower() == FIND_IN_BOOK:
 
                     # *** Искать в книге
@@ -326,7 +363,7 @@ class CTheolog(prototype.CPrototype):
 
                         book_file = f"{self.data_path}/{book_index+1}.txt"
                         answer = search_in_book(book_file, BIBLE_BOOKS[book_index][2],
-                                                     " ".join(word_list[2:]))
+                                                " ".join(word_list[2:]))
                 else:
                     # *** Книгу и главу
                     book_name = word_list[0]

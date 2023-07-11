@@ -80,7 +80,7 @@ class CStarGazer(prototype.CPrototype):
         if easter_date > pnow_date:
 
             # *** Перед Пасхой
-            if easter_date - pnow_date < timedelta(days = 7):
+            if easter_date - pnow_date < timedelta(days=7):
 
                 answer = "Страстная седмица."
             elif easter_date - pnow_date < timedelta(days=48):
@@ -92,15 +92,16 @@ class CStarGazer(prototype.CPrototype):
             elif pnow_date < datetime(pnow_date.year, 1, 7):
 
                 answer = "Рождественский пост"
-            elif pnow_date > datetime(pnow_date.year, 1, 7):
-                pass
+            elif (pnow_date > datetime(pnow_date.year, 1, 7)) and \
+                 (pnow_date < datetime(pnow_date.year, 1, 18)):
 
+                answer = "Святки"
+        # else:
+        #
+        #     # *** После Пасхи
+        #     if (pnow_date > easter_date + timedelta(days=1)) and \
+        #        (pnow_date < )
 
-
-
-        else:
-
-            pass
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
