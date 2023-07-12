@@ -100,7 +100,7 @@ NEW_TESTAMENT_BOOKS = range(40, 67)
 
 THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMENT}", f"{FIND_IN_BOOK}"]
 MAX_SEARCH_RESULT: int = 4
-OUTPUT_COUNT = "-c"
+OUTPUT_COUNT = "-n"
 FULL_OUTPUT = "-f"
 # !найтивз/нз фраза
 # !найти книга фраза
@@ -120,7 +120,6 @@ def search_in_book(pbook_file: str, pbook_title: str, pphrase: str):
             if pphrase in joined_line:
 
                 parsed_line = re.split(r':', line, maxsplit=2)
-                # print(parsed_line, pbook_title)
                 result_line: str = " ".join(parsed_line[2:])
                 result_list.append(f"{pbook_title} глава {parsed_line[0]} стих "
                                    f"{parsed_line[1]}: {result_line}")
@@ -158,24 +157,24 @@ class CTheolog(prototype.CPrototype):
                     return True
         return False
 
-    def execute_quote(self, pbook_idx: int, pbook_name: str, pverse: str,  poutput_count: int) -> str:  # noqa
-        """Выполняет поиск заданной главы в Библии."""
-        assert pbook_name is not None, \
-            "Assert: [theolog.execute_quote] No <pbook_name> parameter specified!"
-        message: str = ""
-        # for book_idx, book in enumerate(BIBLE_BOOKS):
-
-        # if pbook_name.lower() in book:
-
-        message = self.find_in_book(pbook_idx, pbook_name, pverse, poutput_count)
-        # if message:
-        #
-        #     break
-        if not message:
-
-            message = "Нет такой главы и/или стиха в этой книге."
-
-        return message
+    # def execute_quote(self, pbook_idx: int, pbook_name: str, pverse: str,  poutput_count: int) -> str:  # noqa
+    #     """Выполняет поиск заданной главы в Библии."""
+    #     assert pbook_name is not None, \
+    #         "Assert: [theolog.execute_quote] No <pbook_name> parameter specified!"
+    #     message: str = ""
+    #     # for book_idx, book in enumerate(BIBLE_BOOKS):
+    #
+    #     # if pbook_name.lower() in book:
+    #
+    #     message = self.find_in_book(pbook_idx, pbook_name, pverse, poutput_count)
+    #     # if message:
+    #     #
+    #     #     break
+    #     if not message:
+    #
+    #         message = "Нет такой главы и/или стиха в этой книге."
+    #
+    #     return message
 
     def find_in_book(self, pbook_idx: int, pbook_name: str, pchapter: str, pverse: str, poutput_count: int) -> str:  # noqa
         """Ищет заданную строку в файле."""
@@ -190,32 +189,24 @@ class CTheolog(prototype.CPrototype):
         answer: str = ""
         # *** Путь к файлу
         book_name: str = f"{self.data_path}{pbook_idx + 1}.txt"
+        # text_pos: int = 0
         if len(pchapter.strip()) == 0:
 
             pchapter = "1"
 
         if len(pverse.strip()) == 0:
             pverse = "1"
-
         line_id = f"{pchapter}:{pverse}:"
-        verse_position: int = 0
         with open(book_name, "r", encoding="utf-8") as book_file:
 
             for line in book_file:
 
                 # *** Ищем в файле заданный идентификатор строки
-                # regexp = f"^{pline_id}:"
-                # if re.search(f"^{pverse}:", line) is not None:
                 if re.search(f"^{line_id}", line) is not None:
 
-                    # if ":" in line:
-                    #
-                    # number_pos = line.index(line_id)
-                    #     # chapter = line[:chapter_position]
-                    #     line_position = line.index(":", verse_position + 1)
-                    #     line_number = line[verse_position + 1:line_position]
-                    #     text = line[line_position:]
-                    answer = f"{pbook_name} {line} {line}"
+                    text_pos = line.find(':', line.find(':') + 1)
+                    line = line[:text_pos] + " " + line[text_pos+1:]
+                    answer = f"{pbook_name} {line}"
                     if poutput_count == 1:
 
                         break
@@ -255,7 +246,7 @@ class CTheolog(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             hint: list = THEOLOG_HINT
-            hint[2] += " -cN"
+            hint[2] += " -nX"
             hint[3] += " -f"
             return ", ".join(hint)
         return ""
@@ -275,9 +266,7 @@ class CTheolog(prototype.CPrototype):
         if ptestament == NEW_TESTAMENT:
 
             search_range = NEW_TESTAMENT_BOOKS
-        # print("***", pphrase, "***")
         for book in search_range:
-            # print("** ", pphrase)
             book_title: str = BIBLE_BOOKS[book-1][2]
             book_name = f"{self.data_path}{book}.txt"
             with open(book_name, "r", encoding="utf-8") as book_file:
@@ -323,7 +312,7 @@ class CTheolog(prototype.CPrototype):
         word_list: list = func.parse_input(pmessage_text)
         verse: str = ""
         param_count = len(word_list)
-        book_name: str = ""
+        book_name: str
         chapter: str = ""
         full_result: bool = False
         output_count: int = 1
@@ -344,7 +333,7 @@ class CTheolog(prototype.CPrototype):
                     # *** ..получим команду.
                     testament = word_list[0]
 
-                    phrase = " ".join(word_list[1:]).lower()
+                    # phrase = " ".join(word_list[1:]).lower()
                     # *** Нет ли там параметров выдачи?
                     for word in word_list:
 
@@ -360,7 +349,6 @@ class CTheolog(prototype.CPrototype):
                             break
 
                     phrase = " ".join(word_list[1:]).lower()
-                    # print(phrase, full_result, output_count)
                     answer = self.global_search(testament, phrase, full_result, output_count)
                 elif word_list[0].lower() == FIND_IN_BOOK:
 
@@ -380,7 +368,6 @@ class CTheolog(prototype.CPrototype):
                                                 " ".join(word_list[2:]))
                 else:
 
-                    print("^^^ 1")
                     # *** Книгу и главу
                     book_name: str = word_list[0]
                     book_idx: int = 0
@@ -393,7 +380,6 @@ class CTheolog(prototype.CPrototype):
                             book_idx = idx
                             book_name = book[2]
                             break
-                    print(book_idx, book_name)
                     for word in word_list:
 
                         # *** Если задано количество...
