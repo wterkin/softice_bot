@@ -98,7 +98,7 @@ FIND_IN_BOOK: str = "найти"
 OLD_TESTAMENT_BOOKS = range(1, 40)
 NEW_TESTAMENT_BOOKS = range(40, 67)
 
-THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT} [-f] [-cN]", f"{NEW_TESTAMENT} [-f] [-cN]", f"{FIND_IN_BOOK}"]
+THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMENT}", f"{FIND_IN_BOOK}"]
 MAX_SEARCH_RESULT: int = 4
 OUTPUT_COUNT = "-c"
 FULL_OUTPUT = "-f"
@@ -115,6 +115,7 @@ def search_in_book(pbook_file: str, pbook_title: str, pphrase: str):
             parsed_line = re.split(r':', lower_line, maxsplit=2)
             joined_line: str = " ".join(parsed_line[2:])
             if pphrase in joined_line:
+
                 parsed_line = re.split(r':', line, maxsplit=2)
                 # print(parsed_line, pbook_title)
                 result_line: str = " ".join(parsed_line[2:])
@@ -144,7 +145,9 @@ class CTheolog(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
+            # print(word_list)
             if word_list[0].lower() in THEOLOG_HINT:
+
                 return True
 
             for book in BIBLE_BOOKS:
@@ -242,7 +245,10 @@ class CTheolog(prototype.CPrototype):
             "No <pchat_title> parameter specified!"
         if self.is_enabled(pchat_title):
 
-            return ", ".join(THEOLOG_HINT)
+            hint: list = THEOLOG_HINT
+            hint[2] += " -cN"
+            hint[3] += " -f"
+            return ", ".join(hint)
         return ""
 
     def global_search(self, ptestament: str, pphrase: str,
@@ -282,7 +288,7 @@ class CTheolog(prototype.CPrototype):
                 answer = "\n".join(result_list)
             elif poutput_count > 0:
 
-                if len(result_list) > poutput_count:
+                if len(result_list) < poutput_count:
 
                     poutput_count = len(result_list)
                 answer = "\n".join(result_list[:poutput_count])
@@ -346,7 +352,7 @@ class CTheolog(prototype.CPrototype):
                             break
 
                     phrase = " ".join(word_list[1:]).lower()
-                    # print(phrase)
+                    print(phrase, full_result, output_count)
                     answer = self.global_search(testament, phrase, full_result, output_count)
                 elif word_list[0].lower() == FIND_IN_BOOK:
 
