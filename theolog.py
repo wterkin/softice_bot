@@ -102,6 +102,9 @@ THEOLOG_HINT: list = ["книги", "books", f"{OLD_TESTAMENT}", f"{NEW_TESTAMEN
 MAX_SEARCH_RESULT: int = 4
 OUTPUT_COUNT = "-c"
 FULL_OUTPUT = "-f"
+# !найтивз/нз фраза
+# !найти книга фраза
+# !книга глава кол-во строк
 
 
 def search_in_book(pbook_file: str, pbook_title: str, pphrase: str):
@@ -145,7 +148,6 @@ class CTheolog(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             word_list: list = func.parse_input(pmessage_text)
-            # print(word_list)
             if word_list[0].lower() in THEOLOG_HINT:
 
                 return True
@@ -156,71 +158,78 @@ class CTheolog(prototype.CPrototype):
                     return True
         return False
 
-    def execute_quote(self, pchapter: str, pbook_name: str, pline_count: int) -> str:  # noqa
+    def execute_quote(self, pbook_idx: int, pbook_name: str, pverse: str,  poutput_count: int) -> str:  # noqa
         """Выполняет поиск заданной главы в Библии."""
-        assert pchapter is not None, \
-            "Assert: [theolog.execute_quote] No <pchapter> parameter specified!"
         assert pbook_name is not None, \
             "Assert: [theolog.execute_quote] No <pbook_name> parameter specified!"
         message: str = ""
-        for book_idx, book in enumerate(BIBLE_BOOKS):
+        # for book_idx, book in enumerate(BIBLE_BOOKS):
 
-            if pbook_name.lower() in book:
+        # if pbook_name.lower() in book:
 
-                message = self.find_in_book(book_idx, pchapter, pbook_name, pline_count)
-                if message:
-
-                    break
+        message = self.find_in_book(pbook_idx, pbook_name, pverse, poutput_count)
+        # if message:
+        #
+        #     break
         if not message:
 
             message = "Нет такой главы и/или стиха в этой книге."
 
         return message
 
-    def find_in_book(self, pbook_idx: int, pline_id: str, pbook: str,
-                     pline_count: int) -> str:  # noqa
+    def find_in_book(self, pbook_idx: int, pbook_name: str, pchapter: str, pverse: str, poutput_count: int) -> str:  # noqa
         """Ищет заданную строку в файле."""
         assert pbook_idx is not None, \
             "Assert: [theolog.find_in_book] No <pbook_idx> parameter specified!"
-        assert pline_id is not None, \
-            "Assert: [theolog.find_in_book] No <pline_id> parameter specified!"
-        assert pbook is not None, \
+        assert pverse is not None, \
+            "Assert: [theolog.find_in_book] No <pverse> parameter specified!"
+        assert pbook_name is not None, \
             "Assert: [theolog.find_in_book] No <pbook> parameter specified!"
-        assert pline_count is not None, \
+        assert poutput_count is not None, \
             "Assert: [theolog.find_in_book] No <pline_count> parameter specified!"
-        message: str = ""
+        answer: str = ""
         # *** Путь к файлу
         book_name: str = f"{self.data_path}{pbook_idx + 1}.txt"
+        if len(pchapter.strip()) == 0:
+
+            pchapter = "1"
+
+        if len(pverse.strip()) == 0:
+            pverse = "1"
+
+        line_id = f"{pchapter}:{pverse}:"
+        verse_position: int = 0
         with open(book_name, "r", encoding="utf-8") as book_file:
 
             for line in book_file:
 
                 # *** Ищем в файле заданный идентификатор строки
                 # regexp = f"^{pline_id}:"
-                if re.search(f"^{pline_id}:", line) is not None:
+                # if re.search(f"^{pverse}:", line) is not None:
+                if re.search(f"^{line_id}", line) is not None:
 
-                    if ":" in line:
-
-                        chapter_position = line.index(":")
-                        # chapter = line[:chapter_position]
-                        line_position = line.index(":", chapter_position + 1)
-                        line_number = line[chapter_position + 1:line_position]
-                        text = line[line_position:]
-                        message = f"{pbook} {line[:chapter_position]}:{line_number} {text}"
-                    if pline_count == 1:
+                    # if ":" in line:
+                    #
+                    # number_pos = line.index(line_id)
+                    #     # chapter = line[:chapter_position]
+                    #     line_position = line.index(":", verse_position + 1)
+                    #     line_number = line[verse_position + 1:line_position]
+                    #     text = line[line_position:]
+                    answer = f"{pbook_name} {line} {line}"
+                    if poutput_count == 1:
 
                         break
-                elif message:
+                elif answer:
 
-                    if pline_count > 1:
+                    if poutput_count > 1:
 
                         parsed_line: list = line.split(":")
-                        message += "\n" + parsed_line[2]
-                        pline_count -= 1
+                        answer += "\n" + parsed_line[2]
+                        poutput_count -= 1
                     else:
 
                         break
-        return message
+        return answer
 
     def get_help(self, pchat_title: str) -> str:
         """Возвращает список команд, поддерживаемых модулем."""
@@ -312,10 +321,10 @@ class CTheolog(prototype.CPrototype):
             "Assert: [theolog.theolog] No <pchat_title> parameter specified!"
         answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
-        line_count: int = 1
+        verse: str = ""
         param_count = len(word_list)
-        book_name: str
-        chapter: str
+        book_name: str = ""
+        chapter: str = ""
         full_result: bool = False
         output_count: int = 1
 
@@ -348,11 +357,10 @@ class CTheolog(prototype.CPrototype):
 
                             output_count = int(word[2:])
                             word_list.remove(word)
-                            print(output_count)
                             break
 
                     phrase = " ".join(word_list[1:]).lower()
-                    print(phrase, full_result, output_count)
+                    # print(phrase, full_result, output_count)
                     answer = self.global_search(testament, phrase, full_result, output_count)
                 elif word_list[0].lower() == FIND_IN_BOOK:
 
@@ -371,19 +379,44 @@ class CTheolog(prototype.CPrototype):
                         answer = search_in_book(book_file, BIBLE_BOOKS[book_index][2],
                                                 " ".join(word_list[2:]))
                 else:
+
+                    print("^^^ 1")
                     # *** Книгу и главу
-                    book_name = word_list[0]
-                    chapter = word_list[1]
-                    # *** Есть третий параметр, то это количество строк
-                    if (param_count > 2) and word_list[2].isdigit():
+                    book_name: str = word_list[0]
+                    book_idx: int = 0
+                    # chapter = word_list[1]
+                    # *** Переберем всё
+                    for idx, book in enumerate(BIBLE_BOOKS):
 
-                        # *** И это число?
-                        # if word_list[2].isdigit():
+                        if book_name in book:
 
-                        # *** Значит, это количество выводимых строк
-                        line_count = int(word_list[2])
-                        line_count = 5 if line_count > 5 else line_count
-                    answer = self.execute_quote(chapter, book_name, line_count)
+                            book_idx = idx
+                            book_name = book[2]
+                            break
+                    print(book_idx, book_name)
+                    for word in word_list:
+
+                        # *** Если задано количество...
+                        if OUTPUT_COUNT in word:
+
+                            output_count = int(word[2:])
+                            word_list.remove(word)
+                            break
+
+                    # *** Есть второй параметр, то это глава
+                    if (len(word_list) > 1) and word_list[1].isdigit():
+
+                        chapter = word_list[1]
+                    # *** Есть третий параметр, то это стих
+                    if (len(word_list) > 2) and word_list[2].isdigit():
+
+                        verse = word_list[2]
+
+                    # answer = self.execute_quote(book_idx, book_name,  chapter, verse, output_count)
+                    answer = self.find_in_book(book_idx, book_name, chapter, verse, output_count)
+                    if not answer:
+
+                        answer = "Нет такой главы и/или стиха в этой книге."
             if len(answer) > 0:
 
                 print(f"Theolog answers: {answer[:func.OUT_MSG_LOG_LEN]}...")
