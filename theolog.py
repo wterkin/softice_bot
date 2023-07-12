@@ -246,8 +246,10 @@ class CTheolog(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             hint: list = THEOLOG_HINT
-            hint[2] += " -nX"
-            hint[3] += " -f"
+            hint[2] += " [-nX] [-f]"
+            hint[3] += " [-nX] [-f]"
+            hint[4] += " книга фрагмент"
+            hint.append("книга [-nX] глава стих")
             return ", ".join(hint)
         return ""
 
