@@ -19,7 +19,8 @@ MINIMAL_PHOTO_RATING: int = 60
 MINIMAL_AUDIO_RATING: int = 100
 MINIMAL_VIDEO_RATING: int = 150
 # KARMA_UPPER_LIMIT: int = 50
-ENABLED_IN_CHATS_KEY: str = "supervisor_chats"
+# ENABLED_IN_CHATS_KEY: str = "supervisor_chats"
+UNIT_ID = "supervisor"
 COMMANDS: list = ["svon", "svoff", "rt+", "rt-", "rt="]
 PARAMETER_COUNT = "-c"
 PARAMETER_FULL = "-f"
@@ -99,7 +100,8 @@ class CSupervisor(prototype.CPrototype):
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name, puser_title):
         """Проверяет, является ли пользователь хозяином бота."""

@@ -3,10 +3,8 @@
 # @author: Andrey Pakhomenkov pakhomenkov@yandex.ru
 """Модуль прототипа классов модулей бота."""
 
-import prototype
-
 from datetime import date, timedelta, datetime
-
+import prototype
 import functions as func
 
 NEW_STYLE_OFFSET: int = 13
@@ -17,7 +15,8 @@ COMMANDS: tuple = (("пасха", "easter"),
                    ("дата", "date"),
                    ("день", "day"))
 HINTS: tuple = ("календарь", "кл", "calendar", "cl")
-ENABLED_IN_CHATS_KEY: str = "stargazer_chats"
+# ENABLED_IN_CHATS_KEY: str = "stargazer_chats"
+UNIT_ID = "stargazer"
 RUSSIAN_DATE_FORMAT = "%d.%m.%Y"
 STARGAZER_FOLDER: str = "stargazer/"
 LOW_MARGIN: int = 1899
@@ -92,8 +91,7 @@ class CStarGazer(prototype.CPrototype):
             elif pnow_date < datetime(pnow_date.year, 1, 7):
 
                 answer = "Рождественский пост"
-            elif (pnow_date > datetime(pnow_date.year, 1, 7)) and \
-                 (pnow_date < datetime(pnow_date.year, 1, 18)):
+            elif datetime(pnow_date.year, 1, 7) < pnow_date < datetime(pnow_date.year, 1, 18):
 
                 answer = "Святки"
         # else:
@@ -155,7 +153,8 @@ class CStarGazer(prototype.CPrototype):
             "Assert: [stargazer.is_enabled] " \
             "No <pchat_title> parameter specified!"
 
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""

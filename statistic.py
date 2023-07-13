@@ -13,7 +13,8 @@ PERS_COMMAND = [3, 7]
 
 HINT = ["стат", "stat"]
 COMMANDS = ["топ10", "топ25", "топ50", "перс", "top10", "top25", "top50", "pers"]
-ENABLED_IN_CHATS_KEY = "statistic_chats"
+# ENABLED_IN_CHATS_KEY = "statistic_chats"
+UNIT_ID = "statistic"
 BOTS = ("TrueMafiaBot", "MafiaWarBot", "glagolitic_bot", "combot", "chgk_bot")
 FOREIGN_BOTS = "foreign_bots"
 SORTED_BY: tuple = ("предложений", "слов", "стикеров", "картинок",
@@ -194,7 +195,8 @@ class CStatistic(prototype.CPrototype):
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""

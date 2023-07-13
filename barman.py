@@ -133,7 +133,8 @@ BAR_HINT: list = ["бар", "bar"]
 BAR_RELOAD: list = ["brreload", "brrl"]
 BARMAN_FOLDER: str = "barman/"
 # *** Ключ для списка доступных каналов в словаре конфига
-ENABLED_IN_CHATS_KEY: str = "barman_chats"
+# ENABLED_IN_CHATS_KEY: str = "barman_chats"
+UNIT_ID = "barman"
 
 
 class CBarman(prototype.CPrototype):
@@ -244,7 +245,8 @@ class CBarman(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [barman.is_enabled] " \
             "Пропущен параметр <pchat_title> !"
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""

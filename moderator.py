@@ -9,7 +9,9 @@ import prototype
 
 RELOAD_BAD_WORDS: list = ["bwreload", "bwrl"]
 HINT = ["адм", "adm"]
-ENABLED_IN_CHATS_KEY: str = "moderator_chats"
+# ENABLED_IN_CHATS_KEY: str = "moderator_chats"
+UNIT_ID = "moderator"
+
 DATA_FOLDER: str = "moderator"
 BAD_WORDS_FILE: str = "bad_words.txt"
 CENSOR_PREFIX = r"\[\*\*"
@@ -135,7 +137,8 @@ class CModerator(prototype.CPrototype):
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
         # print(pchat_title, self.config[ENABLED_IN_CHATS_KEY])
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name, puser_title):
         """Проверяет, является ли пользователь хозяином бота."""

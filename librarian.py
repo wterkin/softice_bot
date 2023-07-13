@@ -30,7 +30,7 @@ QUOTES_COMMANDS: list = [["цитата", "цт", "quote", "qt"],
                          ]
 
 HINT = ["библиотека", "биб", "library", "lib"]
-ENABLED_IN_CHATS_KEY: str = "librarian_chats"
+UNIT_ID = "librarian"
 
 
 def find_in_book(pbook: list, pword_list: list) -> str:
@@ -254,7 +254,8 @@ class CLibrarian(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [librarian.is_enabled] " \
             "Пропущен параметр <pchat_title> !"
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name, puser_title):
         """Проверяет, является ли пользователь хозяином бота."""

@@ -8,7 +8,7 @@ import prototype
 COMMANDS: list = ["звонить", "звон", "зв", "ring"]
 BELLRINGER_HINT: list = ["звонарь", "ringer"]
 BELLRINGER_FOLDER: str = "bellringer/"
-ENABLED_IN_CHATS_KEY: str = "bellringer_chats"
+UNIT_ID = "bellringer"
 TOAD_COMMANDS = ["данж", "туса"]
 DUNGEON_COMMAND = 0
 TOAD_CHANNELS = ["OSQ Жабки"]
@@ -94,7 +94,8 @@ class CBellRinger(prototype.CPrototype):
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если на этом канале этот модуль разрешен."""
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""

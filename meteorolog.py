@@ -10,6 +10,8 @@ import prototype
 
 WEATHER_COMMANDS = ["погода", "пг", "weather", "wt", "прогноз", "пр", "forecast", "fr"]
 ENABLED_IN_CHATS_KEY = "meteorolog_chats"
+UNIT_ID = "meteorolog"
+
 HINT = ["метео", "meteo"]
 FIND_CITY_URL = 'http://api.openweathermap.org/data/2.5/find'
 FORECAST_WEATHER_URL = 'http://api.openweathermap.org/data/2.5/forecast'
@@ -183,7 +185,8 @@ class CMeteorolog(prototype.CPrototype):
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если метеоролог разрешен на этом канале."""
 
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def meteorolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""

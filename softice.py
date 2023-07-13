@@ -114,6 +114,9 @@ class CSoftIceBot:
         super().__init__()
         self.config: dict = {}
         self.load_config(CONFIG_FILE_NAME)
+        print("*****", self.config["chats"]["Anastasis"][0])
+        # print(self.config)
+        # print(self.config)
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
 

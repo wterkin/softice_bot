@@ -89,7 +89,8 @@ BIBLE_BOOKS: list = [["бытие", "быт", "Книга Бытия"],
                      ["откровение", "откр", "Откровение Иоанна Богослова"]]
 
 # *** Ключ для списка доступных каналов в словаре конфига
-CHANNEL_LIST_KEY: str = "theolog_chats"
+# CHANNEL_LIST_KEY: str = "theolog_chats"
+UNIT_ID = "theolog"
 
 # *** Команды поиска текста по книгам Библии
 NEW_TESTAMENT: str = "найтинз"
@@ -157,7 +158,8 @@ class CTheolog(prototype.CPrototype):
                     return True
         return False
 
-    # def execute_quote(self, pbook_idx: int, pbook_name: str, pverse: str,  poutput_count: int) -> str:  # noqa
+    # def execute_quote(self, pbook_idx: int, pbook_name: str, pverse: str,
+    # poutput_count: int) -> str:  # noqa
     #     """Выполняет поиск заданной главы в Библии."""
     #     assert pbook_name is not None, \
     #         "Assert: [theolog.execute_quote] No <pbook_name> parameter specified!"
@@ -176,7 +178,8 @@ class CTheolog(prototype.CPrototype):
     #
     #     return message
 
-    def find_in_book(self, pbook_idx: int, pbook_name: str, pchapter: str, pverse: str, poutput_count: int) -> str:  # noqa
+    def find_in_book(self, pbook_idx: int, pbook_name: str, pchapter: str, pverse: str,
+                     poutput_count: int) -> str:  # noqa
         """Ищет заданную строку в файле."""
         assert pbook_idx is not None, \
             "Assert: [theolog.find_in_book] No <pbook_idx> parameter specified!"
@@ -188,16 +191,12 @@ class CTheolog(prototype.CPrototype):
             "Assert: [theolog.find_in_book] No <pline_count> parameter specified!"
         answer: str = ""
         # *** Путь к файлу
-        book_name: str = f"{self.data_path}{pbook_idx + 1}.txt"
-        # text_pos: int = 0
-        if len(pchapter.strip()) == 0:
-
-            pchapter = "1"
-
+        book_file_name: str = f"{self.data_path}{pbook_idx + 1}.txt"
         if len(pverse.strip()) == 0:
+
             pverse = "1"
         line_id = f"{pchapter}:{pverse}:"
-        with open(book_name, "r", encoding="utf-8") as book_file:
+        with open(book_file_name, "r", encoding="utf-8") as book_file:
 
             for line in book_file:
 
@@ -301,7 +300,8 @@ class CTheolog(prototype.CPrototype):
         """Возвращает True, если бармен разрешен на этом канале."""
         assert pchat_title is not None, \
             "Assert: [theolog.is_enabled] No <pchat_title> parameter specified!"
-        return pchat_title in self.config[CHANNEL_LIST_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[CHANNEL_LIST_KEY]
 
     def reload(self):
         pass
@@ -371,7 +371,7 @@ class CTheolog(prototype.CPrototype):
                 else:
 
                     # *** Книгу и главу
-                    book_name: str = word_list[0]
+                    book_name = word_list[0]
                     book_idx: int = 0
                     # chapter = word_list[1]
                     # *** Переберем всё
@@ -400,7 +400,6 @@ class CTheolog(prototype.CPrototype):
 
                         verse = word_list[2]
 
-                    # answer = self.execute_quote(book_idx, book_name,  chapter, verse, output_count)
                     answer = self.find_in_book(book_idx, book_name, chapter, verse, output_count)
                     if not answer:
 

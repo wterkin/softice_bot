@@ -27,7 +27,7 @@ HAIJIN_COMMANDS: list = [["хк", "hk"],
                          ["хк-", "hk-"]]
 
 HINT = ["хокку", "hokku"]
-ENABLED_IN_CHATS_KEY: str = "haijin_chats"
+UNIT_ID = "haijin"
 BOLD: str = "*"
 ITALIC: str = "_"
 SPOILER: str = "||"
@@ -205,7 +205,8 @@ class CHaijin(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [haijin.is_enabled] " \
             "Пропущен параметр <pchat_title> !"
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return UNIT_ID in self.config["chats"][pchat_title]
+        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name, puser_title):
         """Проверяет, является ли пользователь хозяином бота."""
