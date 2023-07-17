@@ -115,8 +115,6 @@ class CSoftIceBot:
         self.config: dict = {}
         self.load_config(CONFIG_FILE_NAME)
         print("*****", self.config["chats"]["Anastasis"][0])
-        # print(self.config)
-        # print(self.config)
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
 
@@ -157,12 +155,6 @@ class CSoftIceBot:
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        # logging.basicConfig(filename=log_name,
-        #                     filemode='a',
-        #                     format='%(asctime)s:%(levelname)s:%(message)s',
-        #                     datefmt='%d-%b-%y %H:%M:%S',
-        #                     level=int(self.config[LOGGING_KEY]))
-
         # *** Поехали создавать объекты модулей =)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)

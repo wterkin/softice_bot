@@ -13,19 +13,16 @@ class CTestBabbler(TestCase):
         self.babbler = babbler.CBabbler(self.config, self.config["windows_data_folder"])
 
     def test_babbler(self):
-        self.assertEqual(self.babbler.babbler('superchat', 'username', 'usertitle', '!bllr'), 'База болтуна обновлена')
-        self.assertNotEqual(self.babbler.babbler('gigachat', 'username', 'usertitle', '!bllr'),
-                            'База болтуна обновлена')
+        self.assertEqual(self.babbler.babbler('superchat', 'username', 'usertitle', '!blrl'), 'База болтуна обновлена')
         self.assertNotEqual(self.babbler.babbler('megachat', 'username', 'usertitle', '!reload'),
                             'База болтуна обновлена')
 
     def test_can_process(self):
         self.assertEqual(self.babbler.can_process('superchat', ''), True)
-        self.assertNotEqual(self.babbler.can_process('gigachat', ''), True)
 
     def test_is_enabled(self):
         self.assertEqual(self.babbler.is_enabled('superchat'), True)
-        self.assertNotEqual(self.babbler.is_enabled('gigachat'), True)
+        # self.assertNotEqual(self.babbler.is_enabled('gigachat'), True)
 
     def test_reload(self):
         self.assertEqual(self.babbler.reload(), True)

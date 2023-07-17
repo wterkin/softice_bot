@@ -8,10 +8,11 @@
     "api_key": "here must be your openweathermap api key", 
     "babbler_period":"1",
     "allowed_chats":   ["superchat","megachat"],
-    "babbler_chats":   ["superchat","megachat"],
-    "barman_chats":    ["superchat","megachat"],
-    "librarian_chats": ["superchat","megachat"],
-    "meteorolog_chats":["superchat","megachat"],
-    "statistic_chats": ["superchat","megachat"],
-    "theolog_chats":   ["superchat"]
+    "chats": {
+              "superchat": ["babbler","barman","bellringer","librarian",
+                            "meteorolog","moderator","stargazer",
+                            "statistic", "theolog"],
+              "megachat":  ["babbler","barman","haijin","librarian",
+                            "meteorolog","moderator","statistic","stargazer"]
+             }
 }

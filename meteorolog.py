@@ -184,8 +184,12 @@ class CMeteorolog(prototype.CPrototype):
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если метеоролог разрешен на этом канале."""
+        if pchat_title in self.config["chats"]:
 
-        return UNIT_ID in self.config["chats"][pchat_title]
+            return UNIT_ID in self.config["chats"][pchat_title]
+        else:
+
+            return False
         # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def meteorolog(self, pchat_title: str, pmessage_text: str) -> str:
@@ -245,7 +249,6 @@ class CMeteorolog(prototype.CPrototype):
 
                 answer = "А в каком городе погода нужна?"
         return answer
-
 
     def reload(self):
         pass
