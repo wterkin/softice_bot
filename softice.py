@@ -28,6 +28,7 @@ import statistic
 import stargazer
 # import supervisor
 import theolog
+import welcomer
 
 # *** Местоположение данных бота
 ENABLED_IN_CHATS_KEY: str = "allowed_chats"
@@ -171,6 +172,7 @@ class CSoftIceBot:
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
+        self.welcomer: welcomer.CWelcomer = welcomer.CWelcomer(self.config, self.data_path)
 
         # *** Обработчик сообщений
         @self.robot.message_handler(content_types=EVENTS)
@@ -343,13 +345,16 @@ class CSoftIceBot:
             answer = self.theolog.theolog(pmessage.chat.title, self.message_text).strip()
         if not answer:
 
+            # *** Мажордом точно разберется
+            answer = self.welcomer.welcomer(pmessage.chat.title, self.message_text).strip()
+        if not answer:
+            print("*** 1")
             # *** ... может, у болтуна есть, что сказать?
             answer = self.babbler.babbler(pmessage.chat.title,
                                           pmessage.from_user.username,
                                           pmessage.from_user.first_name,
                                           self.message_text).strip()
         if not answer:
-
             # *** Незнакомая команда.
             print(f"* Запрошена неподдерживаемая команда {self.message_text}.")
             self.logger.info("* Запрошена неподдерживаемая команда %s"
