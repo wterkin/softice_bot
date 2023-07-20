@@ -36,15 +36,13 @@ LINUX_DATA_FOLDER_KEY: str = "linux_data_folder"
 LOGGING_KEY: str = "logging"
 WINDOWS_DATA_FOLDER_KEY: str = "windows_data_folder"
 TOKEN_KEY: str = "token"
-
-
 CONFIG_FILE_NAME: str = "config.json"
 BOT_NAME: str = "SoftIceBot"
 COMMAND_SIGN: str = "!"
 HELP_MESSAGE: str = "В настоящий момент я понимаю только следующие группы команд: \n"
 EVENTS: list = ["text", "sticker", "photo", "audio", "video", "video_note", "voice"]
 RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
-RUSSIAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M:%S"
+RUSSIAN_DATETIME_FORMAT: str = "%d.%m.%Y %H:%M:%S"
 
 CONFIG_COMMANDS: list = ["конфиг", "config"]
 EXIT_COMMANDS: list = ["прощай", "bye", "!!"]
@@ -58,6 +56,16 @@ RESTART_BY_DEMAND: int = 2
 BOT_STATUS: int = CONTINUE_RUNNING
 RUNNING_FLAG: str = "running.flg"
 SLEEP_BEFORE_EXIT_BY_ERROR: int = 10
+
+MCHAT_TITLE: str = "chat_title"
+MCHAT_ID: str = "chat_id"
+MCOMMAND: str = "command"
+MUSER_NAME: str = "user_name"
+MUSER_TITLE: str = "user_title"
+MTEXT: str = "text"
+MCAPTION: str = "caption"
+MDATE: str = "date"
+CONTENT_TYPE: str = "content_type"
 
 
 class CQuitByDemand(Exception):
@@ -76,22 +84,44 @@ class CRestartByDemand(Exception):
         super().__init__(self.message)
 
 
-def decode_message(pmessage):
-    """Возвращает куски сообщения, $#^^^!!!! """
-    text: str = ""
-    if pmessage.text is not None:
+"""
+message_id, date, chat, from_user=None, forward_from=None, forward_from_chat=None, 
+forward_from_message_id=None, forward_date=None, reply_to_message=None, edit_date=None, 
+text=None, entities=None, caption_entities=None, audio=None, document=None, game=None, photo=None, 
+sticker=None, video=None, voice=None, video_note=None, new_chat_members=None, caption=None, 
+contact=None, location=None, venue=None, left_chat_member=None, new_chat_title=None, new_chat_photo=None,
+delete_chat_photo=None, group_chat_created=None, supergroup_chat_created=None, channel_chat_created=None, 
+migrate_to_chat_id=None, migrate_from_chat_id=None, pinned_message=None, invoice=None,
+successful_payment=None, forward_signature=None, author_signature=None, media_group_id=None,
+connected_website=None, animation=None, passport_data=None, poll=None, forward_sender_name=None, 
+reply_markup=None, dice=None, via_bot=None, proximity_alert_triggered=None, sender_chat=None, 
+video_chat_started=None, video_chat_ended=None, video_chat_participants_invited=None, 
+message_auto_delete_timer_changed=None, video_chat_scheduled=None, is_automatic_forward=None, 
+has_protected_content=None, web_app_data=None, is_topic_message=None, message_thread_id=None, 
+forum_topic_created=None, forum_topic_closed=None, forum_topic_reopened=None, 
+forum_topic_edited=None, general_forum_topic_hidden=None, general_forum_topic_unhidden=None, 
+write_access_allowed=None, has_media_spoiler=None, user_shared=None, chat_shared=None, *, api_kwargs=None
+"""
 
-        text = pmessage.text
-    else:
-        if pmessage.caption is not None:
 
-            text = pmessage.caption
-    return text, \
-        text[1:].lower(), \
-        pmessage.chat.id, \
-        pmessage.chat.title, \
-        pmessage.from_user.username, \
-        pmessage.from_user.first_name
+# def decode_message(pmessage):
+#     """Возвращает куски сообщения, $#^^^!!!! """
+#     assert pmessage is not None, \
+#         "Assert: [softice.decode_message] " \
+#         "Пропущен параметр <pmessage> !"
+#     text: str = ""
+#     if pmessage.text is not None:
+#
+#         text = pmessage.text
+#     elif pmessage.caption is not None:
+#
+#         text = pmessage.caption
+#     return text, \
+#         text[1:].lower(), \
+#         pmessage.chat.id, \
+#         pmessage.chat.title, \
+#         pmessage.from_user.username, \
+#         pmessage.from_user.first_name
 
 
 def is_foreign_command(pcommand: str) -> bool:
@@ -115,7 +145,6 @@ class CSoftIceBot:
         super().__init__()
         self.config: dict = {}
         self.load_config(CONFIG_FILE_NAME)
-        print("*****", self.config["chats"]["Anastasis"][0])
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
 
@@ -133,7 +162,7 @@ class CSoftIceBot:
             with open(self.running_flag, 'tw', encoding='utf-8'):
 
                 pass
-        self.message_text: str = ""
+        # self.message_text: str = ""
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -156,23 +185,22 @@ class CSoftIceBot:
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
+        self.msg_rec: dict = {}
         # *** Поехали создавать объекты модулей =)
-        self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
-        self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config,
-                                                                         self.data_path)
+        self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
+        self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config, self.data_path)
         self.haijin: haijin.CHaijin = haijin.CHaijin(self.config, self.data_path)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.majordomo: majordomo.CMajordomo = majordomo.CMajordomo(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
-        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
-                                                                    self.data_path)
-        # !!! self.supervisor: supervisor.CSupervisor =
-        # supervisor.CSupervisor(self.robot, self.config,
-        #                                                                  self.database)
+        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config, self.data_path)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
+        # !!! self.supervisor: supervisor.CSupervisor =
+        # supervisor.CSupervisor(self.robot, self.config,
+        #                                                                  self.database)
 
         # *** Обработчик сообщений
         @self.robot.message_handler(content_types=EVENTS)
@@ -181,27 +209,27 @@ class CSoftIceBot:
             do_not_screen: bool = False
             answer: str = ""
             # *** Вытаскиваем из сообщения нужные поля
-            self.message_text, command, chat_id, chat_title, user_name, user_title = \
-                decode_message(pmessage)
+            # self.message_text, command, chat_id, chat_title, user_name, user_title = \
+            #     decode_message(pmessage)
+            self.decode_message(pmessage)
             # *** Проверим, легитимный ли этот чат
-            if not self.is_this_chat_enabled(chat_title):
+            if not self.is_this_chat_enabled(self.msg_rec[MCHAT_TITLE]):
 
-                if chat_title is not None:
+                if self.msg_rec[MCHAT_TITLE] is not None:
 
                     # *** Бота привели на чужой канал. Выходим.
-                    self.robot.send_message(chat_id, "Вашего чата нет в списке разрешённых. Чао!")
-                    self.robot.leave_chat(chat_id)
-                    print(f"* Попытка нелегитимного использования бота в чате {chat_title}.")
-                    self.logger.warning("Попытка нелегитимного использования бота"
-                                        " в чате %s.", chat_title)
+                    self.robot.send_message(self.msg_rec[MCHAT_ID], "Вашего чата нет в списке разрешённых. Чао!")
+                    self.robot.leave_chat(self.msg_rec[MCHAT_ID])
+                    print(f"* Попытка нелегитимного использования бота в чате {self.msg_rec[MCHAT_TITLE]}.")
+                    self.logger.warning("Попытка нелегитимного использования бота в чате %s.",
+                                        self.msg_rec[MCHAT_TITLE])
                 else:
 
                     answer = "Я в приватах не работаю."
-
             else:
 
                 # *** Сообщение не протухло?
-                message_date = pmessage.date
+                message_date: float = pmessage.date
                 if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
 
                     # *** Модератор должен следить за порядком в чате
@@ -212,35 +240,35 @@ class CSoftIceBot:
                         if not answer:
 
                             # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                            if pmessage.content_type == "text" and self.message_text is not None:
+                            if pmessage.content_type == "text" and self.msg_rec[MTEXT] is not None:
 
                                 # *** Если сообщение адресовано другому боту - пропускаем
-                                if not is_foreign_command(pmessage.text):
+                                if not is_foreign_command(self.msg_rec[MCOMMAND]):
 
                                     # ***  Боту дали команду?
-                                    if self.message_text[0:1] == COMMAND_SIGN:
+                                    if self.msg_rec[MTEXT][0:1] == COMMAND_SIGN:
 
                                         # *** Это системная команда?
-                                        if not self.process_command(command, chat_id, chat_title,
-                                                                    {"name": user_name,
-                                                                     "title": user_title}):
+                                        if not self.process_command(self.msg_rec[MCOMMAND], self.msg_rec[MCHAT_ID],
+                                                                    self.msg_rec[MCHAT_TITLE],
+                                                                    {"name": self.msg_rec[MUSER_NAME],
+                                                                     "title": self.msg_rec[MUSER_TITLE]}):
 
                                             # *** Нет. Ну и пусть модули разбираются....
                                             answer, do_not_screen = self.process_modules(pmessage)
                                     else:
 
                                         # *** Нет. В этом чате статистик разрешен?
-                                        if self.statistic.is_enabled(chat_title):
+                                        if self.statistic.is_enabled(self.msg_rec[MCHAT_TITLE]):
 
                                             # *** Проапдейтим базу статистика
                                             self.statistic.save_all_type_of_messages(pmessage)
 
                                         # *** Болтуну есть что ответить?
-                                        answer = self.babbler.talk(chat_title, self.message_text)
+                                        answer = self.babbler.talk(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT])
                             elif pmessage.content_type in EVENTS:
 
                                 self.statistic.save_all_type_of_messages(pmessage)
-
             # *** Ответ имеется?
             if answer:
 
@@ -252,6 +280,19 @@ class CSoftIceBot:
 
                     self.robot.send_message(pmessage.chat.id, func.screen_text(answer),
                                             parse_mode="MarkdownV2")
+
+    def decode_message(self, pmessage):
+        """Декодирует нужные поля сообщения в словарь."""
+        text: str = pmessage.text
+        self.msg_rec[MCOMMAND] = text[1:]
+        self.msg_rec[MTEXT] = pmessage.text
+        self.msg_rec[MCAPTION] = pmessage.caption
+        self.msg_rec[MCHAT_ID] = pmessage.chat.id
+        self.msg_rec[MCHAT_TITLE] = pmessage.chat.title
+        self.msg_rec[MUSER_NAME] = pmessage.from_user.username
+        self.msg_rec[MUSER_TITLE] = pmessage.from_user.first_name
+        self.msg_rec[MDATE] = pmessage.date
+        self.msg_rec[CONTENT_TYPE] = pmessage.content_type
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""
@@ -267,8 +308,7 @@ class CSoftIceBot:
 
             self.config = json.load(json_file)
 
-    def process_command(self, pcommand: str, pchat_id: int, pchat_title: str,
-                        puser: dict):
+    def process_command(self, pcommand: str, pchat_id: int, pchat_title: str, puser: dict) -> bool:
         """Обрабатывает системные команды"""
         result: bool = False
         # *** Да, команду. Это команда перезагрузки конфига?
@@ -300,18 +340,20 @@ class CSoftIceBot:
         answer: str = self.barman.barman(pmessage.chat.title,
                                          pmessage.from_user.username,
                                          pmessage.from_user.first_name,
-                                         self.message_text).strip()
+                                         self.msg_rec[MTEXT]).strip()
         do_not_screen: bool = False
+
         if not answer:
 
             # *** Или у звонаря
-            answer = self.bellringer.bellringer(pmessage.chat.title, self.message_text).strip()
+            answer = self.bellringer.bellringer(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у хайдзина
             answer = self.haijin.haijin(pmessage.chat.title,
                                         pmessage.from_user.username,
-                                        pmessage.from_user.first_name, self.message_text)
+                                        pmessage.from_user.first_name,
+                                        self.msg_rec[MTEXT])
             do_not_screen = True
         if not answer:
 
@@ -320,15 +362,15 @@ class CSoftIceBot:
             answer = self.librarian.librarian(pmessage.chat.title,
                                               pmessage.from_user.username,
                                               pmessage.from_user.first_name,
-                                              self.message_text).strip()
+                                              self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** или у мажордома...
-            answer = self.majordomo.majordomo(pmessage.chat.title, self.message_text).strip()
+            answer = self.majordomo.majordomo(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у метеоролога...
-            answer = self.meteorolog.meteorolog(pmessage.chat.title, self.message_text).strip()
+            answer = self.meteorolog.meteorolog(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у модератора...
@@ -338,27 +380,26 @@ class CSoftIceBot:
             # *** ... или у статистика...
             answer = self.statistic.statistic(pmessage.chat.id, pmessage.chat.title,
                                               pmessage.from_user.first_name,
-                                              self.message_text).strip()
+                                              self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у звездочёта...
-            answer = self.stargazer.stargazer(pmessage.chat.title, self.message_text).strip()
+            answer = self.stargazer.stargazer(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у теолога...
-            answer = self.theolog.theolog(pmessage.chat.title, self.message_text).strip()
+            answer = self.theolog.theolog(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
         if not answer:
-            print("*** 1")
             # *** ... может, у болтуна есть, что сказать?
             answer = self.babbler.babbler(pmessage.chat.title,
                                           pmessage.from_user.username,
                                           pmessage.from_user.first_name,
-                                          self.message_text).strip()
+                                          self.msg_rec[MTEXT]).strip()
         if not answer:
             # *** Незнакомая команда.
-            print(f"* Запрошена неподдерживаемая команда {self.message_text}.")
+            print(f"* Запрошена неподдерживаемая команда {self.msg_rec[MTEXT]}.")
             self.logger.info("* Запрошена неподдерживаемая команда %s"
-                             " в чате %s.", self.message_text, pmessage.chat.title)
+                             " в чате %s.", self.msg_rec[MTEXT], pmessage.chat.title)
         return answer, do_not_screen
 
     def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
@@ -392,6 +433,7 @@ class CSoftIceBot:
                           \n{self.bellringer.get_hint(pchat_title)}
                           \n{self.haijin.get_hint(pchat_title)}
                           \n{self.librarian.get_hint(pchat_title)}
+                          \n{self.majordomo.get_hint(pchat_title)}
                           \n{self.meteorolog.get_hint(pchat_title)}
                           \n{self.statistic.get_hint(pchat_title)}
                           \n{self.stargazer.get_hint(pchat_title)}
@@ -414,7 +456,6 @@ class CSoftIceBot:
 
             self.robot.send_message(pchat_id, "Добби свободен!")
             os.remove(self.running_flag)
-            # self.exiting = True
             raise CQuitByDemand()
         self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
 
@@ -441,14 +482,12 @@ class CSoftIceBot:
                 self.robot.polling(interval=POLL_INTERVAL)
             except CQuitByDemand as exception:
 
-                # print(exception.message)
                 self.logger.exception(exception.message)
                 self.bot_status = QUIT_BY_DEMAND
                 self.robot.stop_polling()
                 sys.exit(0)
             except CRestartByDemand as exception:
 
-                # print(exception.message)
                 self.logger.exception(exception.message)
                 self.bot_status = RESTART_BY_DEMAND
                 self.robot.stop_polling()
@@ -490,11 +529,6 @@ class CSoftIceBot:
                 self.logger.exception("Соединение разорвано. Выход.", exc_info=True)
                 time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
                 sys.exit(7)
-            # except ConnectionResetError:
-            #
-            #     print("# Ошибка переустановления соединения. Выход.")
-            #     time.sleep(SLEEP_BEFORE_EXIT_BY_ERROR)
-            #     sys.exit(5)
 
 
 if __name__ == "__main__":
