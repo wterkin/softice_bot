@@ -22,13 +22,13 @@ import barman
 import bellringer
 import haijin
 import librarian
+import majordomo
 import meteorolog
 import moderator
 import statistic
 import stargazer
 # import supervisor
 import theolog
-import welcomer
 
 # *** Местоположение данных бота
 ENABLED_IN_CHATS_KEY: str = "allowed_chats"
@@ -163,6 +163,7 @@ class CSoftIceBot:
                                                                          self.data_path)
         self.haijin: haijin.CHaijin = haijin.CHaijin(self.config, self.data_path)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
+        self.majordomo: majordomo.CMajordomo = majordomo.CMajordomo(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
         self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
                                                                     self.data_path)
@@ -172,7 +173,6 @@ class CSoftIceBot:
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
-        self.welcomer: welcomer.CWelcomer = welcomer.CWelcomer(self.config, self.data_path)
 
         # *** Обработчик сообщений
         @self.robot.message_handler(content_types=EVENTS)
@@ -323,6 +323,10 @@ class CSoftIceBot:
                                               self.message_text).strip()
         if not answer:
 
+            # *** или у мажордома...
+            answer = self.majordomo.majordomo(pmessage.chat.title, self.message_text).strip()
+        if not answer:
+
             # *** ... или у метеоролога...
             answer = self.meteorolog.meteorolog(pmessage.chat.title, self.message_text).strip()
         if not answer:
@@ -343,10 +347,6 @@ class CSoftIceBot:
 
             # *** ... или у теолога...
             answer = self.theolog.theolog(pmessage.chat.title, self.message_text).strip()
-        if not answer:
-
-            # *** Мажордом точно разберется
-            answer = self.welcomer.welcomer(pmessage.chat.title, self.message_text).strip()
         if not answer:
             print("*** 1")
             # *** ... может, у болтуна есть, что сказать?

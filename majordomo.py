@@ -3,19 +3,19 @@ import random
 import prototype
 import functions as func
 
-UNIT_ID = "welcomer"
+UNIT_ID = "majordomo"
 
-COMMANDS: list = ["greet", "gr", "привет", "пв"]
-WELCOMER_PATH: str = "welcomer/welcomer.txt"
+COMMANDS: list = ["greet", "gr", "привет", "пт"]
+MAJORDOMO_PATH: str = "majordomo/greetings.txt"
 
 
-class CWelcomer(prototype.CPrototype):
+class CMajordomo(prototype.CPrototype):
     """Прототип классов модулей бота."""
 
     def __init__(self, pconfig: dict, pdata_path: str):
         super().__init__()
         self.config: dict = pconfig
-        self.data_path: str = pdata_path + WELCOMER_PATH
+        self.data_path: str = pdata_path + MAJORDOMO_PATH
         self.greetings: list = []
         self.reload()
 
@@ -54,7 +54,7 @@ class CWelcomer(prototype.CPrototype):
         """Вызывает перезагрузку внешних данных модуля."""
         self.greetings = func.load_from_file(self.data_path)
 
-    def welcomer(self, pchat_title, pmessage_text):
+    def majordomo(self, pchat_title, pmessage_text):
         """Главная функция модуля."""
         answer: str = ""
         word_list: list = func.parse_input(pmessage_text)
@@ -63,5 +63,6 @@ class CWelcomer(prototype.CPrototype):
             if word_list[0] in COMMANDS:
 
                 if len(word_list) > 1:
-                    answer = f"{random.choice(self.greetings)}"
+
+                    answer = random.choice(self.greetings) % word_list[1]
         return answer
