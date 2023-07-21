@@ -143,6 +143,7 @@ class CSoftIceBot:
     def __init__(self):
         """Конструктор класса."""
         super().__init__()
+        self.msg_rec: dict = {}
         self.config: dict = {}
         self.load_config(CONFIG_FILE_NAME)
         # *** Нужно ли работать через прокси?
@@ -162,7 +163,6 @@ class CSoftIceBot:
             with open(self.running_flag, 'tw', encoding='utf-8'):
 
                 pass
-        # self.message_text: str = ""
         # *** Где у нас данные лежат?
         if platform in ("linux", "linux2"):
 
@@ -176,6 +176,7 @@ class CSoftIceBot:
 
             # *** А нету ещё БД, создавать треба.
             database.create()
+        # *** Включаем логирование
         log_name: str = self.data_path+'softice.log'
         print(f"* Создаём файл журнала {log_name} с уровнем {self.config[LOGGING_KEY]}")
         self.logger = logging.getLogger(__name__)
@@ -185,7 +186,6 @@ class CSoftIceBot:
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        self.msg_rec: dict = {}
         # *** Поехали создавать объекты модулей =)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
@@ -198,9 +198,7 @@ class CSoftIceBot:
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
-        # !!! self.supervisor: supervisor.CSupervisor =
-        # supervisor.CSupervisor(self.robot, self.config,
-        #                                                                  self.database)
+        # !!! self.supervisor: supervisor.CSupervisor = supervisor.CSupervisor(self.robot, self.config,  self.database)
 
         # *** Обработчик сообщений
         @self.robot.message_handler(content_types=EVENTS)
@@ -209,12 +207,11 @@ class CSoftIceBot:
             do_not_screen: bool = False
             answer: str = ""
             # *** Вытаскиваем из сообщения нужные поля
-            # self.message_text, command, chat_id, chat_title, user_name, user_title = \
-            #     decode_message(pmessage)
             self.decode_message(pmessage)
             # *** Проверим, легитимный ли этот чат
             if not self.is_this_chat_enabled(self.msg_rec[MCHAT_TITLE]):
 
+                # *** Если нет и это не приват...
                 if self.msg_rec[MCHAT_TITLE] is not None:
 
                     # *** Бота привели на чужой канал. Выходим.
@@ -229,18 +226,18 @@ class CSoftIceBot:
             else:
 
                 # *** Сообщение не протухло?
-                message_date: float = pmessage.date
-                if (datetime.now() - datetime.fromtimestamp(message_date)).total_seconds() < 60:
+                if (datetime.now() - datetime.fromtimestamp(self.msg_rec[MDATE])).total_seconds() < 60:
 
                     # *** Модератор должен следить за порядком в чате
                     answer = self.moderator.moderator(pmessage)
                     if not answer:
 
+                        # *** Когда-нибудь я допишу супервайзера
                         # !!! answer = self.supervisor.supervisor(pmessage)
                         if not answer:
 
                             # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                            if pmessage.content_type == "text" and self.msg_rec[MTEXT] is not None:
+                            if self.msg_rec[CONTENT_TYPE] == "text" and self.msg_rec[MTEXT] is not None:
 
                                 # *** Если сообщение адресовано другому боту - пропускаем
                                 if not is_foreign_command(self.msg_rec[MCOMMAND]):
@@ -249,10 +246,7 @@ class CSoftIceBot:
                                     if self.msg_rec[MTEXT][0:1] == COMMAND_SIGN:
 
                                         # *** Это системная команда?
-                                        if not self.process_command(self.msg_rec[MCOMMAND], self.msg_rec[MCHAT_ID],
-                                                                    self.msg_rec[MCHAT_TITLE],
-                                                                    {"name": self.msg_rec[MUSER_NAME],
-                                                                     "title": self.msg_rec[MUSER_TITLE]}):
+                                        if not self.process_command():
 
                                             # *** Нет. Ну и пусть модули разбираются....
                                             answer, do_not_screen = self.process_modules(pmessage)
@@ -266,7 +260,7 @@ class CSoftIceBot:
 
                                         # *** Болтуну есть что ответить?
                                         answer = self.babbler.talk(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT])
-                            elif pmessage.content_type in EVENTS:
+                            elif self.msg_rec[CONTENT_TYPE] in EVENTS:
 
                                 self.statistic.save_all_type_of_messages(pmessage)
             # *** Ответ имеется?
@@ -275,10 +269,10 @@ class CSoftIceBot:
                 # *** Выводим ответ
                 if do_not_screen:
 
-                    self.robot.send_message(pmessage.chat.id, answer, parse_mode="MarkdownV2")
+                    self.robot.send_message(self.msg_rec[MCHAT_ID], answer, parse_mode="MarkdownV2")
                 else:
 
-                    self.robot.send_message(pmessage.chat.id, func.screen_text(answer),
+                    self.robot.send_message(self.msg_rec[MCHAT_ID], func.screen_text(answer),
                                             parse_mode="MarkdownV2")
 
     def decode_message(self, pmessage):
@@ -308,29 +302,30 @@ class CSoftIceBot:
 
             self.config = json.load(json_file)
 
-    def process_command(self, pcommand: str, pchat_id: int, pchat_title: str, puser: dict) -> bool:
+    def process_command(self) -> bool:
         """Обрабатывает системные команды"""
         result: bool = False
-        # *** Да, команду. Это команда перезагрузки конфига?
-        if pcommand in CONFIG_COMMANDS:
+        # *** Это команда перезагрузки конфига?
+        if self.msg_rec[MCOMMAND] in CONFIG_COMMANDS:
 
-            result = self.reload_config(pchat_id, puser["name"], puser["title"])
+            result = self.reload_config()
         # *** Нет. Запросили выход?
-        elif pcommand in EXIT_COMMANDS:
+        elif self.msg_rec[MCOMMAND] in EXIT_COMMANDS:
 
-            self.stop_working(pchat_id, puser["name"], puser["title"])
+            self.stop_working(self.msg_rec[MCHAT_ID], self.msg_rec[MUSER_NAME], self.msg_rec[MUSER_TITLE])
             result = True
         # *** Опять нет. Запросили помощь?
-        elif pcommand in HELP_COMMANDS:
+        elif self.msg_rec[MCOMMAND] in HELP_COMMANDS:
 
-            answer: str = self.send_help(pchat_title)
+            answer: str = self.send_help(self.msg_rec[MCHAT_TITLE])
             if answer:
 
-                self.robot.send_message(pchat_id, answer)
+                self.robot.send_message(self.msg_rec[MCHAT_ID], answer)
             result = True
-        elif pcommand in RESTART_COMMAND:
+        # *** Нет. Запросили рестарт?
+        elif self.msg_rec[MCOMMAND] in RESTART_COMMAND:
 
-            self.restart(pchat_id, puser["name"], puser["title"])
+            self.restart(self.msg_rec[MCHAT_ID], self.msg_rec[MUSER_NAME], self.msg_rec[MUSER_TITLE])
             result = True
         return result
 
@@ -402,25 +397,19 @@ class CSoftIceBot:
                              " в чате %s.", self.msg_rec[MTEXT], pmessage.chat.title)
         return answer, do_not_screen
 
-    def reload_config(self, pchat_id: int, puser_name: str, puser_title: str):
+    def reload_config(self) -> bool:
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
-        assert pchat_id is not None, \
-            "Assert: [softice.is_reload_config_command_queried] " \
-            "Пропущен параметр <pchat_id> !"
-        assert puser_title is not None, \
-            "Assert: [softice.is_reload_config_command_queried] " \
-            "Пропущен параметр <puser_title> !"
         # *** Такое запрашивать может только хозяин
-        if self.is_master(puser_name):
+        if self.is_master(self.msg_rec[MUSER_NAME]):
 
-            self.robot.send_message(pchat_id, "Обновляю конфигурацию.")
+            self.robot.send_message(self.msg_rec[MCHAT_ID], "Обновляю конфигурацию.")
             self.load_config(CONFIG_FILE_NAME)
-            self.robot.send_message(pchat_id, "Конфигурация обновлена.")
+            self.robot.send_message(self.msg_rec[MCHAT_ID], "Конфигурация обновлена.")
             return True
-        print(f"* Запрос на перезагрузку конфига от нелегитимного лица {puser_title}.")
+        print(f"* Запрос на перезагрузку конфига от нелегитимного лица {self.msg_rec[MUSER_TITLE]}.")
         self.logger.warning("Запрос на перезагрузку конфига от нелегитимного лица %s.",
-                            puser_title)
-        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
+                            self.msg_rec[MUSER_TITLE])
+        self.robot.send_message(self.msg_rec[MCHAT_ID], f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
         return False
 
     def send_help(self, pchat_title: str):
