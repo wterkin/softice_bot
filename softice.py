@@ -277,10 +277,14 @@ class CSoftIceBot:
 
     def decode_message(self, pmessage):
         """Декодирует нужные поля сообщения в словарь."""
-        text: str = pmessage.text
-        self.msg_rec[MCOMMAND] = text[1:]
-        self.msg_rec[MTEXT] = pmessage.text
-        self.msg_rec[MCAPTION] = pmessage.caption
+        if pmessage.text is not None:
+
+            text: str = pmessage.text
+            self.msg_rec[MCOMMAND] = text[1:]
+            self.msg_rec[MTEXT] = pmessage.text
+        if pmessage.caption is not None:
+
+            self.msg_rec[MCAPTION] = pmessage.caption
         self.msg_rec[MCHAT_ID] = pmessage.chat.id
         self.msg_rec[MCHAT_TITLE] = pmessage.chat.title
         self.msg_rec[MUSER_NAME] = pmessage.from_user.username
@@ -312,12 +316,12 @@ class CSoftIceBot:
         # *** Нет. Запросили выход?
         elif self.msg_rec[MCOMMAND] in EXIT_COMMANDS:
 
-            self.stop_working(self.msg_rec[MCHAT_ID], self.msg_rec[MUSER_NAME], self.msg_rec[MUSER_TITLE])
+            self.stop_working()
             result = True
         # *** Опять нет. Запросили помощь?
         elif self.msg_rec[MCOMMAND] in HELP_COMMANDS:
 
-            answer: str = self.send_help(self.msg_rec[MCHAT_TITLE])
+            answer: str = self.send_help()
             if answer:
 
                 self.robot.send_message(self.msg_rec[MCHAT_ID], answer)
@@ -325,47 +329,47 @@ class CSoftIceBot:
         # *** Нет. Запросили рестарт?
         elif self.msg_rec[MCOMMAND] in RESTART_COMMAND:
 
-            self.restart(self.msg_rec[MCHAT_ID], self.msg_rec[MUSER_NAME], self.msg_rec[MUSER_TITLE])
+            self.restart()
             result = True
         return result
 
     def process_modules(self, pmessage):
         """Пытается обработать команду различными модулями."""
         # *** Проверим, не запросил ли пользователь что-то у бармена...
-        answer: str = self.barman.barman(pmessage.chat.title,
-                                         pmessage.from_user.username,
-                                         pmessage.from_user.first_name,
+        answer: str = self.barman.barman(self.msg_rec[MCHAT_TITLE],
+                                         self.msg_rec[MUSER_NAME],
+                                         self.msg_rec[MUSER_TITLE],
                                          self.msg_rec[MTEXT]).strip()
         do_not_screen: bool = False
 
         if not answer:
 
             # *** Или у звонаря
-            answer = self.bellringer.bellringer(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
+            answer = self.bellringer.bellringer(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у хайдзина
-            answer = self.haijin.haijin(pmessage.chat.title,
-                                        pmessage.from_user.username,
-                                        pmessage.from_user.first_name,
+            answer = self.haijin.haijin(self.msg_rec[MCHAT_TITLE],
+                                        self.msg_rec[MUSER_NAME],
+                                        self.msg_rec[MUSER_TITLE],
                                         self.msg_rec[MTEXT])
             do_not_screen = True
         if not answer:
 
             do_not_screen = False
             # *** ... или у библиотекаря...
-            answer = self.librarian.librarian(pmessage.chat.title,
-                                              pmessage.from_user.username,
-                                              pmessage.from_user.first_name,
+            answer = self.librarian.librarian(self.msg_rec[MCHAT_TITLE],
+                                              self.msg_rec[MUSER_NAME],
+                                              self.msg_rec[MUSER_TITLE],
                                               self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** или у мажордома...
-            answer = self.majordomo.majordomo(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
+            answer = self.majordomo.majordomo(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у метеоролога...
-            answer = self.meteorolog.meteorolog(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
+            answer = self.meteorolog.meteorolog(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у модератора...
@@ -373,28 +377,31 @@ class CSoftIceBot:
         if not answer:
 
             # *** ... или у статистика...
-            answer = self.statistic.statistic(pmessage.chat.id, pmessage.chat.title,
-                                              pmessage.from_user.first_name,
+            answer = self.statistic.statistic(self.msg_rec[MCHAT_ID],
+                                              self.msg_rec[MCHAT_TITLE],
+                                              self.msg_rec[MUSER_TITLE],
                                               self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у звездочёта...
-            answer = self.stargazer.stargazer(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
+            answer = self.stargazer.stargazer(self.msg_rec[MCHAT_TITLE],
+                                              self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у теолога...
-            answer = self.theolog.theolog(pmessage.chat.title, self.msg_rec[MTEXT]).strip()
+            answer = self.theolog.theolog(self.msg_rec[MCHAT_TITLE],
+                                          self.msg_rec[MTEXT]).strip()
         if not answer:
             # *** ... может, у болтуна есть, что сказать?
-            answer = self.babbler.babbler(pmessage.chat.title,
-                                          pmessage.from_user.username,
-                                          pmessage.from_user.first_name,
+            answer = self.babbler.babbler(self.msg_rec[MCHAT_TITLE],
+                                          self.msg_rec[MUSER_NAME],
+                                          self.msg_rec[MUSER_TITLE],
                                           self.msg_rec[MTEXT]).strip()
         if not answer:
             # *** Незнакомая команда.
             print(f"* Запрошена неподдерживаемая команда {self.msg_rec[MTEXT]}.")
             self.logger.info("* Запрошена неподдерживаемая команда %s"
-                             " в чате %s.", self.msg_rec[MTEXT], pmessage.chat.title)
+                             " в чате %s.", self.msg_rec[MTEXT], self.msg_rec[MCHAT_TITLE])
         return answer, do_not_screen
 
     def reload_config(self) -> bool:
@@ -412,55 +419,40 @@ class CSoftIceBot:
         self.robot.send_message(self.msg_rec[MCHAT_ID], f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
         return False
 
-    def send_help(self, pchat_title: str):
+    def send_help(self) -> str:
         """Проверяет, не была ли запрошена подсказка."""
-        assert pchat_title is not None, \
-            "Assert: [softice.is_help_command_queried] " \
-            "Пропущен параметр <pchat_title> !"
         # *** Собираем ответы модулей на запрос помощи
-        answer: str = f"""\n{self.barman.get_hint(pchat_title)}
-                          \n{self.bellringer.get_hint(pchat_title)}
-                          \n{self.haijin.get_hint(pchat_title)}
-                          \n{self.librarian.get_hint(pchat_title)}
-                          \n{self.majordomo.get_hint(pchat_title)}
-                          \n{self.meteorolog.get_hint(pchat_title)}
-                          \n{self.statistic.get_hint(pchat_title)}
-                          \n{self.stargazer.get_hint(pchat_title)}
-                          \n{self.theolog.get_hint(pchat_title)}""".strip()
+        answer: str = f"""\n{self.barman.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.bellringer.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.haijin.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.librarian.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.majordomo.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.meteorolog.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.statistic.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.stargazer.get_hint(self.msg_rec[MCHAT_TITLE])}
+                          \n{self.theolog.get_hint(self.msg_rec[MCHAT_TITLE])}""".strip()
         # *** Если ответы есть, отвечаем на запрос
         if answer:
 
             return HELP_MESSAGE + answer
         return answer
 
-    def stop_working(self, pchat_id: int, puser_name: str, puser_title: str):
+    def stop_working(self):
         """Проверка, вдруг была команда выхода."""
-        assert pchat_id is not None, \
-            "Assert: [softice.is_quit_command_queried] " \
-            "Пропущен параметр <pchat_id> !"
-        assert puser_title is not None, \
-            "Assert: [softice.is_quit_command_queried] " \
-            "Пропущен параметр <puser_title> !"
-        if self.is_master(puser_name):
+        if self.is_master(self.msg_rec[MUSER_NAME]):
 
-            self.robot.send_message(pchat_id, "Добби свободен!")
+            self.robot.send_message(self.msg_rec[MCHAT_ID], "Добби свободен!")
             os.remove(self.running_flag)
             raise CQuitByDemand()
-        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
+        self.robot.send_message(self.msg_rec[MCHAT_ID], f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
 
-    def restart(self, pchat_id: int, puser_name: str, puser_title: str):
+    def restart(self):
         """Проверка, вдруг была команда рестарта."""
-        assert pchat_id is not None, \
-            "Assert: [softice.is_quit_command_queried] " \
-            "Пропущен параметр <pchat_id> !"
-        assert puser_title is not None, \
-            "Assert: [softice.is_quit_command_queried] " \
-            "Пропущен параметр <puser_title> !"
-        if self.is_master(puser_name):
+        if self.is_master(self.msg_rec[MUSER_NAME]):
 
-            self.robot.send_message(pchat_id, "Щасвирнус.")
+            self.robot.send_message(self.msg_rec[MCHAT_ID], "Щасвирнус.")
             raise CRestartByDemand()
-        self.robot.send_message(pchat_id, f"У вас нет на это прав, {puser_title}.")
+        self.robot.send_message(self.msg_rec[MCHAT_ID], f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
 
     def poll_forever(self):
         """Функция опроса ботом телеграмма."""
