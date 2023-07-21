@@ -84,44 +84,25 @@ class CRestartByDemand(Exception):
         super().__init__(self.message)
 
 
-"""
-message_id, date, chat, from_user=None, forward_from=None, forward_from_chat=None, 
-forward_from_message_id=None, forward_date=None, reply_to_message=None, edit_date=None, 
-text=None, entities=None, caption_entities=None, audio=None, document=None, game=None, photo=None, 
-sticker=None, video=None, voice=None, video_note=None, new_chat_members=None, caption=None, 
-contact=None, location=None, venue=None, left_chat_member=None, new_chat_title=None, new_chat_photo=None,
-delete_chat_photo=None, group_chat_created=None, supergroup_chat_created=None, channel_chat_created=None, 
-migrate_to_chat_id=None, migrate_from_chat_id=None, pinned_message=None, invoice=None,
-successful_payment=None, forward_signature=None, author_signature=None, media_group_id=None,
-connected_website=None, animation=None, passport_data=None, poll=None, forward_sender_name=None, 
-reply_markup=None, dice=None, via_bot=None, proximity_alert_triggered=None, sender_chat=None, 
-video_chat_started=None, video_chat_ended=None, video_chat_participants_invited=None, 
-message_auto_delete_timer_changed=None, video_chat_scheduled=None, is_automatic_forward=None, 
-has_protected_content=None, web_app_data=None, is_topic_message=None, message_thread_id=None, 
-forum_topic_created=None, forum_topic_closed=None, forum_topic_reopened=None, 
-forum_topic_edited=None, general_forum_topic_hidden=None, general_forum_topic_unhidden=None, 
-write_access_allowed=None, has_media_spoiler=None, user_shared=None, chat_shared=None, *, api_kwargs=None
-"""
-
-
-# def decode_message(pmessage):
-#     """Возвращает куски сообщения, $#^^^!!!! """
-#     assert pmessage is not None, \
-#         "Assert: [softice.decode_message] " \
-#         "Пропущен параметр <pmessage> !"
-#     text: str = ""
-#     if pmessage.text is not None:
-#
-#         text = pmessage.text
-#     elif pmessage.caption is not None:
-#
-#         text = pmessage.caption
-#     return text, \
-#         text[1:].lower(), \
-#         pmessage.chat.id, \
-#         pmessage.chat.title, \
-#         pmessage.from_user.username, \
-#         pmessage.from_user.first_name
+# message_id, date, chat, from_user=None, forward_from=None, forward_from_chat=None,
+# forward_from_message_id=None, forward_date=None, reply_to_message=None, edit_date=None,
+# text=None, entities=None, caption_entities=None, audio=None, document=None, game=None, photo=None,
+# sticker=None, video=None, voice=None, video_note=None, new_chat_members=None, caption=None,
+# contact=None, location=None, venue=None, left_chat_member=None, new_chat_title=None,
+# new_chat_photo=None,
+# delete_chat_photo=None, group_chat_created=None, supergroup_chat_created=None,
+# channel_chat_created=None,
+# migrate_to_chat_id=None, migrate_from_chat_id=None, pinned_message=None, invoice=None,
+# successful_payment=None, forward_signature=None, author_signature=None, media_group_id=None,
+# connected_website=None, animation=None, passport_data=None, poll=None, forward_sender_name=None,
+# reply_markup=None, dice=None, via_bot=None, proximity_alert_triggered=None, sender_chat=None,
+# video_chat_started=None, video_chat_ended=None, video_chat_participants_invited=None,
+# message_auto_delete_timer_changed=None, video_chat_scheduled=None, is_automatic_forward=None,
+# has_protected_content=None, web_app_data=None, is_topic_message=None, message_thread_id=None,
+# forum_topic_created=None, forum_topic_closed=None, forum_topic_reopened=None,
+# forum_topic_edited=None, general_forum_topic_hidden=None, general_forum_topic_unhidden=None,
+# write_access_allowed=None, has_media_spoiler=None, user_shared=None,
+# chat_shared=None, *, api_kwargs=None
 
 
 def is_foreign_command(pcommand: str) -> bool:
@@ -189,16 +170,19 @@ class CSoftIceBot:
         # *** Поехали создавать объекты модулей =)
         self.babbler: babbler.CBabbler = babbler.CBabbler(self.config, self.data_path)
         self.barman: barman.CBarman = barman.CBarman(self.config, self.data_path)
-        self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config, self.data_path)
+        self.bellringer: bellringer.CBellRinger = bellringer.CBellRinger(self.config,
+                                                                         self.data_path)
         self.haijin: haijin.CHaijin = haijin.CHaijin(self.config, self.data_path)
         self.librarian: librarian.CLibrarian = librarian.CLibrarian(self.config, self.data_path)
         self.majordomo: majordomo.CMajordomo = majordomo.CMajordomo(self.config, self.data_path)
         self.meteorolog: meteorolog.CMeteorolog = meteorolog.CMeteorolog(self.config)
-        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config, self.data_path)
+        self.moderator: moderator.CModerator = moderator.CModerator(self.robot, self.config,
+                                                                    self.data_path)
         self.statistic: statistic.CStatistic = statistic.CStatistic(self.config, self.database)
         self.stargazer: stargazer.CStarGazer = stargazer.CStarGazer(self.config, self.data_path)
         self.theolog: theolog.CTheolog = theolog.CTheolog(self.config, self.data_path)
-        # !!! self.supervisor: supervisor.CSupervisor = supervisor.CSupervisor(self.robot, self.config,  self.database)
+        # !!! self.supervisor: supervisor.CSupervisor =
+        # supervisor.CSupervisor(self.robot, self.config,  self.database)
 
         # *** Обработчик сообщений
         @self.robot.message_handler(content_types=EVENTS)
@@ -209,15 +193,17 @@ class CSoftIceBot:
             # *** Вытаскиваем из сообщения нужные поля
             self.decode_message(pmessage)
             # *** Проверим, легитимный ли этот чат
-            if not self.is_this_chat_enabled(self.msg_rec[MCHAT_TITLE]):
+            if not self.is_this_chat_enabled():
 
                 # *** Если нет и это не приват...
                 if self.msg_rec[MCHAT_TITLE] is not None:
 
                     # *** Бота привели на чужой канал. Выходим.
-                    self.robot.send_message(self.msg_rec[MCHAT_ID], "Вашего чата нет в списке разрешённых. Чао!")
+                    self.robot.send_message(self.msg_rec[MCHAT_ID],
+                                            "Вашего чата нет в списке разрешённых. Чао!")
                     self.robot.leave_chat(self.msg_rec[MCHAT_ID])
-                    print(f"* Попытка нелегитимного использования бота в чате {self.msg_rec[MCHAT_TITLE]}.")
+                    print("* Попытка нелегитимного использования "
+                          f"бота в чате {self.msg_rec[MCHAT_TITLE]}.")
                     self.logger.warning("Попытка нелегитимного использования бота в чате %s.",
                                         self.msg_rec[MCHAT_TITLE])
                 else:
@@ -226,7 +212,8 @@ class CSoftIceBot:
             else:
 
                 # *** Сообщение не протухло?
-                if (datetime.now() - datetime.fromtimestamp(self.msg_rec[MDATE])).total_seconds() < 60:
+                date_time: datetime = datetime.fromtimestamp(self.msg_rec[MDATE])
+                if (datetime.now()-date_time).total_seconds() < 60:
 
                     # *** Модератор должен следить за порядком в чате
                     answer = self.moderator.moderator(pmessage)
@@ -237,7 +224,8 @@ class CSoftIceBot:
                         if not answer:
 
                             # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                            if self.msg_rec[CONTENT_TYPE] == "text" and self.msg_rec[MTEXT] is not None:
+                            if self.msg_rec[CONTENT_TYPE] == "text" and \
+                                    self.msg_rec[MTEXT] is not None:
 
                                 # *** Если сообщение адресовано другому боту - пропускаем
                                 if not is_foreign_command(self.msg_rec[MCOMMAND]):
@@ -259,7 +247,8 @@ class CSoftIceBot:
                                             self.statistic.save_all_type_of_messages(pmessage)
 
                                         # *** Болтуну есть что ответить?
-                                        answer = self.babbler.talk(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT])
+                                        answer = self.babbler.talk(self.msg_rec[MCHAT_TITLE],
+                                                                   self.msg_rec[MTEXT])
                             elif self.msg_rec[CONTENT_TYPE] in EVENTS:
 
                                 self.statistic.save_all_type_of_messages(pmessage)
@@ -292,19 +281,32 @@ class CSoftIceBot:
         self.msg_rec[MDATE] = pmessage.date
         self.msg_rec[CONTENT_TYPE] = pmessage.content_type
 
-    def is_master(self, puser_name: str) -> bool:
+    def is_master(self) -> bool:
         """Проверяет, хозяин ли отдал команду."""
-        return puser_name == self.config["master"]
+        return self.msg_rec[MUSER_NAME] == self.config["master"]
 
-    def is_this_chat_enabled(self, pchat_title: str) -> object:
+    def is_this_chat_enabled(self) -> bool:
         """Проверяет, находится ли данный чат в списке разрешенных."""
-        return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return self.msg_rec[MCHAT_TITLE] in self.config[ENABLED_IN_CHATS_KEY]
 
     def load_config(self, pconfig_name: str):
         """Загружает конфигурацию из JSON."""
-        with open(pconfig_name, "r", encoding="utf-8") as json_file:
+        try:
 
-            self.config = json.load(json_file)
+            with open(pconfig_name, "r", encoding="utf-8") as json_file:
+
+                self.config = json.load(json_file)
+        except FileNotFoundError:
+
+            print(f"* Файл конфигурации {pconfig_name} отсутствует.")
+            self.logger.warning("* Файл конфигурации %s отсутствует.", pconfig_name)
+            self.stop_working()
+
+        except ValueError:
+
+            print(f"* Ошибка в процессе парсинге файла конфигурации {pconfig_name}")
+            self.logger.warning("* Ошибка в процессе парсинге файла конфигурации %s", pconfig_name)
+            self.stop_working()
 
     def process_command(self) -> bool:
         """Обрабатывает системные команды"""
@@ -345,7 +347,8 @@ class CSoftIceBot:
         if not answer:
 
             # *** Или у звонаря
-            answer = self.bellringer.bellringer(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT]).strip()
+            answer = self.bellringer.bellringer(self.msg_rec[MCHAT_TITLE],
+                                                self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у хайдзина
@@ -365,11 +368,13 @@ class CSoftIceBot:
         if not answer:
 
             # *** или у мажордома...
-            answer = self.majordomo.majordomo(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT]).strip()
+            answer = self.majordomo.majordomo(self.msg_rec[MCHAT_TITLE],
+                                              self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у метеоролога...
-            answer = self.meteorolog.meteorolog(self.msg_rec[MCHAT_TITLE], self.msg_rec[MTEXT]).strip()
+            answer = self.meteorolog.meteorolog(self.msg_rec[MCHAT_TITLE],
+                                                self.msg_rec[MTEXT]).strip()
         if not answer:
 
             # *** ... или у модератора...
@@ -392,12 +397,14 @@ class CSoftIceBot:
             answer = self.theolog.theolog(self.msg_rec[MCHAT_TITLE],
                                           self.msg_rec[MTEXT]).strip()
         if not answer:
+
             # *** ... может, у болтуна есть, что сказать?
             answer = self.babbler.babbler(self.msg_rec[MCHAT_TITLE],
                                           self.msg_rec[MUSER_NAME],
                                           self.msg_rec[MUSER_TITLE],
                                           self.msg_rec[MTEXT]).strip()
         if not answer:
+
             # *** Незнакомая команда.
             print(f"* Запрошена неподдерживаемая команда {self.msg_rec[MTEXT]}.")
             self.logger.info("* Запрошена неподдерживаемая команда %s"
@@ -407,16 +414,18 @@ class CSoftIceBot:
     def reload_config(self) -> bool:
         """Проверяет, не является ли поданная команда командой перезагрузки конфигурации."""
         # *** Такое запрашивать может только хозяин
-        if self.is_master(self.msg_rec[MUSER_NAME]):
+        if self.is_master():
 
             self.robot.send_message(self.msg_rec[MCHAT_ID], "Обновляю конфигурацию.")
             self.load_config(CONFIG_FILE_NAME)
             self.robot.send_message(self.msg_rec[MCHAT_ID], "Конфигурация обновлена.")
             return True
-        print(f"* Запрос на перезагрузку конфига от нелегитимного лица {self.msg_rec[MUSER_TITLE]}.")
+        print(f"* Запрос на перезагрузку конфига "
+              f"от нелегитимного лица {self.msg_rec[MUSER_TITLE]}.")
         self.logger.warning("Запрос на перезагрузку конфига от нелегитимного лица %s.",
                             self.msg_rec[MUSER_TITLE])
-        self.robot.send_message(self.msg_rec[MCHAT_ID], f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
+        self.robot.send_message(self.msg_rec[MCHAT_ID],
+                                f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
         return False
 
     def send_help(self) -> str:
@@ -439,20 +448,22 @@ class CSoftIceBot:
 
     def stop_working(self):
         """Проверка, вдруг была команда выхода."""
-        if self.is_master(self.msg_rec[MUSER_NAME]):
+        if self.is_master():
 
             self.robot.send_message(self.msg_rec[MCHAT_ID], "Добби свободен!")
             os.remove(self.running_flag)
             raise CQuitByDemand()
-        self.robot.send_message(self.msg_rec[MCHAT_ID], f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
+        self.robot.send_message(self.msg_rec[MCHAT_ID],
+                                f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
 
     def restart(self):
         """Проверка, вдруг была команда рестарта."""
-        if self.is_master(self.msg_rec[MUSER_NAME]):
+        if self.is_master():
 
             self.robot.send_message(self.msg_rec[MCHAT_ID], "Щасвирнус.")
             raise CRestartByDemand()
-        self.robot.send_message(self.msg_rec[MCHAT_ID], f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
+        self.robot.send_message(self.msg_rec[MCHAT_ID],
+                                f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
 
     def poll_forever(self):
         """Функция опроса ботом телеграмма."""
