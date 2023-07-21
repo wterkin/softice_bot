@@ -5,9 +5,11 @@
 import random
 import string
 from datetime import datetime
+# from pdb import pm
 from time import sleep
 from pathlib import Path
 import functions as func
+import constants as cn
 import prototype
 
 # *** Команда перегрузки текстов
@@ -34,29 +36,24 @@ class CBabbler(prototype.CPrototype):
         self.last_phrase_time: datetime = datetime.now()
         self.reload()
 
-    def babbler(self, pchat_title: str, puser_name: str, puser_title: str,
-                pmessage_text: str) -> str:
+    def babbler(self, pmsg_rec: dict) -> str:
         """Улучшенная версия болтуна."""
-        assert pchat_title is not None, \
-            "Assert: [babbler.babbler] Пропущен параметр <pchat_title> !"
-        assert pmessage_text is not None, \
-            "Assert: [babbler.babbler] Пропущен параметр <pmessage_text> !"
         answer: str = ""
-        word_list: list = func.parse_input(pmessage_text)
-        if self.can_process(pchat_title, pmessage_text):
+        word_list: list = func.parse_input(pmsg_rec[cn.MTEXT])
+        if self.can_process(pmsg_rec[cn.MCHAT_TITLE], pmsg_rec[cn.MTEXT]):
 
             # *** Возможно, запросили перезагрузку базы.
             if word_list[0] in BABBLER_RELOAD:
 
-                if self.is_master(puser_name):
+                if self.is_master(pmsg_rec[cn.MUSER_NAME]):
 
                     self.reload()
                     answer = "База болтуна обновлена"
                 else:
 
                     print(f"> Babbler: Запрос на перезагрузку конфига от "
-                          f"нелегитимного лица {puser_title}.")
-                    answer = f"У вас нет на это прав, {puser_title}."
+                          f"нелегитимного лица {pmsg_rec[cn.MUSER_TITLE]}.")
+                    answer = f"У вас нет на это прав, {pmsg_rec[cn.MUSER_TITLE]}."
         return answer
 
     def can_process(self, pchat_title: str, pmessage_text: str) -> bool:
@@ -81,7 +78,6 @@ class CBabbler(prototype.CPrototype):
         assert pchat_title is not None, \
             "Assert: [babbler.is_enabled] Пропущен параметр <pchat_title> !"
         return UNIT_ID in self.config["chats"][pchat_title]
-        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
 
     def is_master(self, puser_name: str) -> bool:
         """Проверяет, хозяин ли отдал команду."""
@@ -103,7 +99,6 @@ class CBabbler(prototype.CPrototype):
                 module = Path(trigger).resolve().name
                 reaction = reactions_path / module
                 if reaction.is_file():
-
                     trigger_content: list = func.load_from_file(str(trigger))
                     block: list = [trigger_content]
                     reaction_content: list = func.load_from_file(str(reaction))
@@ -111,27 +106,24 @@ class CBabbler(prototype.CPrototype):
                     self.mind.append(block)
                     result = True
         if self.mind:
-
             print(f"> Babbler успешно (пере)загрузил {len(self.mind)} реакций.")
         return result
 
-    def talk(self, pchat_title: str, pmessage_text: str) -> str:
+    def talk(self, pmsg_rec: dict) -> str:
         """Улучшенная версия болтуна."""
-        assert pchat_title is not None, \
-            "Assert: [babbler.babbler] Пропущен параметр <pchat_title> !"
-        assert pmessage_text is not None, \
-            "Assert: [babbler.babbler] Пропущен параметр <pmessage_text> !"
+
         answer: str = ""
         # *** Заданный период времени с последней фразы прошел?
-        if self.is_enabled(pchat_title):
+        # print(f"&&&&& 2 {pmsg_rec[cn.MCHAT_TITLE]}")
+        # s = self.config["chats"][pmsg_rec[cn.MCHAT_TITLE]]
+        # print(f"&&&&& 3 {s}")
+        if self.is_enabled(pmsg_rec[cn.MCHAT_TITLE]):
 
             minutes: float = (datetime.now() - self.last_phrase_time).total_seconds() / \
                              int(self.config[BABBLER_PERIOD_KEY])
             if minutes > 1:
-
-                answer = self.think(pmessage_text)
+                answer = self.think(pmsg_rec[cn.MTEXT])
             if answer:
-
                 print(f"> Babbler отвечает: {answer[:func.OUT_MSG_LOG_LEN]}...")
                 self.last_phrase_time = datetime.now()
         return answer
@@ -140,28 +132,21 @@ class CBabbler(prototype.CPrototype):
         """Процесс принятия решений =)"""
         word_list: list = pmessage_text.split(" ")
         answer: str = ""
-        # print("*1")
         for word in word_list:
 
-            clean_word = word.rstrip(string.punctuation).lower()
-            # print(f"*2 {clean_word} {word}")
+            clean_word = word.rstrip(string.punctuation).lower().strip()
             if len(clean_word) > 1:
 
-                # print("*3")
                 for block in self.mind:
 
                     for block_item in block:
 
-                        # print(block_item, clean_word)
-                        if clean_word.strip() in block_item:
-
+                        if clean_word in block_item:
                             answer = f"{random.choice(block[REACTIONS_INDEX])}"
                             sleep(1)
                             break
                     if answer:
-
                         break
             if answer:
-
                 break
         return answer

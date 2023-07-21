@@ -17,6 +17,7 @@ import urllib3.exceptions
 # *** Собственные модули
 import functions as func
 import database
+import constants as cn
 import babbler
 import barman
 import bellringer
@@ -57,15 +58,15 @@ BOT_STATUS: int = CONTINUE_RUNNING
 RUNNING_FLAG: str = "running.flg"
 SLEEP_BEFORE_EXIT_BY_ERROR: int = 10
 
-MCHAT_TITLE: str = "chat_title"
-MCHAT_ID: str = "chat_id"
-MCOMMAND: str = "command"
-MUSER_NAME: str = "user_name"
-MUSER_TITLE: str = "user_title"
-MTEXT: str = "text"
-MCAPTION: str = "caption"
-MDATE: str = "date"
-CONTENT_TYPE: str = "content_type"
+# MCHAT_TITLE: str = "chat_title"
+# MCHAT_ID: str = "chat_id"
+# MCOMMAND: str = "command"
+# MUSER_NAME: str = "user_name"
+# MUSER_TITLE: str = "user_title"
+# MTEXT: str = "text"
+# MCAPTION: str = "caption"
+# MDATE: str = "date"
+# CONTENT_TYPE: str = "content_type"
 
 
 class CQuitByDemand(Exception):
@@ -196,23 +197,23 @@ class CSoftIceBot:
             if not self.is_this_chat_enabled():
 
                 # *** Если нет и это не приват...
-                if self.msg_rec[MCHAT_TITLE] is not None:
+                if self.msg_rec[cn.MCHAT_TITLE] is not None:
 
                     # *** Бота привели на чужой канал. Выходим.
-                    self.robot.send_message(self.msg_rec[MCHAT_ID],
+                    self.robot.send_message(self.msg_rec[cn.MCHAT_ID],
                                             "Вашего чата нет в списке разрешённых. Чао!")
-                    self.robot.leave_chat(self.msg_rec[MCHAT_ID])
+                    self.robot.leave_chat(self.msg_rec[cn.MCHAT_ID])
                     print("* Попытка нелегитимного использования "
-                          f"бота в чате {self.msg_rec[MCHAT_TITLE]}.")
+                          f"бота в чате {self.msg_rec[cn.MCHAT_TITLE]}.")
                     self.logger.warning("Попытка нелегитимного использования бота в чате %s.",
-                                        self.msg_rec[MCHAT_TITLE])
+                                        self.msg_rec[cn.MCHAT_TITLE])
                 else:
 
                     answer = "Я в приватах не работаю."
             else:
 
                 # *** Сообщение не протухло?
-                date_time: datetime = datetime.fromtimestamp(self.msg_rec[MDATE])
+                date_time: datetime = datetime.fromtimestamp(self.msg_rec[cn.MDATE])
                 if (datetime.now()-date_time).total_seconds() < 60:
 
                     # *** Модератор должен следить за порядком в чате
@@ -224,14 +225,14 @@ class CSoftIceBot:
                         if not answer:
 
                             # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                            if self.msg_rec[CONTENT_TYPE] == "text" and \
-                                    self.msg_rec[MTEXT] is not None:
+                            if self.msg_rec[cn.CONTENT_TYPE] == "text" and \
+                                    self.msg_rec[cn.MTEXT] is not None:
 
                                 # *** Если сообщение адресовано другому боту - пропускаем
-                                if not is_foreign_command(self.msg_rec[MCOMMAND]):
+                                if not is_foreign_command(self.msg_rec[cn.MCOMMAND]):
 
                                     # ***  Боту дали команду?
-                                    if self.msg_rec[MTEXT][0:1] == COMMAND_SIGN:
+                                    if self.msg_rec[cn.MTEXT][0:1] == COMMAND_SIGN:
 
                                         # *** Это системная команда?
                                         if not self.process_command():
@@ -241,15 +242,14 @@ class CSoftIceBot:
                                     else:
 
                                         # *** Нет. В этом чате статистик разрешен?
-                                        if self.statistic.is_enabled(self.msg_rec[MCHAT_TITLE]):
+                                        if self.statistic.is_enabled(self.msg_rec[cn.MCHAT_TITLE]):
 
                                             # *** Проапдейтим базу статистика
                                             self.statistic.save_all_type_of_messages(pmessage)
 
                                         # *** Болтуну есть что ответить?
-                                        answer = self.babbler.talk(self.msg_rec[MCHAT_TITLE],
-                                                                   self.msg_rec[MTEXT])
-                            elif self.msg_rec[CONTENT_TYPE] in EVENTS:
+                                        answer = self.babbler.talk(self.msg_rec)
+                            elif self.msg_rec[cn.CONTENT_TYPE] in EVENTS:
 
                                 self.statistic.save_all_type_of_messages(pmessage)
             # *** Ответ имеется?
@@ -258,10 +258,10 @@ class CSoftIceBot:
                 # *** Выводим ответ
                 if do_not_screen:
 
-                    self.robot.send_message(self.msg_rec[MCHAT_ID], answer, parse_mode="MarkdownV2")
+                    self.robot.send_message(self.msg_rec[cn.MCHAT_ID], answer, parse_mode="MarkdownV2")
                 else:
 
-                    self.robot.send_message(self.msg_rec[MCHAT_ID], func.screen_text(answer),
+                    self.robot.send_message(self.msg_rec[cn.MCHAT_ID], func.screen_text(answer),
                                             parse_mode="MarkdownV2")
 
     def decode_message(self, pmessage):
@@ -269,25 +269,25 @@ class CSoftIceBot:
         if pmessage.text is not None:
 
             text: str = pmessage.text
-            self.msg_rec[MCOMMAND] = text[1:]
-            self.msg_rec[MTEXT] = pmessage.text
+            self.msg_rec[cn.MCOMMAND] = text[1:]
+            self.msg_rec[cn.MTEXT] = pmessage.text
         if pmessage.caption is not None:
 
-            self.msg_rec[MCAPTION] = pmessage.caption
-        self.msg_rec[MCHAT_ID] = pmessage.chat.id
-        self.msg_rec[MCHAT_TITLE] = pmessage.chat.title
-        self.msg_rec[MUSER_NAME] = pmessage.from_user.username
-        self.msg_rec[MUSER_TITLE] = pmessage.from_user.first_name
-        self.msg_rec[MDATE] = pmessage.date
-        self.msg_rec[CONTENT_TYPE] = pmessage.content_type
+            self.msg_rec[cn.MCAPTION] = pmessage.caption
+        self.msg_rec[cn.MCHAT_ID] = pmessage.chat.id
+        self.msg_rec[cn.MCHAT_TITLE] = pmessage.chat.title
+        self.msg_rec[cn.MUSER_NAME] = pmessage.from_user.username
+        self.msg_rec[cn.MUSER_TITLE] = pmessage.from_user.first_name
+        self.msg_rec[cn.MDATE] = pmessage.date
+        self.msg_rec[cn.CONTENT_TYPE] = pmessage.content_type
 
     def is_master(self) -> bool:
         """Проверяет, хозяин ли отдал команду."""
-        return self.msg_rec[MUSER_NAME] == self.config["master"]
+        return self.msg_rec[cn.MUSER_NAME] == self.config["master"]
 
     def is_this_chat_enabled(self) -> bool:
         """Проверяет, находится ли данный чат в списке разрешенных."""
-        return self.msg_rec[MCHAT_TITLE] in self.config[ENABLED_IN_CHATS_KEY]
+        return self.msg_rec[cn.MCHAT_TITLE] in self.config[ENABLED_IN_CHATS_KEY]
 
     def load_config(self, pconfig_name: str):
         """Загружает конфигурацию из JSON."""
@@ -312,24 +312,24 @@ class CSoftIceBot:
         """Обрабатывает системные команды"""
         result: bool = False
         # *** Это команда перезагрузки конфига?
-        if self.msg_rec[MCOMMAND] in CONFIG_COMMANDS:
+        if self.msg_rec[cn.MCOMMAND] in CONFIG_COMMANDS:
 
             result = self.reload_config()
         # *** Нет. Запросили выход?
-        elif self.msg_rec[MCOMMAND] in EXIT_COMMANDS:
+        elif self.msg_rec[cn.MCOMMAND] in EXIT_COMMANDS:
 
             self.stop_working()
             result = True
         # *** Опять нет. Запросили помощь?
-        elif self.msg_rec[MCOMMAND] in HELP_COMMANDS:
+        elif self.msg_rec[cn.MCOMMAND] in HELP_COMMANDS:
 
             answer: str = self.send_help()
             if answer:
 
-                self.robot.send_message(self.msg_rec[MCHAT_ID], answer)
+                self.robot.send_message(self.msg_rec[cn.MCHAT_ID], answer)
             result = True
         # *** Нет. Запросили рестарт?
-        elif self.msg_rec[MCOMMAND] in RESTART_COMMAND:
+        elif self.msg_rec[cn.MCOMMAND] in RESTART_COMMAND:
 
             self.restart()
             result = True
@@ -338,43 +338,43 @@ class CSoftIceBot:
     def process_modules(self, pmessage):
         """Пытается обработать команду различными модулями."""
         # *** Проверим, не запросил ли пользователь что-то у бармена...
-        answer: str = self.barman.barman(self.msg_rec[MCHAT_TITLE],
-                                         self.msg_rec[MUSER_NAME],
-                                         self.msg_rec[MUSER_TITLE],
-                                         self.msg_rec[MTEXT]).strip()
+        answer: str = self.barman.barman(self.msg_rec[cn.MCHAT_TITLE],
+                                         self.msg_rec[cn.MUSER_NAME],
+                                         self.msg_rec[cn.MUSER_TITLE],
+                                         self.msg_rec[cn.MTEXT]).strip()
         do_not_screen: bool = False
 
         if not answer:
 
             # *** Или у звонаря
-            answer = self.bellringer.bellringer(self.msg_rec[MCHAT_TITLE],
-                                                self.msg_rec[MTEXT]).strip()
+            answer = self.bellringer.bellringer(self.msg_rec[cn.MCHAT_TITLE],
+                                                self.msg_rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** ... или у хайдзина
-            answer = self.haijin.haijin(self.msg_rec[MCHAT_TITLE],
-                                        self.msg_rec[MUSER_NAME],
-                                        self.msg_rec[MUSER_TITLE],
-                                        self.msg_rec[MTEXT])
+            answer = self.haijin.haijin(self.msg_rec[cn.MCHAT_TITLE],
+                                        self.msg_rec[cn.MUSER_NAME],
+                                        self.msg_rec[cn.MUSER_TITLE],
+                                        self.msg_rec[cn.MTEXT])
             do_not_screen = True
         if not answer:
 
             do_not_screen = False
             # *** ... или у библиотекаря...
-            answer = self.librarian.librarian(self.msg_rec[MCHAT_TITLE],
-                                              self.msg_rec[MUSER_NAME],
-                                              self.msg_rec[MUSER_TITLE],
-                                              self.msg_rec[MTEXT]).strip()
+            answer = self.librarian.librarian(self.msg_rec[cn.MCHAT_TITLE],
+                                              self.msg_rec[cn.MUSER_NAME],
+                                              self.msg_rec[cn.MUSER_TITLE],
+                                              self.msg_rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** или у мажордома...
-            answer = self.majordomo.majordomo(self.msg_rec[MCHAT_TITLE],
-                                              self.msg_rec[MTEXT]).strip()
+            answer = self.majordomo.majordomo(self.msg_rec[cn.MCHAT_TITLE],
+                                              self.msg_rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** ... или у метеоролога...
-            answer = self.meteorolog.meteorolog(self.msg_rec[MCHAT_TITLE],
-                                                self.msg_rec[MTEXT]).strip()
+            answer = self.meteorolog.meteorolog(self.msg_rec[cn.MCHAT_TITLE],
+                                                self.msg_rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** ... или у модератора...
@@ -382,33 +382,30 @@ class CSoftIceBot:
         if not answer:
 
             # *** ... или у статистика...
-            answer = self.statistic.statistic(self.msg_rec[MCHAT_ID],
-                                              self.msg_rec[MCHAT_TITLE],
-                                              self.msg_rec[MUSER_TITLE],
-                                              self.msg_rec[MTEXT]).strip()
+            answer = self.statistic.statistic(self.msg_rec[cn.MCHAT_ID],
+                                              self.msg_rec[cn.MCHAT_TITLE],
+                                              self.msg_rec[cn.MUSER_TITLE],
+                                              self.msg_rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** ... или у звездочёта...
-            answer = self.stargazer.stargazer(self.msg_rec[MCHAT_TITLE],
-                                              self.msg_rec[MTEXT]).strip()
+            answer = self.stargazer.stargazer(self.msg_rec[cn.MCHAT_TITLE],
+                                              self.msg_rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** ... или у теолога...
-            answer = self.theolog.theolog(self.msg_rec[MCHAT_TITLE],
-                                          self.msg_rec[MTEXT]).strip()
+            answer = self.theolog.theolog(self.msg_rec[cn.MCHAT_TITLE],
+                                          self.msg_rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** ... может, у болтуна есть, что сказать?
-            answer = self.babbler.babbler(self.msg_rec[MCHAT_TITLE],
-                                          self.msg_rec[MUSER_NAME],
-                                          self.msg_rec[MUSER_TITLE],
-                                          self.msg_rec[MTEXT]).strip()
+            answer = self.babbler.babbler(self.msg_rec).strip()
         if not answer:
 
             # *** Незнакомая команда.
-            print(f"* Запрошена неподдерживаемая команда {self.msg_rec[MTEXT]}.")
+            print(f"* Запрошена неподдерживаемая команда {self.msg_rec[cn.MTEXT]}.")
             self.logger.info("* Запрошена неподдерживаемая команда %s"
-                             " в чате %s.", self.msg_rec[MTEXT], self.msg_rec[MCHAT_TITLE])
+                             " в чате %s.", self.msg_rec[cn.MTEXT], self.msg_rec[cn.MCHAT_TITLE])
         return answer, do_not_screen
 
     def reload_config(self) -> bool:
@@ -416,30 +413,30 @@ class CSoftIceBot:
         # *** Такое запрашивать может только хозяин
         if self.is_master():
 
-            self.robot.send_message(self.msg_rec[MCHAT_ID], "Обновляю конфигурацию.")
+            self.robot.send_message(self.msg_rec[cn.MCHAT_ID], "Обновляю конфигурацию.")
             self.load_config(CONFIG_FILE_NAME)
-            self.robot.send_message(self.msg_rec[MCHAT_ID], "Конфигурация обновлена.")
+            self.robot.send_message(self.msg_rec[cn.MCHAT_ID], "Конфигурация обновлена.")
             return True
         print(f"* Запрос на перезагрузку конфига "
-              f"от нелегитимного лица {self.msg_rec[MUSER_TITLE]}.")
+              f"от нелегитимного лица {self.msg_rec[cn.MUSER_TITLE]}.")
         self.logger.warning("Запрос на перезагрузку конфига от нелегитимного лица %s.",
-                            self.msg_rec[MUSER_TITLE])
-        self.robot.send_message(self.msg_rec[MCHAT_ID],
-                                f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
+                            self.msg_rec[cn.MUSER_TITLE])
+        self.robot.send_message(self.msg_rec[cn.MCHAT_ID],
+                                f"У вас нет на это прав, {self.msg_rec[cn.MUSER_TITLE]}.")
         return False
 
     def send_help(self) -> str:
         """Проверяет, не была ли запрошена подсказка."""
         # *** Собираем ответы модулей на запрос помощи
-        answer: str = f"""\n{self.barman.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.bellringer.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.haijin.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.librarian.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.majordomo.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.meteorolog.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.statistic.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.stargazer.get_hint(self.msg_rec[MCHAT_TITLE])}
-                          \n{self.theolog.get_hint(self.msg_rec[MCHAT_TITLE])}""".strip()
+        answer: str = f"""\n{self.barman.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.bellringer.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.haijin.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.librarian.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.majordomo.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.meteorolog.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.statistic.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.stargazer.get_hint(self.msg_rec[cn.MCHAT_TITLE])}
+                          \n{self.theolog.get_hint(self.msg_rec[cn.MCHAT_TITLE])}""".strip()
         # *** Если ответы есть, отвечаем на запрос
         if answer:
 
@@ -450,20 +447,20 @@ class CSoftIceBot:
         """Проверка, вдруг была команда выхода."""
         if self.is_master():
 
-            self.robot.send_message(self.msg_rec[MCHAT_ID], "Добби свободен!")
+            self.robot.send_message(self.msg_rec[cn.MCHAT_ID], "Добби свободен!")
             os.remove(self.running_flag)
             raise CQuitByDemand()
-        self.robot.send_message(self.msg_rec[MCHAT_ID],
-                                f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
+        self.robot.send_message(self.msg_rec[cn.MCHAT_ID],
+                                f"У вас нет на это прав, {self.msg_rec[cn.MUSER_TITLE]}.")
 
     def restart(self):
         """Проверка, вдруг была команда рестарта."""
         if self.is_master():
 
-            self.robot.send_message(self.msg_rec[MCHAT_ID], "Щасвирнус.")
+            self.robot.send_message(self.msg_rec[cn.MCHAT_ID], "Щасвирнус.")
             raise CRestartByDemand()
-        self.robot.send_message(self.msg_rec[MCHAT_ID],
-                                f"У вас нет на это прав, {self.msg_rec[MUSER_TITLE]}.")
+        self.robot.send_message(self.msg_rec[cn.MCHAT_ID],
+                                f"У вас нет на это прав, {self.msg_rec[cn.MUSER_TITLE]}.")
 
     def poll_forever(self):
         """Функция опроса ботом телеграмма."""
