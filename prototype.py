@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod  # , abstractproperty
 
 
 class CPrototype:
-    """Прототип классов модулей бота."""
+    """Прототип классов модулей бота.. """
     __metaclass__ = ABCMeta
 
     def __init__(self):
