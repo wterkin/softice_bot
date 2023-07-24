@@ -6,6 +6,7 @@ from pathlib import Path
 # import random
 import functions as func
 import prototype
+import constants as cn
 
 RELOAD_BAD_WORDS: list = ["bwreload", "bwrl"]
 HINT = ["адм", "adm"]
@@ -53,20 +54,7 @@ class CModerator(prototype.CPrototype):
         return self.is_enabled(pchat_title) and ((word_list[0] in RELOAD_BAD_WORDS)
                                                  or (word_list[0] in HINT))
 
-    def check_bad_words(self, pmessage) -> bool:
-        """Проверяет сообщение на наличие мата."""
-        result: bool = False
-        if pmessage is not None:
-
-            for word in self.bad_words:
-
-                # print(word)
-                result = re.match(word, pmessage.lower()) is not None
-                if result:
-                    break
-        return result
-
-    def check_bad_words_ex(self, pmessage) -> str:
+    def check_bad_words_ex(self, pmessage: str) -> str:
         """Проверяет сообщение на наличие мата."""
         answer: str = ""
         detected: bool = False
@@ -90,31 +78,31 @@ class CModerator(prototype.CPrototype):
 
         return answer
 
-    def control_talking(self, pmessage):
+    def control_talking(self, prec):
         """Следит за матершинниками."""
         answer: str = ""
         source_text: str
         text: str
 
-        if pmessage.content_type == "text":
+        if prec[cn.MCONTENT_TYPE] == "text":
 
-            source_text = pmessage.text
+            source_text = prec[cn.MTEXT]
         else:
 
-            source_text = pmessage.caption
+            source_text = prec[cn.MCAPTION]
         # print(text)
-        if self.is_enabled(pmessage.chat.title):
+        if self.is_enabled(prec[cn.MCHAT_TITLE]):
 
             # print(text)
             text = self.check_bad_words_ex(source_text)
             if text:
 
-                self.bot.delete_message(chat_id=pmessage.chat.id, message_id=pmessage.message_id)
-                answer = pmessage.from_user.first_name
-                if pmessage.from_user.last_name:
+                self.bot.delete_message(chat_id=prec[cn.MCHAT_ID], message_id=prec[cn.MMESSAGE_ID])
+                answer = prec[cn.MUSER_TITLE]
+                if prec[cn.MUSER_LASTNAME]:
 
-                    answer += pmessage.from_user.last_name
-                print(f"Пользователь {answer} матерился в чате {pmessage.chat.title}.")
+                    answer += prec[cn.MUSER_LASTNAME]
+                print(f"Пользователь {answer} матерился в чате {prec[cn.MCHAT_TITLE]}.")
                 print(f"Он сказал: {source_text}")
                 answer += f" хотел сказать \"{text}\""
         return answer
@@ -150,24 +138,25 @@ class CModerator(prototype.CPrototype):
               f"матерных выражений от нелегитимного лица {puser_title}.")
         return False, f"У вас нет на это прав, {puser_title}."
 
-    def moderator(self, pmessage) -> str:
+    def moderator(self, prec) -> str:
         """Процедура разбора запроса пользователя."""
         # *** Проверим, всё ли в порядке в чате
-        answer: str = self.control_talking(pmessage)
+        answer: str = self.control_talking(prec)
+        # print("!!!!! 1", prec)
         if not answer:
 
-            if pmessage.text is not None:
+            if prec[cn.MTEXT] is not None:
 
                 # *** Порядок. Возможно, запрошена команда. Мы ее умеем?
-                if self.can_process(pmessage.chat.title, pmessage.text):
+                if self.can_process(prec[cn.MCHAT_TITLE], prec[cn.MTEXT]):
 
                     # *** Да. Возможно, запросили перезагрузку.
-                    word_list: list = func.parse_input(pmessage.text)
+                    word_list: list = func.parse_input(prec[cn.MTEXT])
                     if word_list[0] in RELOAD_BAD_WORDS:
 
                         # *** Пользователь хочет перезагрузить словарь мата.
-                        can_reload, answer = self.is_master(pmessage.from_user.username,
-                                                            pmessage.from_user.first_name)
+                        can_reload, answer = self.is_master(prec[cn.MUSER_NAME],
+                                                            prec[cn.MUSER_TITLE])
                         if can_reload:
 
                             self.reload()
@@ -176,8 +165,8 @@ class CModerator(prototype.CPrototype):
 
                             # *** ... но не тут-то было...
                             print(f"> Moderator: Запрос на перегрузку словаря мата от "
-                                  f"нелегитимного лица {pmessage.from_user.first_name}.")
-                            answer = (f"Извини, {pmessage.from_user.first_name}, "
+                                  f"нелегитимного лица {prec[cn.MUSER_TITLE]}.")
+                            answer = (f"Извини, {prec[cn.MUSER_TITLE]}, "
                                       f"только {self.config['master_name']} может "
                                       "перегружать словарь мата!")
         return answer

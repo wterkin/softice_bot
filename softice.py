@@ -193,7 +193,7 @@ class CSoftIceBot:
         def process_message(pmessage):
 
             do_not_screen: bool = False
-            answer: str = ""
+            answer: str
             # *** Вытаскиваем из сообщения нужные поля
             self.decode_message(pmessage)
             # self.events.append(copy.deepcopy(self.msg_rec))
@@ -208,31 +208,34 @@ class CSoftIceBot:
                 if self.is_message_actual(self.event):
 
                     # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                    if self.event[cn.CONTENT_TYPE] == "text" and \
+                    if self.event[cn.MCONTENT_TYPE] == "text" and \
                             self.event[cn.MTEXT] is not None:
 
                         # *** Если сообщение адресовано другому боту - пропускаем
                         if not is_foreign_command(self.event[cn.MCOMMAND]):
 
-                            # ***  Боту дали команду?
-                            if self.event[cn.MTEXT][0:1] == COMMAND_SIGN:
+                            answer = self.moderator.moderator(self.event)
+                            if not answer:
 
-                                # *** Это системная команда?
-                                if not self.process_command():
+                                # ***  Боту дали команду?
+                                if self.event[cn.MTEXT][0:1] == COMMAND_SIGN:
 
-                                    # *** Нет. Ну и пусть модули разбираются....
-                                    answer, do_not_screen = self.process_modules(pmessage)
-                            else:
+                                    # *** Это системная команда?
+                                    if not self.process_command():
 
-                                # *** Нет. В этом чате статистик разрешен?
-                                if self.statistic.is_enabled(self.msg_rec[cn.MCHAT_TITLE]):
+                                        # *** Нет. Ну и пусть модули разбираются....
+                                        answer, do_not_screen = self.process_modules(pmessage)
+                                else:
 
-                                    # *** Проапдейтим базу статистика
-                                    self.statistic.save_all_type_of_messages(pmessage)
+                                    # *** Нет. В этом чате статистик разрешен?
+                                    if self.statistic.is_enabled(self.msg_rec[cn.MCHAT_TITLE]):
 
-                                # *** Болтуну есть что ответить?
-                                answer = self.babbler.talk(self.msg_rec)
-                    elif self.msg_rec[cn.CONTENT_TYPE] in EVENTS:
+                                        # *** Проапдейтим базу статистика
+                                        self.statistic.save_all_type_of_messages(pmessage)
+
+                                    # *** Болтуну есть что ответить?
+                                    answer = self.babbler.talk(self.msg_rec)
+                    elif self.msg_rec[cn.MCONTENT_TYPE] in EVENTS:
 
                         self.statistic.save_all_type_of_messages(pmessage)
             # *** Ответ имеется?
@@ -261,8 +264,10 @@ class CSoftIceBot:
         self.msg_rec[cn.MCHAT_TITLE] = pmessage.chat.title
         self.msg_rec[cn.MUSER_NAME] = pmessage.from_user.username
         self.msg_rec[cn.MUSER_TITLE] = pmessage.from_user.first_name
+        self.msg_rec[cn.MUSER_LASTNAME] = pmessage.from_user.last_name
         self.msg_rec[cn.MDATE] = pmessage.date
-        self.msg_rec[cn.CONTENT_TYPE] = pmessage.content_type
+        self.msg_rec[cn.MCONTENT_TYPE] = pmessage.content_type
+        self.msg_rec[cn.MMESSAGE_ID] = pmessage.message_id
 
     def is_chat_legitimate(self, pevent) -> str:
         """Проверяет, если ли этот чат в списке разрешенных."""
@@ -352,14 +357,10 @@ class CSoftIceBot:
         do_not_screen: bool = False
         # *** Когда-нибудь я допишу супервайзера
         # !!! answer = self.supervisor.supervisor(pmessage)
-        answer = self.moderator.moderator(pmessage)
-        if not answer:
-
-            # *** ... или у модератора...
-            answer: str = self.barman.barman(rec[cn.MCHAT_TITLE],
-                                             rec[cn.MUSER_NAME],
-                                             rec[cn.MUSER_TITLE],
-                                             rec[cn.MTEXT]).strip()
+        answer: str = self.barman.barman(rec[cn.MCHAT_TITLE],
+                                         rec[cn.MUSER_NAME],
+                                         rec[cn.MUSER_TITLE],
+                                         rec[cn.MTEXT]).strip()
         if not answer:
 
             # *** Или у звонаря
