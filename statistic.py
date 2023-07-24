@@ -5,6 +5,7 @@
 import prototype
 import database as db
 import functions as func
+import constants as cn
 
 TOP_10_COMMAND = [0, 4]
 TOP_25_COMMAND = [1, 5]
@@ -28,17 +29,18 @@ def decode_stat(pstat: db.CStat):
         pstat.fpictures, pstat.faudios, pstat.fvideos
 
 
-def extract_user_name(pmessage):
+def extract_user_name(pevent: dict):
     """Возвращает имя пользователя, при его наличии."""
     tg_user_title: str = ""
     # *** Если есть у юзера первое имя - берем.
-    if pmessage.from_user.first_name is not None:
 
-        tg_user_title: str = pmessage.from_user.first_name
+    if cn.MUSER_TITLE in pevent:
+
+        tg_user_title: str = pevent[cn.MUSER_TITLE]
     # *** Если есть у юзера второе имя - тож берем.
-    if pmessage.from_user.last_name is not None:
+    if cn.MUSER_LASTNAME in pevent:
 
-        tg_user_title += " " + pmessage.from_user.last_name
+        tg_user_title += " " + pevent[cn.MUSER_LASTNAME]
     return tg_user_title
 
 
@@ -201,15 +203,18 @@ class CStatistic(prototype.CPrototype):
     def reload(self):
         """Вызывает перезагрузку внешних данных модуля."""
 
-    def save_all_type_of_messages(self, pmessage):
+    def save_all_type_of_messages(self, pevent: dict):
         """Учитывает стикеры, видео, аудиосообщения."""
-        message_text: str = pmessage.text
-        # print(f"*** STT:SATOM:{pmessage.chat.id}")
-        tg_chat_id: int = pmessage.chat.id
-        tg_chat_title: str = pmessage.chat.title
-        tg_user_title: str = ""
-        tg_user_id: int = pmessage.from_user.id
-        tg_user_name: str = pmessage.from_user.username
+        message_text: str = pevent[cn.MTEXT]
+        tg_chat_id: int = pevent[cn.MCHAT_ID]
+        tg_chat_title: str = pevent[cn.MCHAT_TITLE]
+        # tg_user_title: str = ""
+        tg_user_id: int = pevent[cn.MUSER_ID]
+        tg_user_name: str
+        if cn.MUSER_NAME in pevent:
+
+            tg_user_name = pevent[cn.MUSER_NAME]
+
         statfields: dict = {db.STATUSERID: 0,
                             db.STATLETTERS: 0,
                             db.STATWORDS: 0,
@@ -219,12 +224,11 @@ class CStatistic(prototype.CPrototype):
                             db.STATAUDIOS: 0,
                             db.STATVIDEOS: 0}
 
-        tg_user_title = extract_user_name(pmessage)
+        tg_user_title = extract_user_name(pevent)
         # *** Это не бот написал? Чужой бот, не наш?
         if tg_user_name not in self.config[FOREIGN_BOTS]:
 
             # Проверить, нет ли уже этого чата в таблице чатов
-            # print("*"*10, tg_chat_id)
             chat_id = self.get_chat_id(tg_chat_id)
             if chat_id is None:
 
@@ -242,19 +246,19 @@ class CStatistic(prototype.CPrototype):
 
                 statfields = user_stat.get_all_fields()  # !!! тут
             # *** Изменяем статистику юзера в зависимости от типа сообщения
-            if pmessage.content_type in ["video", "video_note"]:
+            if pevent[cn.MCONTENT_TYPE] in ["video", "video_note"]:
 
                 statfields[db.STATVIDEOS] += 1
-            elif pmessage.content_type in ["audio", "voice"]:
+            elif pevent[cn.MCONTENT_TYPE] in ["audio", "voice"]:
 
                 statfields[db.STATAUDIOS] += 1
-            elif pmessage.content_type == "photo":
+            elif pevent[cn.MCONTENT_TYPE] == "photo":
 
                 statfields[db.STATPICTURES] += 1
-            elif pmessage.content_type == "sticker":
+            elif pevent[cn.MCONTENT_TYPE] == "sticker":
 
                 statfields[db.STATSTICKERS] += 1
-            elif pmessage.content_type == "text":
+            elif pevent[cn.MCONTENT_TYPE] == "text":
 
                 if message_text[0] != "!":
 

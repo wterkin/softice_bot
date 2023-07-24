@@ -192,16 +192,12 @@ class CSoftIceBot:
         @self.robot.message_handler(content_types=EVENTS)
         def process_message(pmessage):
 
-            # do_not_screen: bool = False
             answer: str
             # *** Вытаскиваем из сообщения нужные поля
             self.decode_message(pmessage)
-            # self.events.append(copy.deepcopy(self.msg_rec))
-            # if self.event == {}:
-
             self.event = copy.deepcopy(self.msg_rec)
             # *** Проверим, легитимный ли этот чат
-            answer = self.is_chat_legitimate(self.event)
+            answer = self.is_chat_legitimate(self.event).strip()
             if not answer:
 
                 # *** Сообщение не протухло?
@@ -215,7 +211,7 @@ class CSoftIceBot:
                         if not is_foreign_command(self.event[cn.MCOMMAND]):
 
                             # *** Если модератору что-то не понравилось...
-                            answer = self.moderator.moderator(self.event)
+                            answer = self.moderator.moderator(self.event).strip()
                             if not answer:
 
                                 # ***  Боту дали команду?
@@ -225,20 +221,20 @@ class CSoftIceBot:
                                     if not self.process_command():
 
                                         # *** Нет. Ну и пусть модули разбираются....
-                                        answer = self.process_modules(pmessage)
+                                        answer = self.process_modules(pmessage).strip()
                                 else:
 
                                     # *** Нет. В этом чате статистик разрешен?
                                     if self.statistic.is_enabled(self.event[cn.MCHAT_TITLE]):
 
                                         # *** Проапдейтим базу статистика
-                                        self.statistic.save_all_type_of_messages(pmessage)
+                                        self.statistic.save_all_type_of_messages(self.event)
 
                                     # *** Болтуну есть что ответить?
-                                    answer = self.babbler.talk(self.event)
+                                    answer = self.babbler.talk(self.event).strip()
                     elif self.event[cn.MCONTENT_TYPE] in EVENTS:
 
-                        self.statistic.save_all_type_of_messages(pmessage)
+                        self.statistic.save_all_type_of_messages(self.event)
             # *** Ответ имеется?
             if answer:
 
@@ -246,17 +242,20 @@ class CSoftIceBot:
 
     def decode_message(self, pmessage):
         """Декодирует нужные поля сообщения в словарь."""
-        if pmessage.text is not None:
+        if pmessage.text:
 
             text: str = pmessage.text.strip()
             self.msg_rec[cn.MCOMMAND] = text[1:]
             self.msg_rec[cn.MTEXT] = pmessage.text.strip()
-        if pmessage.caption is not None:
+        if pmessage.caption:
 
             self.msg_rec[cn.MCAPTION] = pmessage.caption.strip()
         self.msg_rec[cn.MCHAT_ID] = pmessage.chat.id
         self.msg_rec[cn.MCHAT_TITLE] = pmessage.chat.title.strip()
-        self.msg_rec[cn.MUSER_NAME] = pmessage.from_user.username.strip()
+        self.msg_rec[cn.MUSER_ID] = pmessage.from_user.id
+        if pmessage.from_user.username:
+
+            self.msg_rec[cn.MUSER_NAME] = pmessage.from_user.username.strip()
         self.msg_rec[cn.MUSER_TITLE] = pmessage.from_user.first_name.strip()
         if pmessage.from_user.last_name:
 
@@ -354,42 +353,48 @@ class CSoftIceBot:
         # *** Когда-нибудь я допишу супервайзера
         # !!! answer = self.supervisor.supervisor(pmessage)
         answer = self.moderator.moderator(rec)
+        # print(f"*** moderator [{answer}]")
         if not answer:
             answer: str = self.barman.barman(rec[cn.MCHAT_TITLE],
                                              rec[cn.MUSER_NAME],
                                              rec[cn.MUSER_TITLE],
                                              rec[cn.MTEXT]).strip()
+            # print(f"*** barmen [{answer}]")
         if not answer:
 
             # *** Или у звонаря
             answer = self.bellringer.bellringer(rec[cn.MCHAT_TITLE],
                                                 rec[cn.MTEXT]).strip()
+            # print(f"*** bellringer [{answer}]")
         if not answer:
 
             # *** ... или у хайдзина
             answer = self.haijin.haijin(rec[cn.MCHAT_TITLE],
                                         rec[cn.MUSER_NAME],
                                         rec[cn.MUSER_TITLE],
-                                        rec[cn.MTEXT])
+                                        rec[cn.MTEXT]).strip()
             # do_not_screen = True
+            # print(f"*** haijin [{answer}]")
         if not answer:
 
-            # do_not_screen = False
             # *** ... или у библиотекаря...
             answer = self.librarian.librarian(rec[cn.MCHAT_TITLE],
                                               rec[cn.MUSER_NAME],
                                               rec[cn.MUSER_TITLE],
                                               rec[cn.MTEXT]).strip()
+            # print(f"*** librarian [{answer}]")
         if not answer:
 
             # *** или у мажордома...
             answer = self.majordomo.majordomo(rec[cn.MCHAT_TITLE],
                                               rec[cn.MTEXT]).strip()
+            # print(f"*** majordomo [{answer}]")
         if not answer:
 
             # *** ... или у метеоролога...
             answer = self.meteorolog.meteorolog(rec[cn.MCHAT_TITLE],
                                                 rec[cn.MTEXT]).strip()
+            # print(f"*** meteorolog [{answer}]")
         if not answer:
 
             # *** ... или у статистика...
@@ -397,20 +402,24 @@ class CSoftIceBot:
                                               rec[cn.MCHAT_TITLE],
                                               rec[cn.MUSER_TITLE],
                                               rec[cn.MTEXT]).strip()
+            # print(f"*** statistic [{answer}]")
         if not answer:
 
             # *** ... или у звездочёта...
             answer = self.stargazer.stargazer(rec[cn.MCHAT_TITLE],
                                               rec[cn.MTEXT]).strip()
+            # print(f"*** stargazer [{answer}]")
         if not answer:
 
             # *** ... или у теолога...
             answer = self.theolog.theolog(rec[cn.MCHAT_TITLE],
                                           rec[cn.MTEXT]).strip()
+            # print(f"*** theolog [{answer}]")
         if not answer:
 
             # *** ... может, у болтуна есть, что сказать?
             answer = self.babbler.babbler(rec).strip()
+            # print(f"*** babbler [{answer}]")
         if not answer:
 
             # *** Незнакомая команда.

@@ -1,6 +1,7 @@
 MCHAT_TITLE: str = "chat_title"
 MCHAT_ID: str = "chat_id"
 MCOMMAND: str = "command"
+MUSER_ID: str = "user_id"
 MUSER_NAME: str = "user_name"
 MUSER_TITLE: str = "user_title"
 MTEXT: str = "text"
