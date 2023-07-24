@@ -9,3 +9,5 @@ MDATE: str = "date"
 MCONTENT_TYPE: str = "content_type"
 MMESSAGE_ID: str = "message_id"
 MUSER_LASTNAME: str = "user_lastname"
+
+SCREENED: str = "\t"

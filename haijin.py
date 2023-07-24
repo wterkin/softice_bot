@@ -5,6 +5,7 @@
 import functions as func
 import prototype
 import librarian
+import constants as cn
 
 # *** Команды для цитатника хокку
 ASK_HOKKU_CMD: int = 0
@@ -198,7 +199,7 @@ class CHaijin(prototype.CPrototype):
                 else:
 
                     print("> Haijin отвечает: ", answer[:func.OUT_MSG_LOG_LEN])
-        return answer
+        return f"{cn.SCREENED}{answer}"
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если библиотекарь разрешен на этом канале."""
