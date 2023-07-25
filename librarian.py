@@ -57,7 +57,7 @@ def find_in_book(pbook: list, pword_list: list) -> str:
     if not answer:
 
         answer = messages.MESSAGE_NOT_FOUND
-    return answer # , result
+    return answer  # , result
 
 
 def get_command(pword: str) -> int:

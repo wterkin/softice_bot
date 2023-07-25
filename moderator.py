@@ -101,7 +101,7 @@ class CModerator(prototype.CPrototype):
                 answer = prec[cn.MUSER_TITLE]
                 if prec[cn.MUSER_LASTNAME]:
 
-                    answer += prec[cn.MUSER_LASTNAME]
+                    answer += " " + prec[cn.MUSER_LASTNAME]
                 print(f"Пользователь {answer} матерился в чате {prec[cn.MCHAT_TITLE]}.")
                 print(f"Он сказал: {source_text}")
                 answer += f" хотел сказать \"{text}\""
