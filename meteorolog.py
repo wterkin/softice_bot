@@ -187,10 +187,7 @@ class CMeteorolog(prototype.CPrototype):
         if pchat_title in self.config["chats"]:
 
             return UNIT_ID in self.config["chats"][pchat_title]
-        else:
-
-            return False
-        # return pchat_title in self.config[ENABLED_IN_CHATS_KEY]
+        return False
 
     def meteorolog(self, pchat_title: str, pmessage_text: str) -> str:
         """Процедура разбора запроса пользователя."""

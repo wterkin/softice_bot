@@ -205,74 +205,76 @@ class CStatistic(prototype.CPrototype):
 
     def save_all_type_of_messages(self, pevent: dict):
         """Учитывает стикеры, видео, аудиосообщения."""
-        message_text: str = pevent[cn.MTEXT]
-        tg_chat_id: int = pevent[cn.MCHAT_ID]
-        tg_chat_title: str = pevent[cn.MCHAT_TITLE]
-        # tg_user_title: str = ""
-        tg_user_id: int = pevent[cn.MUSER_ID]
-        tg_user_name: str
-        if cn.MUSER_NAME in pevent:
+        if self.is_enabled(pevent[cn.MCHAT_TITLE]):
 
-            tg_user_name = pevent[cn.MUSER_NAME]
+            message_text: str = pevent[cn.MTEXT]
+            tg_chat_id: int = pevent[cn.MCHAT_ID]
+            tg_chat_title: str = pevent[cn.MCHAT_TITLE]
+            # tg_user_title: str = ""
+            tg_user_id: int = pevent[cn.MUSER_ID]
+            tg_user_name: str = ""
+            if cn.MUSER_NAME in pevent:
 
-        statfields: dict = {db.STATUSERID: 0,
-                            db.STATLETTERS: 0,
-                            db.STATWORDS: 0,
-                            db.STATPHRASES: 0,
-                            db.STATPICTURES: 0,
-                            db.STATSTICKERS: 0,
-                            db.STATAUDIOS: 0,
-                            db.STATVIDEOS: 0}
+                tg_user_name = pevent[cn.MUSER_NAME]
 
-        tg_user_title = extract_user_name(pevent)
-        # *** Это не бот написал? Чужой бот, не наш?
-        if tg_user_name not in self.config[FOREIGN_BOTS]:
+            statfields: dict = {db.STATUSERID: 0,
+                                db.STATLETTERS: 0,
+                                db.STATWORDS: 0,
+                                db.STATPHRASES: 0,
+                                db.STATPICTURES: 0,
+                                db.STATSTICKERS: 0,
+                                db.STATAUDIOS: 0,
+                                db.STATVIDEOS: 0}
 
-            # Проверить, нет ли уже этого чата в таблице чатов
-            chat_id = self.get_chat_id(tg_chat_id)
-            if chat_id is None:
+            tg_user_title = extract_user_name(pevent)
+            # *** Это не бот написал? Чужой бот, не наш?
+            if tg_user_name not in self.config[FOREIGN_BOTS]:
 
-                # Нету еще, новый чат - добавить, и получить id
-                chat_id = self.add_chat_to_base(tg_chat_id, tg_chat_title)
-            # *** Проверить, нет ли юзера в таблице тг юзеров
-            user_id = self.get_user_id(tg_user_id)
-            if user_id is None:
+                # Проверить, нет ли уже этого чата в таблице чатов
+                chat_id = self.get_chat_id(tg_chat_id)
+                if chat_id is None:
 
-                # *** Нету, новый пользователь
-                user_id = self.add_user_to_base(tg_user_id, tg_user_title)
-            # *** Имеется ли в БД статистика по этому пользователю?
-            user_stat = self.get_user_stat(chat_id, user_id)
-            if user_stat is not None:
+                    # Нету еще, новый чат - добавить, и получить id
+                    chat_id = self.add_chat_to_base(tg_chat_id, tg_chat_title)
+                # *** Проверить, нет ли юзера в таблице тг юзеров
+                user_id = self.get_user_id(tg_user_id)
+                if user_id is None:
 
-                statfields = user_stat.get_all_fields()  # !!! тут
-            # *** Изменяем статистику юзера в зависимости от типа сообщения
-            if pevent[cn.MCONTENT_TYPE] in ["video", "video_note"]:
+                    # *** Нету, новый пользователь
+                    user_id = self.add_user_to_base(tg_user_id, tg_user_title)
+                # *** Имеется ли в БД статистика по этому пользователю?
+                user_stat = self.get_user_stat(chat_id, user_id)
+                if user_stat is not None:
 
-                statfields[db.STATVIDEOS] += 1
-            elif pevent[cn.MCONTENT_TYPE] in ["audio", "voice"]:
+                    statfields = user_stat.get_all_fields()  # !!! тут
+                # *** Изменяем статистику юзера в зависимости от типа сообщения
+                if pevent[cn.MCONTENT_TYPE] in ["video", "video_note"]:
 
-                statfields[db.STATAUDIOS] += 1
-            elif pevent[cn.MCONTENT_TYPE] == "photo":
+                    statfields[db.STATVIDEOS] += 1
+                elif pevent[cn.MCONTENT_TYPE] in ["audio", "voice"]:
 
-                statfields[db.STATPICTURES] += 1
-            elif pevent[cn.MCONTENT_TYPE] == "sticker":
+                    statfields[db.STATAUDIOS] += 1
+                elif pevent[cn.MCONTENT_TYPE] == "photo":
 
-                statfields[db.STATSTICKERS] += 1
-            elif pevent[cn.MCONTENT_TYPE] == "text":
+                    statfields[db.STATPICTURES] += 1
+                elif pevent[cn.MCONTENT_TYPE] == "sticker":
 
-                if message_text[0] != "!":
+                    statfields[db.STATSTICKERS] += 1
+                elif pevent[cn.MCONTENT_TYPE] == "text":
 
-                    statfields[db.STATLETTERS] += len(message_text)
-                    statfields[db.STATWORDS] += len(message_text.split(" "))
-                    statfields[db.STATPHRASES] += 1
+                    if message_text[0] != "!":
 
-            if user_stat is None:
+                        statfields[db.STATLETTERS] += len(message_text)
+                        statfields[db.STATWORDS] += len(message_text.split(" "))
+                        statfields[db.STATPHRASES] += 1
 
-                self.add_user_stat(user_id, chat_id, statfields)
+                if user_stat is None:
 
-            else:
+                    self.add_user_stat(user_id, chat_id, statfields)
 
-                self.update_user_stat(user_id, chat_id, statfields)
+                else:
+
+                    self.update_user_stat(user_id, chat_id, statfields)
 
     def statistic(self, pchat_id: int, pchat_title: str, puser_title, pmessage_text: str):
         """Обработчик команд."""
