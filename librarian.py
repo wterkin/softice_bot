@@ -234,7 +234,6 @@ class CLibrarian(prototype.CPrototype):
         if self.is_enabled(pchat_title):
 
             for command in QUOTES_COMMANDS:
-
                 command_list += ", ".join(command)
                 command_list += "\n"
         return command_list

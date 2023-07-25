@@ -134,6 +134,7 @@ class CHaijin(prototype.CPrototype):
             "Assert: [haijin.get_help] " \
             "Пропущен параметр <pchat_title> !"
         command_list: str = ""
+        # ToDo: вот тут не выводится команда удаления
         if self.is_enabled(pchat_title):
 
             for idx, command in enumerate(HAIJIN_COMMANDS):
@@ -142,6 +143,8 @@ class CHaijin(prototype.CPrototype):
 
                     command_list += ", ".join(command) + HAIJIN_DESC[idx]
                     command_list += "\n"
+        # print(f"***** {func.screen_text(command_list)} **********")
+
         return func.screen_text(command_list)
 
     def get_hint(self, pchat_title: str) -> str:  # [arguments-differ]
@@ -151,7 +154,7 @@ class CHaijin(prototype.CPrototype):
             "Пропущен параметр <pchat_title> !"
         if self.is_enabled(pchat_title):
 
-            return func.screen_text(", ".join(HINT))
+            return cn.SCREENED + func.screen_text(", ".join(HINT))
         return ""
 
     def haijin(self, pchat_title, puser_name: str, puser_title: str, pmessage_text: str) -> str:
@@ -187,6 +190,7 @@ class CHaijin(prototype.CPrototype):
             elif word_list[0] in HINT:
 
                 answer = self.get_help(pchat_title)
+                # print(f"[[[[{answer}]]]]")
             else:
                 answer, unformatted_answer = self.process_command(word_list,
                                                                   puser_name,
@@ -199,7 +203,10 @@ class CHaijin(prototype.CPrototype):
                 else:
 
                     print("> Haijin отвечает: ", answer[:func.OUT_MSG_LOG_LEN])
-        return f"{cn.SCREENED}{answer}"
+        if answer:
+
+            answer = f"{cn.SCREENED}{answer}"
+        return answer
 
     def is_enabled(self, pchat_title: str) -> bool:
         """Возвращает True, если библиотекарь разрешен на этом канале."""
