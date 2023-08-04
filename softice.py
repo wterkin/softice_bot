@@ -184,26 +184,33 @@ class CSoftIceBot:
         @self.robot.message_handler(content_types=EVENTS)
         def process_message(pmessage):
 
-            answer: str
+            answer: str = ""
             # *** Вытаскиваем из сообщения нужные поля
             self.decode_message(pmessage)
-            self.event = copy.deepcopy(self.msg_rec)
-            # *** Проверим, легитимный ли этот чат
-            answer = self.is_chat_legitimate(self.event).strip()
-            if not answer:
+            # if not self.msg_rec[cn.MPROCESSED]:
 
-                # *** Сообщение не протухло?
-                if self.is_message_actual():
+            if not self.lock:
 
-                    # *** Если это текстовое сообщение - обрабатываем в этой ветке.
-                    if self.event[cn.MCONTENT_TYPE] == "text" and \
-                            self.event[cn.MTEXT] is not None:
+                self.event = copy.deepcopy(self.msg_rec)
+                # if self.event[cn.MCHAT_TITLE] == "Ботовка":
+                #
+                #     print(pmessage)
+                # *** Проверим, легитимный ли этот чат
+                answer = self.is_chat_legitimate(self.event).strip()
+                if not answer:
 
-                        # *** Если сообщение адресовано другому боту - пропускаем
-                        if not is_foreign_command(self.event[cn.MCOMMAND]):
+                    # *** Сообщение не протухло?
+                    if self.is_message_actual():
 
-                            answer = self.process_modules().strip()
-                    self.statistic.save_all_type_of_messages(self.event)
+                        # *** Если это текстовое сообщение - обрабатываем в этой ветке.
+                        if self.event[cn.MCONTENT_TYPE] == "text" and \
+                                self.event[cn.MTEXT] is not None:
+
+                            # *** Если сообщение адресовано другому боту - пропускаем
+                            if not is_foreign_command(self.event[cn.MCOMMAND]):
+
+                                answer = self.process_modules().strip()
+                        self.statistic.save_all_type_of_messages(self.event)
             # *** Ответ имеется?
             if answer:
 
@@ -211,6 +218,7 @@ class CSoftIceBot:
 
     def decode_message(self, pmessage):
         """Декодирует нужные поля сообщения в словарь."""
+        self.msg_rec[cn.MPROCESSED] = False
         if pmessage.text:
 
             text: str = pmessage.text.strip()
@@ -428,6 +436,7 @@ class CSoftIceBot:
                         print(f"* Запрошена неподдерживаемая команда {rec[cn.MTEXT]}.")
                         self.logger.info("* Запрошена неподдерживаемая команда %s"
                                          " в чате %s.", rec[cn.MTEXT], rec[cn.MCHAT_TITLE])
+                    # self.event[cn.MPROCESSED] = True
             self.lock = False
         return answer  # , do_not_screen
 
@@ -466,7 +475,7 @@ class CSoftIceBot:
 
     def send_help(self) -> str:
         """Проверяет, не была ли запрошена подсказка."""
-        # *** Собираем ответы модулей на запр1й3    31456489ос помощи
+        # *** Собираем ответы модулей на запрос помощи
         answer: str = f"""\n{self.barman.get_hint(self.event[cn.MCHAT_TITLE])}
                           \n{self.bellringer.get_hint(self.event[cn.MCHAT_TITLE])}
                           \n{self.haijin.get_hint(self.event[cn.MCHAT_TITLE])[1:]}

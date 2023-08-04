@@ -7,6 +7,7 @@ from pathlib import Path
 import functions as func
 import prototype
 import constants as cn
+import debug as dbg
 
 RELOAD_BAD_WORDS: list = ["bwreload", "bwrl"]
 HINT = ["адм", "adm"]
@@ -67,9 +68,11 @@ class CModerator(prototype.CPrototype):
                 while result:
 
                     # print(bad_word)
+                    # dbg.dout(bad_word)
                     result = re.match(bad_word, text) is not None
                     if result:
 
+                        # dbg.dout("detected: ")
                         detected = True
                         text = replace_bad_words(bad_word, text)
             if detected:

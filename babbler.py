@@ -11,6 +11,7 @@ from pathlib import Path
 import functions as func
 import constants as cn
 import prototype
+import debug as dbg
 
 # *** Команда перегрузки текстов
 BABBLER_RELOAD: list = ["blreload", "blrl"]
@@ -19,9 +20,11 @@ UNIT_ID = "babbler"
 BABBLER_PATH: str = "babbler/"
 BABBLER_PERIOD_KEY = "babbler_period"
 TRIGGERS_FOLDER: str = "triggers"
+TRIGGERS_INDEX: int = 0
 REACTIONS_FOLDER: str = "reactions"
 REACTIONS_INDEX: int = 1
 BABBLER_EMODJI: list = ["😎", "😊", "☺", "😊", "😋"]
+NICKNAMES: list = ["softice", "софтик", "софтайсик", "ботик", "бот"]
 
 
 class CBabbler(prototype.CPrototype):
@@ -122,29 +125,65 @@ class CBabbler(prototype.CPrototype):
             minutes: float = (datetime.now() - self.last_phrase_time).total_seconds() / \
                              int(self.config[BABBLER_PERIOD_KEY])
             if minutes > 1:
-                answer = self.think(pmsg_rec[cn.MTEXT])
+                answer = self.think(pmsg_rec)
             if answer:
                 print(f"> Babbler отвечает: {answer[:func.OUT_MSG_LOG_LEN]}...")
                 self.last_phrase_time = datetime.now()
         return answer
 
-    def think(self, pmessage_text: str):
+    def think(self, pmsg_rec: dict):
         """Процесс принятия решений =)"""
-        word_list: list = pmessage_text.split(" ")
+        word_list: list = pmsg_rec[cn.MTEXT].split(" ")
         answer: str = ""
+        personal: bool = False
+        nicks: str = " ".join(NICKNAMES)
+        # personal = clean_word in " ".join(NICKNAMES)
+        for word in word_list:
+
+            personal = word.rstrip(string.punctuation).lower().strip() in nicks
+            if personal:
+
+                break
         for word in word_list:
 
             clean_word = word.rstrip(string.punctuation).lower().strip()
+            dbg.dout(f"*** 4 {clean_word} {NICKNAMES} {clean_word in NICKNAMES}")
+            # clean_word = clean_word[1:]
             if len(clean_word) > 1:
 
                 for block in self.mind:
 
-                    for block_item in block:
+                    # dbg.dout(f"*** {block}")
+                    # for block_item in block:
+                    for index, block_item in enumerate(block):
 
-                        if clean_word in block_item:
-                            answer = f"{random.choice(block[REACTIONS_INDEX])}"
-                            sleep(1)
-                            break
+                        if index == 0:
+
+                            # dbg.dout(f"*** {block_item}")
+                            # *** Если в блоке есть такое слово
+                            if clean_word in block_item or "@" + clean_word in block_item:
+
+                                # if personal and pmsg_rec[cn.]
+                                # dbg.dout(f"*** {pmsg_rec[cn.MTEXT].strip()[0:1]}")
+                                # *** Если этот пункт помечен как личный
+                                dbg.dout(f"%%%%%% 5 {block_item}")
+                                if "@" in "".join(block_item):
+
+                                    dbg.dout(f"%%%%%% 1 {personal}")
+                                    # *** если в строке есть обращение к боту
+                                    if personal:
+
+                                        dbg.dout(f"%%%%%% 2")
+                                        answer = f"{random.choice(block[REACTIONS_INDEX])}"
+                                        sleep(1)
+                                        break
+                                else:
+
+                                    dbg.dout(f"%%%%%% 3")
+                                    answer = f"{random.choice(block[REACTIONS_INDEX])}"
+                                    sleep(1)
+                                    break
+
                     if answer:
                         break
             if answer:
