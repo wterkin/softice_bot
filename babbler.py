@@ -147,7 +147,7 @@ class CBabbler(prototype.CPrototype):
         for word in word_list:
 
             clean_word = word.rstrip(string.punctuation).lower().strip()
-            dbg.dout(f"*** 4 {clean_word} {NICKNAMES} {clean_word in NICKNAMES}")
+            # dbg.dout(f"*** 4 {clean_word} {NICKNAMES} {clean_word in NICKNAMES}")
             # clean_word = clean_word[1:]
             if len(clean_word) > 1:
 
