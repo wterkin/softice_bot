@@ -1,3 +1,3 @@
 cd /home/app/Projects/-softice/
-python3 softice.py
+/media/data/Projects/pyenv/pytelegram/bin/python softice.py
 read

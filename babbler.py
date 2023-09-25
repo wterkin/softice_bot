@@ -147,7 +147,7 @@ class CBabbler(prototype.CPrototype):
         for word in word_list:
 
             clean_word = word.rstrip(string.punctuation).lower().strip()
-            dbg.dout(f"*** 4 {clean_word} {NICKNAMES} {clean_word in NICKNAMES}")
+            # dbg.dout(f"*** 4 {clean_word} {NICKNAMES} {clean_word in NICKNAMES}")
             # clean_word = clean_word[1:]
             if len(clean_word) > 1:
 
@@ -166,20 +166,20 @@ class CBabbler(prototype.CPrototype):
                                 # if personal and pmsg_rec[cn.]
                                 # dbg.dout(f"*** {pmsg_rec[cn.MTEXT].strip()[0:1]}")
                                 # *** Если этот пункт помечен как личный
-                                dbg.dout(f"%%%%%% 5 {block_item}")
+                                # dbg.dout(f"%%%%%% 5 {block_item}")
                                 if "@" in "".join(block_item):
 
-                                    dbg.dout(f"%%%%%% 1 {personal}")
+                                    # dbg.dout(f"%%%%%% 1 {personal}")
                                     # *** если в строке есть обращение к боту
                                     if personal:
 
-                                        dbg.dout(f"%%%%%% 2")
+                                        # dbg.dout(f"%%%%%% 2")
                                         answer = f"{random.choice(block[REACTIONS_INDEX])}"
                                         sleep(1)
                                         break
                                 else:
 
-                                    dbg.dout(f"%%%%%% 3")
+                                    # dbg.dout(f"%%%%%% 3")
                                     answer = f"{random.choice(block[REACTIONS_INDEX])}"
                                     sleep(1)
                                     break
