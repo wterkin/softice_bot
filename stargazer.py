@@ -97,8 +97,8 @@ class CStarGazer(prototype.CPrototype):
         # else:
         #
         #     # *** После Пасхи
-        #     if (pnow_date > easter_date + timedelta(days=1)) and \
-        #        (pnow_date < )
+        #     if (pnow_date > (easter_date + timedelta(days=1))) and \
+        #        (pnow_date < (easter_date + timedelta(days=7)))
 
         return answer
 

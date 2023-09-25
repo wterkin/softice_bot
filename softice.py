@@ -48,7 +48,7 @@ RUSSIAN_DATE_FORMAT: str = "%d.%m.%Y"
 RUSSIAN_DATETIME_FORMAT: str = "%d.%m.%Y %H:%M:%S"
 
 CONFIG_COMMANDS: list = ["конфиг", "config"]
-EXIT_COMMANDS: list = ["прощай", "bye", "!!"]
+EXIT_COMMANDS: list = ["прощай", "bye", "!!", "носок"]
 HELP_COMMANDS: list = ["помощь", "help"]
 RESTART_COMMAND: list = ["перезапуск", "restart", "22"]
 NON_STOP: bool = True
@@ -234,7 +234,9 @@ class CSoftIceBot:
 
             self.msg_rec[cn.MCAPTION] = ""
         self.msg_rec[cn.MCHAT_ID] = pmessage.chat.id
-        self.msg_rec[cn.MCHAT_TITLE] = pmessage.chat.title.strip()
+        if pmessage.chat.title:
+
+            self.msg_rec[cn.MCHAT_TITLE] = pmessage.chat.title.strip()
         self.msg_rec[cn.MUSER_ID] = pmessage.from_user.id
         if pmessage.from_user.username:
 

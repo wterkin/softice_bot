@@ -150,6 +150,7 @@ class CTheolog(prototype.CPrototype):
             word_list: list = func.parse_input(pmessage_text)
             if word_list[0].lower() in THEOLOG_HINT:
 
+                # print(word_list[0].lower(), THEOLOG_HINT)
                 return True
 
             for book in BIBLE_BOOKS:
