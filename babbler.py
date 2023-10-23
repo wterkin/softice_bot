@@ -155,29 +155,16 @@ class CBabbler(prototype.CPrototype):
             # *** Если что-то осталось, двигаемся дальше.
             if len(clean_word) > 1:
 
-                # dbg.dout(f"%0 {clean_word}")
                 # *** Перебираем блоки памяти бота
                 for block in self.mind:
-                    # dbg.dout(f"%1 {block[:4]}")
-                    # *** Перебираем каждый блок
-                    # for index, block_item in enumerate(block):
 
-                    # dbg.dout(f"%2 {index}:{block_item[:4]}")
-                    # *** Если это список слов-триггеров...
-                    # if index == 0:
-
+                    triggers: list = block[0]
                     # *** Если в списке триггеров есть такое слово
-                    # if clean_word in block_item or "@" + clean_word in block_item:
-                    if clean_word in block[0] or "@" + clean_word in block[0]:
 
-                        # if personal and pmsg_rec[cn.]
-                        # dbg.dout(f"*** {pmsg_rec[cn.MTEXT].strip()[0:1]}")
-                        # *** Если этот пункт помечен как личный
-                        # dbg.dout(f"%%%%%% 5 {block_item}")
-                        # if "@" in "".join(block_item):
+                    if clean_word in triggers or "@" + clean_word in triggers:
+
                         if "@" in "".join(block[0]):
 
-                            # dbg.dout(f"%%%%%% 1 {personal}")
                             # *** если в строке есть обращение к боту
                             if personal:
 
