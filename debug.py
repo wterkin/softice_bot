@@ -1,6 +1,6 @@
 
 # debug_state: bool = True
-debug_state: bool = False  # True
+debug_state: bool = True
 
 
 def dout(pmessage: str):

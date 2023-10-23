@@ -123,6 +123,7 @@ class CSoftIceBot:
         self.config: dict = {}
         self.load_config(CONFIG_FILE_NAME)
         self.lock: bool = False
+        #dbg.debug_state = self.config["debug"] == "0"
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
 
@@ -478,15 +479,52 @@ class CSoftIceBot:
     def send_help(self) -> str:
         """Проверяет, не была ли запрошена подсказка."""
         # *** Собираем ответы модулей на запрос помощи
-        answer: str = f"""\n{self.barman.get_hint(self.event[cn.MCHAT_TITLE])}
-                          \n{self.bellringer.get_hint(self.event[cn.MCHAT_TITLE])}
-                          \n{self.haijin.get_hint(self.event[cn.MCHAT_TITLE])[1:]}
-                          \n{self.librarian.get_hint(self.event[cn.MCHAT_TITLE])}
-                          \n{self.majordomo.get_hint(self.event[cn.MCHAT_TITLE])}
-                          \n{self.meteorolog.get_hint(self.event[cn.MCHAT_TITLE])}
-                          \n{self.statistic.get_hint(self.event[cn.MCHAT_TITLE])}
-                          \n{self.stargazer.get_hint(self.event[cn.MCHAT_TITLE])}
-                          \n{self.theolog.get_hint(self.event[cn.MCHAT_TITLE])}""".strip()
+        # answer: str = f"""\n{self.barman.get_hint(self.event[cn.MCHAT_TITLE])}
+        #                  \n{self.bellringer.get_hint(self.event[cn.MCHAT_TITLE])}
+        #                  \n{self.haijin.get_hint(self.event[cn.MCHAT_TITLE])[1:]}
+        #                  \n{self.librarian.get_hint(self.event[cn.MCHAT_TITLE])}
+        #                  \n{self.majordomo.get_hint(self.event[cn.MCHAT_TITLE])}
+        #                  \n{self.meteorolog.get_hint(self.event[cn.MCHAT_TITLE])}
+        #                  \n{self.statistic.get_hint(self.event[cn.MCHAT_TITLE])}
+        #                  \n{self.stargazer.get_hint(self.event[cn.MCHAT_TITLE])}
+        #                  \n{self.theolog.get_hint(self.event[cn.MCHAT_TITLE])}""".strip()
+        answer: str = ""
+        result: str = self.barman.get_hint(self.event[cn.MCHAT_TITLE])
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.bellringer.get_hint(self.event[cn.MCHAT_TITLE])
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.haijin.get_hint(self.event[cn.MCHAT_TITLE])[1:]
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.librarian.get_hint(self.event[cn.MCHAT_TITLE]) 
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.majordomo.get_hint(self.event[cn.MCHAT_TITLE])
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.meteorolog.get_hint(self.event[cn.MCHAT_TITLE])
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.statistic.get_hint(self.event[cn.MCHAT_TITLE])
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.stargazer.get_hint(self.event[cn.MCHAT_TITLE])
+        if result:
+
+              answer = answer + result + "\n"
+        result = self.theolog.get_hint(self.event[cn.MCHAT_TITLE])
+        if result:
+
+            answer = answer + result + "\n"
         # *** Если ответы есть, отвечаем на запрос
         if answer:
 
