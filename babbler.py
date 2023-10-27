@@ -25,6 +25,7 @@ REACTIONS_FOLDER: str = "reactions"
 REACTIONS_INDEX: int = 1
 BABBLER_EMODJI: list = ["😎", "😊", "☺", "😊", "😋"]
 NICKNAMES: list = ["softice", "софтик", "софтайсик", "ботик", "бот"]
+AT_CHAR: str = "@"
 
 
 class CBabbler(prototype.CPrototype):
@@ -136,17 +137,15 @@ class CBabbler(prototype.CPrototype):
         word_list: list = pmsg_rec[cn.MTEXT].split(" ")
         answer: str = ""
         personal: bool = False
-        nicks: str = " ".join(NICKNAMES)
+        # nicks: str = " ".join(NICKNAMES)
         # *** Переберем все слова в сообщении
-        # ToDO: Вот тут сделать перебор ников и потом nick in word_list
-        for word in word_list:
+        for nick in NICKNAMES:
 
-            # *** Определяем, есть ли в сообщении упоминание бота.
-            personal = word.rstrip(string.punctuation).lower().strip() in nicks
-            # *** Как только нашли - выходим из цикла.
+            personal = nick in word_list
             if personal:
 
                 break
+
         # *** Снова перебираем сообщение по словам (как-то неоптимально выходит)
         for word in word_list:
 
@@ -155,26 +154,37 @@ class CBabbler(prototype.CPrototype):
             # *** Если что-то осталось, двигаемся дальше.
             if len(clean_word) > 1:
 
+                # dbg.dout(f"%%% ! {clean_word}")
                 # *** Перебираем блоки памяти бота
                 for block in self.mind:
 
+                    # dbg.dout(f"%%%% @ {block}")
                     triggers: list = block[0]
+                    # dbg.dout(f"%%%% # {triggers}")
                     # *** Если в списке триггеров есть такое слово
+                    if clean_word in triggers or AT_CHAR + clean_word in triggers:
 
-                    if clean_word in triggers or "@" + clean_word in triggers:
+                        # dbg.dout(f"%%%%%% Trig {triggers.index(clean_word)}")
+                        # *** если в строке есть обращение к боту
+                        if AT_CHAR in "".join(triggers) and personal:
 
-                        if "@" in "".join(block[0]):
-
-                            # *** если в строке есть обращение к боту
-                            if personal:
-
-                                # dbg.dout(f"%%%%%% 2")
-                                answer = f"{random.choice(block[REACTIONS_INDEX])}"
-                                sleep(1)
-                                break
+                            answer = f"{random.choice(block[REACTIONS_INDEX])}"
+                            sleep(1)
+                            break
                         else:
 
-                            # dbg.dout(f"%%%%%% 3")
+                            dbg.dout(f"%%% Не личное сообщение")
+                            trigger: string = triggers[triggers.index(clean_word)].strip()
+                            dbg.dout(f"%%% & {trigger}")
+                            # if " " in trigger:
+                            #
+                            #     # *** Это не слово, а фраза
+                            #     phrase: list = trigger.split(" ")
+                            #     # for word in phrase:
+                            #     #
+                            #     #     if word in clean_word
+                            # else:
+
                             answer = f"{random.choice(block[REACTIONS_INDEX])}"
                             sleep(1)
                             break
