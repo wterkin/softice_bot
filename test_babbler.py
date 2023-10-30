@@ -13,7 +13,7 @@ class CTestBabbler(TestCase):
         self.babbler = babbler.CBabbler(self.config, self.config["windows_data_folder"])
 
     def test_babbler(self):
-        self.assertEqual(self.babbler.babbler('superchat', 'username', 'usertitle', '!blrl'), 'База болтуна обновлена')
+        self.assertEqual(self.babbler.babbler('superchat')
         self.assertNotEqual(self.babbler.babbler('megachat', 'username', 'usertitle', '!reload'),
                             'База болтуна обновлена')
 

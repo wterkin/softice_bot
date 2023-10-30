@@ -171,23 +171,23 @@ class CBabbler(prototype.CPrototype):
                             answer = f"{random.choice(block[REACTIONS_INDEX])}"
                             sleep(1)
                             break
-                        else:
+                        # else:
 
-                            dbg.dout(f"%%% Не личное сообщение")
-                            trigger: string = triggers[triggers.index(clean_word)].strip()
-                            dbg.dout(f"%%% & {trigger}")
-                            # if " " in trigger:
-                            #
-                            #     # *** Это не слово, а фраза
-                            #     phrase: list = trigger.split(" ")
-                            #     # for word in phrase:
-                            #     #
-                            #     #     if word in clean_word
-                            # else:
+                        dbg.dout("%%% Не личное сообщение")
+                        trigger: str = triggers[triggers.index(clean_word)].strip()
+                        dbg.dout(f"%%% & {trigger}")
+                        # if " " in trigger:
+                        #
+                        #     # *** Это не слово, а фраза
+                        #     phrase: list = trigger.split(" ")
+                        #     # for word in phrase:
+                        #     #
+                        #     #     if word in clean_word
+                        # else:
 
-                            answer = f"{random.choice(block[REACTIONS_INDEX])}"
-                            sleep(1)
-                            break
+                        answer = f"{random.choice(block[REACTIONS_INDEX])}"
+                        sleep(1)
+                        break
 
                     if answer:
                         break

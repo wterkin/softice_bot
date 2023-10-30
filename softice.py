@@ -123,7 +123,7 @@ class CSoftIceBot:
         self.config: dict = {}
         self.load_config(CONFIG_FILE_NAME)
         self.lock: bool = False
-        #dbg.debug_state = self.config["debug"] == "0"
+        # dbg.debug_state = self.config["debug"] == "0"
         # *** Нужно ли работать через прокси?
         if self.config["proxy"]:
 
@@ -492,35 +492,35 @@ class CSoftIceBot:
         result: str = self.barman.get_hint(self.event[cn.MCHAT_TITLE])
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.bellringer.get_hint(self.event[cn.MCHAT_TITLE])
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.haijin.get_hint(self.event[cn.MCHAT_TITLE])[1:]
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.librarian.get_hint(self.event[cn.MCHAT_TITLE]) 
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.majordomo.get_hint(self.event[cn.MCHAT_TITLE])
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.meteorolog.get_hint(self.event[cn.MCHAT_TITLE])
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.statistic.get_hint(self.event[cn.MCHAT_TITLE])
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.stargazer.get_hint(self.event[cn.MCHAT_TITLE])
         if result:
 
-              answer = answer + result + "\n"
+            answer = answer + result + "\n"
         result = self.theolog.get_hint(self.event[cn.MCHAT_TITLE])
         if result:
 
